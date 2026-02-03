@@ -1,0 +1,25 @@
+using Lyke.Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Lyke.Infrastructure.Data.Configurations;
+
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.Property(u => u.UserType)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.HasOne(u => u.BodyProfile)
+            .WithOne(bp => bp.User)
+            .HasForeignKey<BodyProfile>(bp => bp.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne(u => u.Creator)
+            .WithOne(c => c.User)
+            .HasForeignKey<Creator>(c => c.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

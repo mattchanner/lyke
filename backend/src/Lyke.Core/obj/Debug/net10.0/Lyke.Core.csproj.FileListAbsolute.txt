@@ -1,0 +1,12 @@
+C:\Sources\repos\lyke\src\Lyke.Core\bin\Debug\net10.0\Lyke.Core.deps.json
+C:\Sources\repos\lyke\src\Lyke.Core\bin\Debug\net10.0\Lyke.Core.dll
+C:\Sources\repos\lyke\src\Lyke.Core\bin\Debug\net10.0\Lyke.Core.pdb
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.csproj.AssemblyReference.cache
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.AssemblyInfoInputs.cache
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.AssemblyInfo.cs
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.csproj.CoreCompileInputs.cache
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.dll
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\refint\Lyke.Core.dll
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\Lyke.Core.pdb
+C:\Sources\repos\lyke\src\Lyke.Core\obj\Debug\net10.0\ref\Lyke.Core.dll
