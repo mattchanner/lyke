@@ -19,6 +19,9 @@ public static class DependencyInjection
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(LykeDbContext).Assembly.FullName)));
 
+        // Register DbContext as well for services that need generic access
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<LykeDbContext>());
+
         // Identity
         services.AddIdentity<User, IdentityRole<Guid>>(options =>
         {

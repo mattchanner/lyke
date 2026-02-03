@@ -32,6 +32,8 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
         // Apply all configurations from assembly
         builder.ApplyConfigurationsFromAssembly(typeof(LykeDbContext).Assembly);
+
+        // Note: Seed data for BodyTypes and FitTags is in InitialCreate migration
     }
 
     public override int SaveChanges()

@@ -26,7 +26,7 @@ public class ApiResponse<T>
 
 public class ApiResponse : ApiResponse<object>
 {
-    public static new ApiResponse Ok() => new() { Success = true };
+    public static ApiResponse Ok() => new() { Success = true };
 
     public static new ApiResponse Fail(string code, string message) => new()
     {
