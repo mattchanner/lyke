@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\aspire\Lyke.ServiceDefaults\Lyke.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Lyke.Core\Lyke.Core.csproj" />
   </ItemGroup>
 

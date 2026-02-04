@@ -19,6 +19,10 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+// Aspire defaults
+builder.AddServiceDefaults();
+//builder.ConfigureOpenTelemetry();
+
 // Add services
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
