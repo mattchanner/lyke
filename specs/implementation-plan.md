@@ -32,12 +32,15 @@
 | Profile Service & Endpoints | ✅ Complete (8 endpoints) |
 | Feed Service & Endpoints | ✅ Complete (8 endpoints) |
 | Commerce Service & Endpoints | ✅ Complete (6 endpoints) |
-| FluentValidation | ✅ Complete (11 validators) |
+| Creator Service & Endpoints | ✅ Complete (13 endpoints) |
+| FluentValidation | ✅ Complete (15 validators) |
 | Seed Data (Lookups) | ✅ Complete (8 body types, 12 fit tags) |
+| Role-Based Authorization | ✅ Complete (5 policies) |
+| Unit Tests | ✅ Complete (5 service test suites) |
+| Integration Tests | ✅ In Progress |
 | Frontend | ❌ Not Started |
-| Tests | ❌ Not Started |
 
-**Overall Backend Progress: ~60%** | **Overall Project: ~30%**
+**Overall Backend Progress: ~75%** | **Overall Project: ~40%**
 
 ---
 
@@ -49,12 +52,17 @@
   - `Lyke.Core` - Domain entities and interfaces
   - `Lyke.Infrastructure` - EF Core, repositories, external services
   - `Lyke.Application` - Business logic, DTOs, services
+  - `Lyke.UnitTests` - Unit test project
+  - `Lyke.IntegrationTests` - Integration test project
+  - `Lyke.AppHost` - .NET Aspire host project
+  - `Lyke.ServiceDefaults` - Aspire service defaults
 - [x] Configure PostgreSQL connection and EF Core
 - [x] Set up dependency injection container
 - [x] Configure logging (Serilog)
 - [x] Set up environment-based configuration (appsettings.json)
 - [x] Add health check endpoints
 - [x] Configure CORS for mobile app
+- [x] Configure .NET Aspire for cloud-native development
 
 ### 1.2 Frontend Project Setup
 - [ ] Initialize Ionic Angular project (`ionic start lyke-app blank --type=angular`)
@@ -239,8 +247,8 @@ CreatorEarnings
 - [x] Create refresh token mechanism with rotation
 - [x] Create AuthService with full authentication logic
 - [x] Create FluentValidation validators for all auth requests
-- [ ] Implement role-based authorization (Shopper, Creator, Retailer, Admin)
-- [ ] Add policy-based authorization for granular permissions
+- [x] Implement role-based authorization (Shopper, Creator, Retailer, Admin)
+- [x] Add policy-based authorization for granular permissions (CreatorOnly, AdminOnly, RetailerOnly, CreatorOrAdmin, RetailerOrAdmin)
 - [ ] Implement account lockout and security features
 
 ### 3.2 API Endpoints - Authentication (Minimal APIs)
@@ -359,21 +367,24 @@ CreatorEarnings
 
 ### 6.1 Backend - Commerce APIs
 ```
-POST   /api/clicks/track           - Track outbound click
-GET    /api/products/{id}          - Get product details
-GET    /api/products/search        - Search products (for creators)
-GET    /api/retailers              - List active retailers
-GET    /api/retailers/{id}/products - Get retailer products
-POST   /api/retailers/{id}/conversions - Conversion webhook
+POST   /api/clicks/track           - Track outbound click ✅
+GET    /api/products/{id}          - Get product details ✅
+GET    /api/products/search        - Search products (for creators) ✅
+GET    /api/retailers              - List active retailers ✅
+GET    /api/retailers/{id}/products - Get retailer products ✅
+POST   /api/retailers/{id}/conversions - Conversion webhook ✅
 ```
 
 ### 6.2 Backend Tasks
 - [x] Create CommerceService
-  - Generate unique click IDs
-  - Store attribution data (JSON in ClickEvent.AttributionData)
-  - Handle affiliate link generation
+  - [x] Generate unique click IDs
+  - [x] Store attribution data (JSON in ClickEvent.AttributionData)
+  - [x] Handle affiliate link generation
+  - [x] Click deduplication for accuracy
+  - [x] IP address hashing for privacy
 - [x] Implement affiliate URL builder per retailer (uses Retailer.AffiliateConfig JSON)
 - [x] Create conversion webhook endpoints (with HMAC signature verification)
+- [x] Product search with filtering (name, SKU, retailer, category)
 - [ ] Build click analytics aggregation (deferred to Phase 10)
 
 ### 6.3 Frontend Tasks
@@ -389,30 +400,31 @@ POST   /api/retailers/{id}/conversions - Conversion webhook
 
 ### 7.1 Backend - Creator APIs
 ```
-POST   /api/creators/register      - Register as creator
-GET    /api/creators/profile       - Get creator profile
-PUT    /api/creators/profile       - Update creator profile
-POST   /api/creators/posts         - Create new post
-PUT    /api/creators/posts/{id}    - Update post
-DELETE /api/creators/posts/{id}    - Delete post
-GET    /api/creators/posts         - Get creator's posts
-POST   /api/creators/posts/{id}/submit - Submit for review
-GET    /api/creators/analytics     - Get performance metrics
-GET    /api/creators/earnings      - Get earnings summary
-GET    /api/creators/earnings/history - Get earnings history
+POST   /api/creators/register      - Register as creator ✅
+GET    /api/creators/profile       - Get creator profile ✅
+PUT    /api/creators/profile       - Update creator profile ✅
+POST   /api/creators/posts         - Create new post ✅
+PUT    /api/creators/posts/{id}    - Update post ✅
+DELETE /api/creators/posts/{id}    - Delete post ✅
+GET    /api/creators/posts         - Get creator's posts ✅
+GET    /api/creators/posts/{id}    - Get specific post ✅
+POST   /api/creators/posts/{id}/submit - Submit for review ✅
+GET    /api/creators/analytics     - Get performance metrics ✅
+GET    /api/creators/earnings/summary - Get earnings summary ✅
+GET    /api/creators/earnings/history - Get earnings history ✅
 ```
 
 ### 7.2 Backend Tasks
-- [ ] Create CreatorService
+- [x] Create CreatorService
 - [ ] Implement creator verification workflow
 - [ ] Build media upload service (Azure Blob/S3)
   - Image optimization and resizing
   - Video transcoding (or use external service)
   - Thumbnail generation
-- [ ] Create post draft/publish workflow
-- [ ] Implement product search and tagging
-- [ ] Build earnings calculation service
-- [ ] Create analytics aggregation queries
+- [x] Create post draft/publish workflow
+- [x] Implement product search and tagging
+- [x] Build earnings calculation service
+- [x] Create analytics aggregation queries
 
 ### 7.3 Frontend - Creator Module
 - [ ] Create creator registration flow
@@ -572,11 +584,14 @@ GET    /api/admin/analytics        - Platform analytics
 ## Phase 12: Testing Strategy
 
 ### 12.1 Backend Testing
-- [ ] Unit tests for services (xUnit)
-  - MatchingService tests
-  - FeedService tests
-  - Analytics calculation tests
-- [ ] Integration tests for API endpoints
+- [x] Unit tests for services (xUnit)
+  - [x] AuthServiceTests (registration, login, token refresh, logout)
+  - [x] ProfileServiceTests (body profile management)
+  - [x] FeedServiceTests (feed generation, similarity matching)
+  - [x] CreatorServiceTests (registration, post management, analytics)
+  - [x] CommerceServiceTests (click tracking, product search)
+- [x] Test infrastructure (TestDbContextFactory, MockUserManager)
+- [ ] Integration tests for API endpoints (in progress)
 - [ ] Database tests with test containers
 - [ ] Load testing with k6 or similar
 - [ ] Security testing (OWASP ZAP)
@@ -700,37 +715,34 @@ GET    /api/admin/analytics        - Platform analytics
 
 ## Appendix B: Folder Structure
 
-### Backend
+### Backend (Implemented Structure)
 ```
 /src
   /Lyke.Api
-    /Controllers
-    /Middleware
-    /Filters
-    Program.cs
+    /Endpoints          - Minimal API endpoint definitions
+    /Middleware         - Exception handling middleware
+    Program.cs          - Application bootstrap
   /Lyke.Core
-    /Entities
-    /Interfaces
-    /Enums
-    /Exceptions
+    /Entities           - Domain entities (User, Post, Product, etc.)
+    /Interfaces         - Service and repository interfaces
+    /Enums              - Domain enumerations
+    /Exceptions         - Custom domain exceptions
   /Lyke.Application
-    /Services
-    /DTOs
-    /Validators
-    /Mappings
+    /Services           - Business logic services
+    /DTOs               - Data transfer objects (requests/responses)
+    /Validators         - FluentValidation validators
+    /Configuration      - Settings classes (JwtSettings, etc.)
   /Lyke.Infrastructure
     /Data
-      /Configurations
-      /Migrations
-      LykeDbContext.cs
-    /Repositories
-    /Services
-      /Storage
-      /Email
-      /Analytics
+      /Configurations   - EF Core entity configurations
+      /Migrations       - Database migrations
+      LykeDbContext.cs  - DbContext with Identity
+    /Repositories       - Generic repository implementation
+  /Lyke.AppHost         - .NET Aspire orchestration
+  /Lyke.ServiceDefaults - Aspire service defaults
 /tests
-  /Lyke.UnitTests
-  /Lyke.IntegrationTests
+  /Lyke.UnitTests       - Service unit tests (5 test suites)
+  /Lyke.IntegrationTests - API integration tests
 ```
 
 ### Frontend (Ionic/Angular)
@@ -787,23 +799,23 @@ ANALYTICS_KEY=<key>
 
 | Phase | Tasks | Completed | Priority | Status |
 |-------|-------|-----------|----------|--------|
-| Phase 1: Foundation | 15 | 7 | Critical | 47% (backend only) |
+| Phase 1: Foundation | 15 | 8 | Critical | 53% (backend only) |
 | Phase 2: Database | 8 | 7 | Critical | 88% |
-| Phase 3: Authentication | 17 | 12 | Critical | 71% |
+| Phase 3: Authentication | 17 | 14 | Critical | 82% |
 | Phase 4: User Profile | 18 | 13 | Critical | 72% (backend complete) |
 | Phase 5: Content Feed | 25 | 14 | Critical | 56% (backend complete) |
-| Phase 6: Commerce | 8 | 4 | Critical | 50% (backend complete) |
-| Phase 7: Creator | 14 | 0 | High | 0% |
+| Phase 6: Commerce | 8 | 7 | Critical | 88% (backend complete) |
+| Phase 7: Creator | 14 | 9 | High | 64% (backend complete) |
 | Phase 8: Retailer Portal | 12 | 0 | High | 0% |
 | Phase 9: Admin | 10 | 0 | High | 0% |
 | Phase 10: Analytics | 8 | 0 | Medium | 0% |
 | Phase 11: Privacy | 8 | 0 | Critical | 0% |
-| Phase 12: Testing | 10 | 0 | High | 0% |
+| Phase 12: Testing | 10 | 6 | High | 60% |
 | Phase 13: Performance | 8 | 0 | Medium | 0% |
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~171 actionable tasks (~57 completed, ~33% overall)**
+**Total: ~171 actionable tasks (~78 completed, ~46% overall)**
 
 ---
 
