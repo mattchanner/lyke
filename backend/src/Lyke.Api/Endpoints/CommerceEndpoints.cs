@@ -46,7 +46,7 @@ public static class CommerceEndpoints
             .WithName("SearchProducts")
             .WithSummary("Search products (for creators tagging posts)")
             .Produces<ApiResponse<IReadOnlyList<ProductResponse>>>(StatusCodes.Status200OK)
-            .RequireAuthorization();
+            .RequireAuthorization("CreatorOrAdmin");
     }
 
     private static void MapRetailerEndpoints(IEndpointRouteBuilder app)

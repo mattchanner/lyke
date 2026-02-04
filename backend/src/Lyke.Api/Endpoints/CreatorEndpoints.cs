@@ -12,10 +12,12 @@ public static class CreatorEndpoints
     {
         var group = app.MapGroup("/api/creators")
             .WithTags("Creators")
-            .RequireAuthorization();
+            .RequireAuthorization("CreatorOnly");
 
         // Registration & Profile
+        // Note: Registration allows any authenticated user (Shopper becoming Creator)
         group.MapPost("/register", RegisterAsCreatorAsync)
+            .RequireAuthorization() // Override: any authenticated user can register
             .WithName("RegisterAsCreator")
             .WithSummary("Register current user as a creator")
             .Produces<ApiResponse<CreatorProfileResponse>>(StatusCodes.Status200OK)
