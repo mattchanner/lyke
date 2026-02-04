@@ -15,6 +15,7 @@ public static class DependencyInjection
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
         services.Configure<MatchingSettings>(configuration.GetSection(MatchingSettings.SectionName));
         services.Configure<CommerceSettings>(configuration.GetSection(CommerceSettings.SectionName));
+        services.Configure<CreatorSettings>(configuration.GetSection(CreatorSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IFeedService, FeedService>();
         services.AddScoped<ICommerceService, CommerceService>();
+        services.AddScoped<ICreatorService, CreatorService>();
 
         return services;
     }

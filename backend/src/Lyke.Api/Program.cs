@@ -112,6 +112,7 @@ app.MapFeedEndpoints();
 app.MapPostEndpoints();
 app.MapSearchEndpoints();
 app.MapCommerceEndpoints();
+app.MapCreatorEndpoints();
 
 app.Run();
 

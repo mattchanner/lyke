@@ -9,7 +9,8 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
       "Bash(dotnet ef migrations add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git push)"
     ]
   }
 }

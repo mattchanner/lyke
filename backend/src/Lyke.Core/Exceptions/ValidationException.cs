@@ -14,7 +14,7 @@ public class ValidationException : Exception
         Errors = errors;
     }
 
-    public ValidationException(string propertyName, string errorMessage) : this()
+    public ValidationException(string propertyName, string errorMessage) : base(errorMessage)
     {
         Errors = new Dictionary<string, string[]>
         {
