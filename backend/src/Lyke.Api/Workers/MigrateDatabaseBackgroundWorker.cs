@@ -10,11 +10,13 @@ public class MigrateDatabaseBackgroundWorker(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var scope = provider.CreateScope();
-        LykeDbContext context =
-            scope.ServiceProvider.GetRequiredService<LykeDbContext>();
 
+        LykeDbContext context = scope.ServiceProvider.GetRequiredService<LykeDbContext>();
 
-        if (true || context.Database.HasPendingModelChanges())
+        IEnumerable<string> pendingMigrations = 
+            await context.Database.GetPendingMigrationsAsync(stoppingToken);
+
+        if (pendingMigrations.Any())
         {
             logger.LogInformation("Migrating database to the latest version");
             await context.Database.MigrateAsync(stoppingToken).ConfigureAwait(false);
