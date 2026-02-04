@@ -3,13 +3,14 @@
     <Project Path="../aspire/Lyke.AppHost/Lyke.AppHost.csproj" Id="98726864-7b3f-4f59-90fa-59b457dcaf98" />
     <Project Path="../aspire/Lyke.ServiceDefaults/Lyke.ServiceDefaults.csproj" />
   </Folder>
-  <Folder Name="/src/">
+  <Folder Name="/backend/" />
+  <Folder Name="/backend/src/">
     <Project Path="src/Lyke.Api/Lyke.Api.csproj" />
     <Project Path="src/Lyke.Application/Lyke.Application.csproj" />
     <Project Path="src/Lyke.Core/Lyke.Core.csproj" />
     <Project Path="src/Lyke.Infrastructure/Lyke.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/tests/">
+  <Folder Name="/backend/tests/">
     <Project Path="tests/Lyke.IntegrationTests/Lyke.IntegrationTests.csproj" />
     <Project Path="tests/Lyke.UnitTests/Lyke.UnitTests.csproj" />
   </Folder>
