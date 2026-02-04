@@ -12,6 +12,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(u => u.SuspensionReason)
+            .HasMaxLength(500);
+
         builder.HasOne(u => u.BodyProfile)
             .WithOne(bp => bp.User)
             .HasForeignKey<BodyProfile>(bp => bp.UserId)
@@ -21,5 +24,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(c => c.User)
             .HasForeignKey<Creator>(c => c.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Index for finding suspended/active users
+        builder.HasIndex(u => u.IsActive)
+            .HasDatabaseName("IX_Users_IsActive");
     }
 }

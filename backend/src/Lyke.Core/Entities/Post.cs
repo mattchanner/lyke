@@ -13,8 +13,13 @@ public class Post : BaseEntity
     public string? ModerationNotes { get; set; }
     public DateTime? PublishedAt { get; set; }
 
+    // Moderation tracking
+    public Guid? ModeratedByUserId { get; set; }
+    public DateTime? ModeratedAt { get; set; }
+
     // Navigation properties
     public Creator Creator { get; set; } = null!;
+    public User? ModeratedByUser { get; set; }
     public ICollection<PostProduct> PostProducts { get; set; } = new List<PostProduct>();
     public ICollection<Engagement> Engagements { get; set; } = new List<Engagement>();
     public ICollection<ClickEvent> ClickEvents { get; set; } = new List<ClickEvent>();

@@ -18,7 +18,8 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         int width,
         int height,
         double atSecond = 1.0,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.jpg");
 
@@ -27,10 +28,13 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
             var conversion = await FFmpeg.Conversions.FromSnippet.Snapshot(
                 videoPath,
                 outputPath,
-                TimeSpan.FromSeconds(atSecond));
+                TimeSpan.FromSeconds(atSecond)
+            );
 
             // Add resize filter
-            conversion.AddParameter($"-vf scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2");
+            conversion.AddParameter(
+                $"-vf scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2"
+            );
 
             await conversion.Start(cancellationToken);
 
@@ -54,7 +58,8 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
 
     public async Task<VideoInfo> GetVideoInfoAsync(
         string videoPath,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var mediaInfo = await FFmpeg.GetMediaInfo(videoPath, cancellationToken);
         var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
@@ -77,7 +82,8 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         string outputPath,
         int maxWidth,
         int maxHeight,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var mediaInfo = await FFmpeg.GetMediaInfo(inputPath, cancellationToken);
         var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
@@ -89,13 +95,18 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
 
         // Calculate new dimensions maintaining aspect ratio
         var (newWidth, newHeight) = CalculateResizedDimensions(
-            videoStream.Width, videoStream.Height, maxWidth, maxHeight);
+            videoStream.Width,
+            videoStream.Height,
+            maxWidth,
+            maxHeight
+        );
 
         // Ensure dimensions are even (required for many video codecs)
         newWidth = newWidth % 2 == 0 ? newWidth : newWidth - 1;
         newHeight = newHeight % 2 == 0 ? newHeight : newHeight - 1;
 
-        var conversion = FFmpeg.Conversions.New()
+        var conversion = FFmpeg
+            .Conversions.New()
             .AddStream(videoStream.SetSize(newWidth, newHeight))
             .SetOutput(outputPath)
             .SetOverwriteOutput(true);
@@ -119,7 +130,11 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
     }
 
     private static (int Width, int Height) CalculateResizedDimensions(
-        int originalWidth, int originalHeight, int maxWidth, int maxHeight)
+        int originalWidth,
+        int originalHeight,
+        int maxWidth,
+        int maxHeight
+    )
     {
         if (originalWidth <= maxWidth && originalHeight <= maxHeight)
         {
@@ -130,9 +145,6 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         var ratioY = (double)maxHeight / originalHeight;
         var ratio = Math.Min(ratioX, ratioY);
 
-        return (
-            (int)Math.Round(originalWidth * ratio),
-            (int)Math.Round(originalHeight * ratio)
-        );
+        return ((int)Math.Round(originalWidth * ratio), (int)Math.Round(originalHeight * ratio));
     }
 }

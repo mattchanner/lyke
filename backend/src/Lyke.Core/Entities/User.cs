@@ -10,6 +10,11 @@ public class User : IdentityUser<Guid>
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
+    // Suspension tracking
+    public DateTime? SuspendedAt { get; set; }
+    public Guid? SuspendedByUserId { get; set; }
+    public string? SuspensionReason { get; set; }
+
     // Navigation properties
     public BodyProfile? BodyProfile { get; set; }
     public Creator? Creator { get; set; }

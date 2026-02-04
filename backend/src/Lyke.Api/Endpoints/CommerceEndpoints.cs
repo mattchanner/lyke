@@ -19,10 +19,10 @@ public static class CommerceEndpoints
 
     private static void MapClickEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/clicks")
-            .WithTags("Click Tracking");
+        var group = app.MapGroup("/api/clicks").WithTags("Click Tracking");
 
-        group.MapPost("/track", TrackClickAsync)
+        group
+            .MapPost("/track", TrackClickAsync)
             .WithName("TrackClick")
             .WithSummary("Track outbound click and get affiliate URL")
             .Produces<ApiResponse<TrackClickResponse>>(StatusCodes.Status200OK)
@@ -32,17 +32,18 @@ public static class CommerceEndpoints
 
     private static void MapProductEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/products")
-            .WithTags("Products");
+        var group = app.MapGroup("/api/products").WithTags("Products");
 
-        group.MapGet("/{id:guid}", GetProductAsync)
+        group
+            .MapGet("/{id:guid}", GetProductAsync)
             .WithName("GetProduct")
             .WithSummary("Get product details by ID")
             .Produces<ApiResponse<ProductResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
-        group.MapGet("/search", SearchProductsAsync)
+        group
+            .MapGet("/search", SearchProductsAsync)
             .WithName("SearchProducts")
             .WithSummary("Search products (for creators tagging posts)")
             .Produces<ApiResponse<IReadOnlyList<ProductResponse>>>(StatusCodes.Status200OK)
@@ -51,23 +52,25 @@ public static class CommerceEndpoints
 
     private static void MapRetailerEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/retailers")
-            .WithTags("Retailers");
+        var group = app.MapGroup("/api/retailers").WithTags("Retailers");
 
-        group.MapGet("/", GetRetailersAsync)
+        group
+            .MapGet("/", GetRetailersAsync)
             .WithName("GetRetailers")
             .WithSummary("Get all active retailers")
             .Produces<ApiResponse<IReadOnlyList<RetailerResponse>>>(StatusCodes.Status200OK)
             .AllowAnonymous();
 
-        group.MapGet("/{id:guid}/products", GetRetailerProductsAsync)
+        group
+            .MapGet("/{id:guid}/products", GetRetailerProductsAsync)
             .WithName("GetRetailerProducts")
             .WithSummary("Get retailer products (paginated)")
             .Produces<ApiResponse<RetailerProductsResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
-        group.MapPost("/{id:guid}/conversions", ProcessConversionAsync)
+        group
+            .MapPost("/{id:guid}/conversions", ProcessConversionAsync)
             .WithName("ProcessConversion")
             .WithSummary("Webhook for retailer to report conversions")
             .Produces<ApiResponse>(StatusCodes.Status200OK)
@@ -80,14 +83,20 @@ public static class CommerceEndpoints
         ClaimsPrincipal user,
         ICommerceService commerceService,
         HttpContext httpContext,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
         var userAgent = httpContext.Request.Headers.UserAgent.ToString();
         var ipAddress = httpContext.Connection.RemoteIpAddress?.ToString();
 
         var result = await commerceService.TrackClickAsync(
-            userId, request, userAgent, ipAddress, cancellationToken);
+            userId,
+            request,
+            userAgent,
+            ipAddress,
+            cancellationToken
+        );
 
         return Results.Ok(ApiResponse<TrackClickResponse>.Ok(result));
     }
@@ -95,7 +104,8 @@ public static class CommerceEndpoints
     private static async Task<IResult> GetProductAsync(
         Guid id,
         ICommerceService commerceService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var product = await commerceService.GetProductAsync(id, cancellationToken);
         return Results.Ok(ApiResponse<ProductResponse>.Ok(product));
@@ -104,7 +114,8 @@ public static class CommerceEndpoints
     private static async Task<IResult> SearchProductsAsync(
         [AsParameters] ProductSearchQueryParams queryParams,
         ICommerceService commerceService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var request = new ProductSearchRequest(
             queryParams.Q ?? "",
@@ -114,13 +125,17 @@ public static class CommerceEndpoints
             queryParams.PageSize ?? 20
         );
 
-        var (products, meta) = await commerceService.SearchProductsAsync(request, cancellationToken);
+        var (products, meta) = await commerceService.SearchProductsAsync(
+            request,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<IReadOnlyList<ProductResponse>>.Ok(products, meta));
     }
 
     private static async Task<IResult> GetRetailersAsync(
         ICommerceService commerceService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var retailers = await commerceService.GetRetailersAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<RetailerResponse>>.Ok(retailers));
@@ -132,10 +147,16 @@ public static class CommerceEndpoints
         [FromQuery] int? pageSize,
         [FromQuery] string? category,
         ICommerceService commerceService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var (data, meta) = await commerceService.GetRetailerProductsAsync(
-            id, page ?? 1, pageSize ?? 20, category, cancellationToken);
+            id,
+            page ?? 1,
+            pageSize ?? 20,
+            category,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<RetailerProductsResponse>.Ok(data, meta));
     }
 
@@ -143,20 +164,23 @@ public static class CommerceEndpoints
         Guid id,
         [FromBody] ConversionWebhookRequest request,
         ICommerceService commerceService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var success = await commerceService.ProcessConversionAsync(id, request, cancellationToken);
         if (!success)
         {
-            return Results.BadRequest(ApiResponse.Fail("CONVERSION_FAILED", "Failed to process conversion"));
+            return Results.BadRequest(
+                ApiResponse.Fail("CONVERSION_FAILED", "Failed to process conversion")
+            );
         }
         return Results.Ok(ApiResponse.Ok());
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)
     {
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? user.FindFirst("sub")?.Value;
+        var userIdClaim =
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {

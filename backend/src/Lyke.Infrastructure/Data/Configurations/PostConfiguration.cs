@@ -30,10 +30,19 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder.Property(p => p.ModerationNotes)
             .HasMaxLength(1000);
 
+        // Moderation tracking
+        builder.HasOne(p => p.ModeratedByUser)
+            .WithMany()
+            .HasForeignKey(p => p.ModeratedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(p => new { p.CreatorId, p.Status, p.PublishedAt })
             .HasDatabaseName("IX_Posts_CreatorId_Status_PublishedAt");
 
         builder.HasIndex(p => new { p.Status, p.PublishedAt })
             .HasDatabaseName("IX_Posts_Status_PublishedAt");
+
+        builder.HasIndex(p => p.Status)
+            .HasDatabaseName("IX_Posts_Status");
     }
 }

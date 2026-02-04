@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<ICommerceService, CommerceService>();
         services.AddScoped<ICreatorService, CreatorService>();
         services.AddScoped<IMediaService, MediaService>();
+        services.AddScoped<IAdminService, AdminService>();
 
         return services;
     }
