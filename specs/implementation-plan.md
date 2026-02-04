@@ -18,7 +18,7 @@
 
 ## Current Progress Summary
 
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-04
 
 | Component | Status |
 |-----------|--------|
@@ -30,13 +30,14 @@
 | JWT Infrastructure | ✅ Complete |
 | Auth Service & Endpoints | ✅ Complete (7 endpoints) |
 | Profile Service & Endpoints | ✅ Complete (8 endpoints) |
-| FluentValidation | ✅ Complete (8 validators) |
+| Feed Service & Endpoints | ✅ Complete (8 endpoints) |
+| Commerce Service & Endpoints | ✅ Complete (6 endpoints) |
+| FluentValidation | ✅ Complete (11 validators) |
 | Seed Data (Lookups) | ✅ Complete (8 body types, 12 fit tags) |
-| Feed Service | ❌ Not Started |
 | Frontend | ❌ Not Started |
 | Tests | ❌ Not Started |
 
-**Overall Backend Progress: ~45%** | **Overall Project: ~22%**
+**Overall Backend Progress: ~60%** | **Overall Project: ~30%**
 
 ---
 
@@ -363,16 +364,17 @@ GET    /api/products/{id}          - Get product details
 GET    /api/products/search        - Search products (for creators)
 GET    /api/retailers              - List active retailers
 GET    /api/retailers/{id}/products - Get retailer products
+POST   /api/retailers/{id}/conversions - Conversion webhook
 ```
 
 ### 6.2 Backend Tasks
-- [ ] Create ClickTrackingService
+- [x] Create CommerceService
   - Generate unique click IDs
-  - Store attribution data
+  - Store attribution data (JSON in ClickEvent.AttributionData)
   - Handle affiliate link generation
-- [ ] Implement affiliate URL builder per retailer
-- [ ] Create conversion webhook endpoints
-- [ ] Build click analytics aggregation
+- [x] Implement affiliate URL builder per retailer (uses Retailer.AffiliateConfig JSON)
+- [x] Create conversion webhook endpoints (with HMAC signature verification)
+- [ ] Build click analytics aggregation (deferred to Phase 10)
 
 ### 6.3 Frontend Tasks
 - [ ] Create product card component
@@ -789,8 +791,8 @@ ANALYTICS_KEY=<key>
 | Phase 2: Database | 8 | 7 | Critical | 88% |
 | Phase 3: Authentication | 17 | 12 | Critical | 71% |
 | Phase 4: User Profile | 18 | 13 | Critical | 72% (backend complete) |
-| Phase 5: Content Feed | 15 | 0 | Critical | 0% |
-| Phase 6: Commerce | 8 | 0 | Critical | 0% |
+| Phase 5: Content Feed | 25 | 14 | Critical | 56% (backend complete) |
+| Phase 6: Commerce | 8 | 4 | Critical | 50% (backend complete) |
 | Phase 7: Creator | 14 | 0 | High | 0% |
 | Phase 8: Retailer Portal | 12 | 0 | High | 0% |
 | Phase 9: Admin | 10 | 0 | High | 0% |
@@ -801,7 +803,7 @@ ANALYTICS_KEY=<key>
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~161 actionable tasks (~39 completed, ~24% overall)**
+**Total: ~171 actionable tasks (~57 completed, ~33% overall)**
 
 ---
 

@@ -111,6 +111,7 @@ app.MapLookupEndpoints();
 app.MapFeedEndpoints();
 app.MapPostEndpoints();
 app.MapSearchEndpoints();
+app.MapCommerceEndpoints();
 
 app.Run();
 
