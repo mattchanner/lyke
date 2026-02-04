@@ -1,9 +1,7 @@
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
-using Lyke.Core.Interfaces;
 using Lyke.Infrastructure.Configuration;
 using Lyke.Infrastructure.Data;
-using Lyke.Infrastructure.Repositories;
 using Lyke.Infrastructure.Services;
 using Lyke.Infrastructure.Storage;
 using Microsoft.AspNetCore.Identity;
@@ -22,11 +20,12 @@ public static class DependencyInjection
     {
         // Database
         services.AddDbContext<LykeDbContext>(options =>
+        {
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(LykeDbContext).Assembly.FullName)
-            )
-        );
+            );
+        });
 
         // Register DbContext as well for services that need generic access
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<LykeDbContext>());
@@ -44,11 +43,8 @@ public static class DependencyInjection
                 options.SignIn.RequireConfirmedEmail = false;
             })
             .AddEntityFrameworkStores<LykeDbContext>()
-            .AddDefaultTokenProviders();
-
-        // Repositories
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+            .AddDefaultTokenProviders();       
+        
 
         // Storage
         services.AddStorage(configuration);

@@ -10,7 +10,7 @@ public static class MediaEndpoints
 {
     public static IEndpointRouteBuilder MapMediaEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/media")
+        var group = app.MapGroup("/api/media/v1")
             .WithTags("Media")
             .RequireAuthorization("CreatorOnly")
             .DisableAntiforgery();

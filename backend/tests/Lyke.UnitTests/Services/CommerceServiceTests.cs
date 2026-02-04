@@ -346,7 +346,7 @@ public class CommerceServiceTests : IDisposable
             Currency: "USD",
             ProductSku: "SKU",
             TransactionDate: DateTime.UtcNow,
-            Signature: null // No signature verification for this test
+            Signature: default! // No signature verification for this test
         );
 
         // Act
@@ -377,7 +377,7 @@ public class CommerceServiceTests : IDisposable
             Currency: "USD",
             ProductSku: "SKU",
             TransactionDate: DateTime.UtcNow,
-            Signature: null
+            Signature: default!
         );
 
         // Act
@@ -413,7 +413,7 @@ public class CommerceServiceTests : IDisposable
             Currency: "USD",
             ProductSku: "SKU",
             TransactionDate: DateTime.UtcNow,
-            Signature: null
+            Signature: default!
         );
 
         // Act
@@ -436,7 +436,7 @@ public class CommerceServiceTests : IDisposable
             Currency: "USD",
             ProductSku: "SKU",
             TransactionDate: DateTime.UtcNow,
-            Signature: null
+            Signature: default!
         );
 
         // Act

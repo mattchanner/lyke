@@ -10,7 +10,7 @@ public static class ProfileEndpoints
 {
     public static IEndpointRouteBuilder MapProfileEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/profile")
+        var group = app.MapGroup("/api/profile/v1")
             .WithTags("Profile")
             .RequireAuthorization();
 
@@ -61,7 +61,7 @@ public static class ProfileEndpoints
 
     public static IEndpointRouteBuilder MapLookupEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/lookup")
+        var group = app.MapGroup("/api/lookup/v1")
             .WithTags("Lookups");
 
         group.MapGet("/body-types", GetBodyTypesAsync)

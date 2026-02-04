@@ -15,47 +15,51 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "ModeratedAt",
                 table: "Posts",
                 type: "timestamp with time zone",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<Guid>(
                 name: "ModeratedByUserId",
                 table: "Posts",
                 type: "uuid",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "SuspendedAt",
                 table: "AspNetUsers",
                 type: "timestamp with time zone",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<Guid>(
                 name: "SuspendedByUserId",
                 table: "AspNetUsers",
                 type: "uuid",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "SuspensionReason",
                 table: "AspNetUsers",
                 type: "character varying(500)",
                 maxLength: 500,
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_Posts_ModeratedByUserId",
                 table: "Posts",
-                column: "ModeratedByUserId");
+                column: "ModeratedByUserId"
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_Status",
-                table: "Posts",
-                column: "Status");
+            migrationBuilder.CreateIndex(name: "IX_Posts_Status", table: "Posts", column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_IsActive",
                 table: "AspNetUsers",
-                column: "IsActive");
+                column: "IsActive"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Posts_AspNetUsers_ModeratedByUserId",
@@ -63,7 +67,8 @@ namespace Lyke.Infrastructure.Data.Migrations
                 column: "ModeratedByUserId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.SetNull
+            );
         }
 
         /// <inheritdoc />
@@ -71,39 +76,24 @@ namespace Lyke.Infrastructure.Data.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Posts_AspNetUsers_ModeratedByUserId",
-                table: "Posts");
+                table: "Posts"
+            );
 
-            migrationBuilder.DropIndex(
-                name: "IX_Posts_ModeratedByUserId",
-                table: "Posts");
+            migrationBuilder.DropIndex(name: "IX_Posts_ModeratedByUserId", table: "Posts");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Posts_Status",
-                table: "Posts");
+            migrationBuilder.DropIndex(name: "IX_Posts_Status", table: "Posts");
 
-            migrationBuilder.DropIndex(
-                name: "IX_Users_IsActive",
-                table: "AspNetUsers");
+            migrationBuilder.DropIndex(name: "IX_Users_IsActive", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ModeratedAt",
-                table: "Posts");
+            migrationBuilder.DropColumn(name: "ModeratedAt", table: "Posts");
 
-            migrationBuilder.DropColumn(
-                name: "ModeratedByUserId",
-                table: "Posts");
+            migrationBuilder.DropColumn(name: "ModeratedByUserId", table: "Posts");
 
-            migrationBuilder.DropColumn(
-                name: "SuspendedAt",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "SuspendedAt", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "SuspendedByUserId",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "SuspendedByUserId", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "SuspensionReason",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "SuspensionReason", table: "AspNetUsers");
         }
     }
 }

@@ -12,7 +12,7 @@ public static class AdminEndpoints
 {
     public static IEndpointRouteBuilder MapAdminEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/admin").WithTags("Admin").RequireAuthorization("AdminOnly");
+        var group = app.MapGroup("/api/admin/v1").WithTags("Admin").RequireAuthorization("AdminOnly");
 
         // Verification Management
         group

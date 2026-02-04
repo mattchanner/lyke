@@ -1,12 +1,14 @@
-using System.Text;
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
+using Lyke.Api.Workers;
 using Lyke.Application;
 using Lyke.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,11 +23,11 @@ builder.Host.UseSerilog();
 
 // Aspire defaults
 builder.AddServiceDefaults();
-//builder.ConfigureOpenTelemetry();
 
 // Add services
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddRedirectToScalarUiMiddleware();
 
 // FluentValidation auto-validation for endpoints
 builder.Services.AddFluentValidationAutoValidation();
@@ -82,9 +84,10 @@ builder.Services.AddAuthorization(options =>
 
 // Controllers
 builder.Services.AddControllers();
+builder.Services.AddHostedService<MigrateDatabaseBackgroundWorker>();
 
 // OpenAPI/Swagger
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi("be-lyke_api_v1");
 
 // CORS
 builder.Services.AddCors(options =>
@@ -114,6 +117,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseRedirectToScalarUiMiddleware();
+    app.MapScalarApiReference(configure =>
+    {
+        configure
+            .WithOpenApiRoutePattern("/openapi/{documentName}.json")
+            .WithTitle("Be-Lyke API v1");
+
+        configure.ShowSidebar = false;
+        configure.Theme = ScalarTheme.Purple;
+    });
 }
 
 app.UseExceptionHandling();

@@ -10,7 +10,7 @@ public static class FeedEndpoints
 {
     public static IEndpointRouteBuilder MapFeedEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/feed")
+        var group = app.MapGroup("/api/feed/v1")
             .WithTags("Feed");
 
         group.MapGet("/", GetFeedAsync)
@@ -30,7 +30,7 @@ public static class FeedEndpoints
 
     public static IEndpointRouteBuilder MapPostEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/posts")
+        var group = app.MapGroup("/api/posts/v1")
             .WithTags("Posts");
 
         group.MapGet("/{id:guid}", GetPostAsync)
@@ -71,7 +71,7 @@ public static class FeedEndpoints
 
     public static IEndpointRouteBuilder MapSearchEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/search")
+        var group = app.MapGroup("/api/search/v1")
             .WithTags("Search");
 
         group.MapGet("/", SearchAsync)

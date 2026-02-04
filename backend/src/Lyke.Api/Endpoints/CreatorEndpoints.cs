@@ -10,7 +10,7 @@ public static class CreatorEndpoints
 {
     public static IEndpointRouteBuilder MapCreatorEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/creators")
+        var group = app.MapGroup("/api/creators/v1")
             .WithTags("Creators")
             .RequireAuthorization("CreatorOnly");
 
