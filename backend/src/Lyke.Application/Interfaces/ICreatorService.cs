@@ -1,5 +1,6 @@
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Creator;
+using Lyke.Core.Enums;
 
 namespace Lyke.Application.Interfaces;
 
@@ -9,6 +10,15 @@ public interface ICreatorService
     Task<CreatorProfileResponse> RegisterAsCreatorAsync(Guid userId, RegisterCreatorRequest request, CancellationToken cancellationToken = default);
     Task<CreatorProfileResponse> GetCreatorProfileAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<CreatorProfileResponse> UpdateCreatorProfileAsync(Guid userId, UpdateCreatorProfileRequest request, CancellationToken cancellationToken = default);
+
+    // Verification (Creator)
+    Task<VerificationStatusResponse> GetVerificationStatusAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<VerificationStatusResponse> SubmitVerificationAsync(Guid userId, SubmitVerificationRequest request, CancellationToken cancellationToken = default);
+
+    // Verification (Admin)
+    Task<(IReadOnlyList<PendingVerificationResponse> Verifications, PaginationMeta Meta)> GetPendingVerificationsAsync(VerificationStatus? status, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<PendingVerificationResponse> GetVerificationDetailsAsync(Guid creatorId, CancellationToken cancellationToken = default);
+    Task<VerificationStatusResponse> ReviewVerificationAsync(Guid adminUserId, Guid creatorId, ReviewVerificationRequest request, CancellationToken cancellationToken = default);
 
     // Post Management
     Task<CreatorPostResponse> CreatePostAsync(Guid userId, CreatePostRequest request, CancellationToken cancellationToken = default);

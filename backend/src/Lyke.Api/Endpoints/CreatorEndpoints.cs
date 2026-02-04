@@ -107,6 +107,22 @@ public static class CreatorEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
 
+        // Verification
+        group.MapGet("/verification", GetVerificationStatusAsync)
+            .WithName("GetCreatorVerificationStatus")
+            .WithSummary("Get current verification status")
+            .Produces<ApiResponse<VerificationStatusResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        group.MapPost("/verification", SubmitVerificationAsync)
+            .WithName("SubmitCreatorVerification")
+            .WithSummary("Submit verification request")
+            .Produces<ApiResponse<VerificationStatusResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
         return app;
     }
 
@@ -263,6 +279,31 @@ public static class CreatorEndpoints
 
         var (earnings, meta) = await creatorService.GetEarningsHistoryAsync(userId.Value, request, cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<EarningDetailResponse>>.Ok(earnings, meta));
+    }
+
+    private static async Task<IResult> GetVerificationStatusAsync(
+        ClaimsPrincipal user,
+        ICreatorService creatorService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        if (userId == null) return Results.Unauthorized();
+
+        var result = await creatorService.GetVerificationStatusAsync(userId.Value, cancellationToken);
+        return Results.Ok(ApiResponse<VerificationStatusResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> SubmitVerificationAsync(
+        [FromBody] SubmitVerificationRequest request,
+        ClaimsPrincipal user,
+        ICreatorService creatorService,
+        CancellationToken cancellationToken)
+    {
+        var userId = GetUserId(user);
+        if (userId == null) return Results.Unauthorized();
+
+        var result = await creatorService.SubmitVerificationAsync(userId.Value, request, cancellationToken);
+        return Results.Ok(ApiResponse<VerificationStatusResponse>.Ok(result));
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)

@@ -140,6 +140,7 @@ app.MapSearchEndpoints();
 app.MapCommerceEndpoints();
 app.MapCreatorEndpoints();
 app.MapMediaEndpoints();
+app.MapAdminEndpoints();
 
 app.Run();
 

@@ -2,16 +2,16 @@ using Lyke.Core.Enums;
 
 namespace Lyke.Application.DTOs.Creator;
 
-public record CreatorProfileResponse(
-    Guid Id,
+public record PendingVerificationResponse(
+    Guid CreatorId,
     string DisplayName,
     string? Bio,
-    bool IsVerified,
-    VerificationStatus VerificationStatus,
     Dictionary<string, string>? SocialLinks,
+    VerificationStatus Status,
+    string? Notes,
+    List<string>? DocumentUrls,
+    DateTime? RequestedAt,
     int TotalPosts,
     int PublishedPosts,
-    int DraftPosts,
-    int PendingReviewPosts,
     DateTime CreatedAt
 );

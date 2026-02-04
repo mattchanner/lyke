@@ -106,6 +106,7 @@ public class CreatorService : ICreatorService
             DisplayName: creator.DisplayName,
             Bio: creator.Bio,
             IsVerified: creator.IsVerified,
+            VerificationStatus: creator.VerificationStatus,
             SocialLinks: ParseSocialLinks(creator.SocialLinks),
             TotalPosts: totalPosts,
             PublishedPosts: publishedPosts,
@@ -142,6 +143,215 @@ public class CreatorService : ICreatorService
         _logger.LogInformation("Creator {CreatorId} profile updated", creator.Id);
 
         return await GetCreatorProfileAsync(userId, cancellationToken);
+    }
+
+    #endregion
+
+    #region Verification (Creator)
+
+    public async Task<VerificationStatusResponse> GetVerificationStatusAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
+
+        return new VerificationStatusResponse(
+            Status: creator.VerificationStatus,
+            Notes: creator.VerificationNotes,
+            DocumentUrls: ParseDocumentUrls(creator.VerificationDocumentUrls),
+            RequestedAt: creator.VerificationRequestedAt,
+            ReviewedAt: creator.VerificationReviewedAt,
+            RejectionReason: creator.VerificationRejectionReason
+        );
+    }
+
+    public async Task<VerificationStatusResponse> SubmitVerificationAsync(
+        Guid userId,
+        SubmitVerificationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
+
+        if (creator.VerificationStatus == VerificationStatus.Pending)
+        {
+            throw new ValidationException("Verification", "A verification request is already pending");
+        }
+
+        if (creator.VerificationStatus == VerificationStatus.Approved)
+        {
+            throw new ValidationException("Verification", "Creator is already verified");
+        }
+
+        creator.VerificationStatus = VerificationStatus.Pending;
+        creator.VerificationNotes = request.Notes;
+        creator.VerificationDocumentUrls = JsonSerializer.Serialize(request.DocumentUrls, JsonOptions);
+        creator.VerificationRequestedAt = DateTime.UtcNow;
+        creator.VerificationReviewedAt = null;
+        creator.VerificationReviewedByUserId = null;
+        creator.VerificationRejectionReason = null;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Creator {CreatorId} submitted verification request", creator.Id);
+
+        return await GetVerificationStatusAsync(userId, cancellationToken);
+    }
+
+    #endregion
+
+    #region Verification (Admin)
+
+    public async Task<(IReadOnlyList<PendingVerificationResponse> Verifications, PaginationMeta Meta)> GetPendingVerificationsAsync(
+        VerificationStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.Set<Creator>().AsQueryable();
+
+        if (status.HasValue)
+        {
+            query = query.Where(c => c.VerificationStatus == status.Value);
+        }
+        else
+        {
+            // Default to pending if no status specified
+            query = query.Where(c => c.VerificationStatus == VerificationStatus.Pending);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var creators = await query
+            .OrderBy(c => c.VerificationRequestedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        var creatorIds = creators.Select(c => c.Id).ToList();
+
+        var postCounts = await _dbContext.Set<Post>()
+            .Where(p => creatorIds.Contains(p.CreatorId))
+            .GroupBy(p => new { p.CreatorId, p.Status })
+            .Select(g => new { g.Key.CreatorId, g.Key.Status, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var responses = creators.Select(c =>
+        {
+            var creatorPostCounts = postCounts.Where(pc => pc.CreatorId == c.Id).ToList();
+            var totalPosts = creatorPostCounts.Sum(x => x.Count);
+            var publishedPosts = creatorPostCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
+
+            return new PendingVerificationResponse(
+                CreatorId: c.Id,
+                DisplayName: c.DisplayName,
+                Bio: c.Bio,
+                SocialLinks: ParseSocialLinks(c.SocialLinks),
+                Status: c.VerificationStatus,
+                Notes: c.VerificationNotes,
+                DocumentUrls: ParseDocumentUrls(c.VerificationDocumentUrls),
+                RequestedAt: c.VerificationRequestedAt,
+                TotalPosts: totalPosts,
+                PublishedPosts: publishedPosts,
+                CreatedAt: c.CreatedAt
+            );
+        }).ToList();
+
+        var meta = new PaginationMeta
+        {
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+
+        return (responses, meta);
+    }
+
+    public async Task<PendingVerificationResponse> GetVerificationDetailsAsync(
+        Guid creatorId,
+        CancellationToken cancellationToken = default)
+    {
+        var creator = await _dbContext.Set<Creator>()
+            .FirstOrDefaultAsync(c => c.Id == creatorId, cancellationToken);
+
+        if (creator == null)
+        {
+            throw new NotFoundException(nameof(Creator), creatorId);
+        }
+
+        var postCounts = await _dbContext.Set<Post>()
+            .Where(p => p.CreatorId == creatorId)
+            .GroupBy(p => p.Status)
+            .Select(g => new { Status = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        var totalPosts = postCounts.Sum(x => x.Count);
+        var publishedPosts = postCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
+
+        return new PendingVerificationResponse(
+            CreatorId: creator.Id,
+            DisplayName: creator.DisplayName,
+            Bio: creator.Bio,
+            SocialLinks: ParseSocialLinks(creator.SocialLinks),
+            Status: creator.VerificationStatus,
+            Notes: creator.VerificationNotes,
+            DocumentUrls: ParseDocumentUrls(creator.VerificationDocumentUrls),
+            RequestedAt: creator.VerificationRequestedAt,
+            TotalPosts: totalPosts,
+            PublishedPosts: publishedPosts,
+            CreatedAt: creator.CreatedAt
+        );
+    }
+
+    public async Task<VerificationStatusResponse> ReviewVerificationAsync(
+        Guid adminUserId,
+        Guid creatorId,
+        ReviewVerificationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var creator = await _dbContext.Set<Creator>()
+            .FirstOrDefaultAsync(c => c.Id == creatorId, cancellationToken);
+
+        if (creator == null)
+        {
+            throw new NotFoundException(nameof(Creator), creatorId);
+        }
+
+        if (creator.VerificationStatus != VerificationStatus.Pending)
+        {
+            throw new ValidationException("Verification", "Only pending verifications can be reviewed");
+        }
+
+        creator.VerificationReviewedAt = DateTime.UtcNow;
+        creator.VerificationReviewedByUserId = adminUserId;
+
+        if (request.Approve)
+        {
+            creator.VerificationStatus = VerificationStatus.Approved;
+            creator.IsVerified = true;
+            creator.VerificationRejectionReason = null;
+
+            _logger.LogInformation("Admin {AdminUserId} approved verification for creator {CreatorId}", adminUserId, creatorId);
+        }
+        else
+        {
+            creator.VerificationStatus = VerificationStatus.Rejected;
+            creator.IsVerified = false;
+            creator.VerificationRejectionReason = request.RejectionReason;
+
+            _logger.LogInformation("Admin {AdminUserId} rejected verification for creator {CreatorId}: {Reason}",
+                adminUserId, creatorId, request.RejectionReason);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return new VerificationStatusResponse(
+            Status: creator.VerificationStatus,
+            Notes: creator.VerificationNotes,
+            DocumentUrls: ParseDocumentUrls(creator.VerificationDocumentUrls),
+            RequestedAt: creator.VerificationRequestedAt,
+            ReviewedAt: creator.VerificationReviewedAt,
+            RejectionReason: creator.VerificationRejectionReason
+        );
     }
 
     #endregion
@@ -776,6 +986,23 @@ public class CreatorService : ICreatorService
         try
         {
             return JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static List<string>? ParseDocumentUrls(string? json)
+    {
+        if (string.IsNullOrEmpty(json))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<string>>(json, JsonOptions);
         }
         catch
         {
