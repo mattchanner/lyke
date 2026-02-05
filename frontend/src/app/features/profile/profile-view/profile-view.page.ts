@@ -25,7 +25,8 @@ import {
   ribbonOutline,
 } from 'ionicons/icons';
 import { ApiService, AuthService } from '../../../core';
-import { UserProfileResponse, BodyProfileResponse, UserType } from '../../../models';
+import { UserProfileResponse, BodyProfileResponse } from '../../../models';
+import { SkeletonProfileComponent } from '../../../shared/components/loading-skeleton';
 
 @Component({
   selector: 'app-profile-view',
@@ -45,6 +46,7 @@ import { UserProfileResponse, BodyProfileResponse, UserType } from '../../../mod
     IonItem,
     IonLabel,
     IonAvatar,
+    SkeletonProfileComponent,
   ],
   template: `
     <ion-header>
@@ -60,9 +62,7 @@ import { UserProfileResponse, BodyProfileResponse, UserType } from '../../../mod
 
     <ion-content class="ion-padding">
       @if (isLoading()) {
-        <div class="loading-container">
-          <ion-spinner name="crescent"></ion-spinner>
-        </div>
+        <app-skeleton-profile></app-skeleton-profile>
       } @else if (profile()) {
         <div class="profile-header">
           <ion-avatar>
@@ -104,12 +104,6 @@ import { UserProfileResponse, BodyProfileResponse, UserType } from '../../../mod
     </ion-content>
   `,
   styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
-    }
-
     .profile-header {
       text-align: center;
       padding: 2rem 0;

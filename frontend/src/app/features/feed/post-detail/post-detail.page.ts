@@ -29,6 +29,7 @@ import {
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
 import { PostDetailResponse, EngagementType, FitRating } from '../../../models';
+import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
 
 @Component({
   selector: 'app-post-detail',
@@ -50,6 +51,7 @@ import { PostDetailResponse, EngagementType, FitRating } from '../../../models';
     IonChip,
     IonLabel,
     IonAvatar,
+    SkeletonPostDetailComponent,
   ],
   template: `
     <ion-header>
@@ -68,9 +70,7 @@ import { PostDetailResponse, EngagementType, FitRating } from '../../../models';
 
     <ion-content>
       @if (isLoading()) {
-        <div class="loading-container">
-          <ion-spinner name="crescent"></ion-spinner>
-        </div>
+        <app-skeleton-post-detail></app-skeleton-post-detail>
       } @else if (post()) {
         <div class="post-detail">
           <div class="media-section">
@@ -190,12 +190,6 @@ import { PostDetailResponse, EngagementType, FitRating } from '../../../models';
     </ion-content>
   `,
   styles: [`
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
-    }
-
     .media-section {
       img {
         width: 100%;

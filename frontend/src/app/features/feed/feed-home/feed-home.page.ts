@@ -29,6 +29,7 @@ import {
 import { ApiService, AuthService } from '../../../core';
 import { FeedPostResponse, FeedSortBy } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
+import { SkeletonPostCardComponent } from '../../../shared/components/loading-skeleton';
 
 @Component({
   selector: 'app-feed-home',
@@ -51,6 +52,7 @@ import { PostCardComponent } from '../../../shared/components/post-card/post-car
     IonChip,
     IonLabel,
     PostCardComponent,
+    SkeletonPostCardComponent,
   ],
   template: `
     <ion-header>
@@ -99,11 +101,12 @@ import { PostCardComponent } from '../../../shared/components/post-card/post-car
       </ion-refresher>
 
       @if (isLoading() && posts().length === 0) {
-        <div class="loading-container">
-          <ion-spinner name="crescent"></ion-spinner>
-          <p>Loading your feed...</p>
+        <div class="skeleton-feed">
+          @for (i of [1, 2, 3]; track i) {
+            <app-skeleton-post-card></app-skeleton-post-card>
+          }
         </div>
-      } @else if (posts().length === 0) {
+      } @else if (!isLoading() && posts().length === 0) {
         <div class="empty-state">
           <h3>No posts yet</h3>
           <p>Complete your body profile to see personalized outfit recommendations!</p>
@@ -146,17 +149,11 @@ import { PostCardComponent } from '../../../shared/components/post-card/post-car
       }
     }
 
-    .loading-container {
+    .skeleton-feed {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 50vh;
-      color: var(--ion-color-medium);
-
-      p {
-        margin-top: 1rem;
-      }
+      gap: 1px;
+      background: var(--ion-color-light);
     }
 
     .empty-state {
