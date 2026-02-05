@@ -13,7 +13,12 @@
       "Bash(git push)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(dotnet restore:*)"
+      "Bash(dotnet restore:*)",
+      "Bash(ionic start:*)",
+      "Bash(npm install:*)",
+      "Bash(npx cap sync)",
+      "Bash(npm run build:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

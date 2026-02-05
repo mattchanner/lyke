@@ -9,6 +9,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,9 @@ builder.Host.UseSerilog();
 
 // Aspire defaults
 builder.AddServiceDefaults();
+
+builder.Services.ConfigureHttpJsonOptions(
+    options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Add services
 builder.Services.AddApplication(builder.Configuration);
