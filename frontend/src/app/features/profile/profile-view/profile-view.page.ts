@@ -166,7 +166,7 @@ export class ProfileViewPage implements OnInit {
   }
 
   loadBodyProfile(): void {
-    this.api.get<BodyProfileResponse>('profile', 'body-profile').subscribe({
+    this.api.get<BodyProfileResponse>('profile', 'body').subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.bodyProfile.set(response.data);

@@ -20,8 +20,15 @@ public class RetailerConfiguration : IEntityTypeConfiguration<Retailer>
         builder.Property(r => r.WebsiteUrl)
             .HasMaxLength(500);
 
+        builder.Property(r => r.ContactEmail)
+            .HasMaxLength(200);
+
         builder.Property(r => r.AffiliateConfig)
             .HasColumnType("jsonb");
+
+        builder.HasIndex(r => r.UserId)
+            .IsUnique()
+            .HasDatabaseName("IX_Retailers_UserId");
 
         builder.HasMany(r => r.Products)
             .WithOne(p => p.Retailer)

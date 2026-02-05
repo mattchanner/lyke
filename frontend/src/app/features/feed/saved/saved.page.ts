@@ -105,7 +105,7 @@ export class SavedPage implements OnInit {
   loadSaved(): void {
     this.isLoading.set(true);
 
-    this.api.get<FeedPostResponse[]>('feed', 'saved').subscribe({
+    this.api.get<FeedPostResponse[]>('posts', 'saved').subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.posts.set(response.data);

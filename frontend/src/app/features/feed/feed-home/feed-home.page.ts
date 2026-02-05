@@ -109,10 +109,10 @@ import { SkeletonPostCardComponent } from '../../../shared/components/loading-sk
       } @else if (!isLoading() && posts().length === 0) {
         <div class="empty-state">
           <h3>No posts yet</h3>
-          <p>Complete your body profile to see personalized outfit recommendations!</p>
+          <!-- <p>Complete your body profile to see personalized outfit recommendations!</p>
           <ion-button routerLink="/profile/body-profile">
             Update Body Profile
-          </ion-button>
+          </ion-button> -->
         </div>
       } @else {
         <div class="feed-grid">
