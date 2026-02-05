@@ -1,0 +1,239 @@
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, from, of, throwError } from 'rxjs';
+import { map, switchMap, tap, catchError } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
+import { ApiService } from './api.service';
+import { StorageService } from './storage.service';
+import { ToastService } from './toast.service';
+import {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  RefreshTokenRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  UserType,
+} from '../../models';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  userType: string;
+  exp: number;
+  iat: number;
+}
+
+interface AuthState {
+  userId: string | null;
+  email: string | null;
+  userType: UserType | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+const INITIAL_STATE: AuthState = {
+  userId: null,
+  email: null,
+  userType: null,
+  isAuthenticated: false,
+  isLoading: true,
+};
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private readonly api = inject(ApiService);
+  private readonly storage = inject(StorageService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+
+  // State using Angular Signals
+  private readonly state = signal<AuthState>(INITIAL_STATE);
+
+  // Public computed signals
+  readonly userId = computed(() => this.state().userId);
+  readonly email = computed(() => this.state().email);
+  readonly userType = computed(() => this.state().userType);
+  readonly isAuthenticated = computed(() => this.state().isAuthenticated);
+  readonly isLoading = computed(() => this.state().isLoading);
+
+  readonly isCreator = computed(() => this.state().userType === UserType.Creator);
+  readonly isAdmin = computed(() => this.state().userType === UserType.Admin);
+  readonly isShopper = computed(() => this.state().userType === UserType.Shopper);
+
+  constructor() {
+    this.initializeAuth();
+  }
+
+  private async initializeAuth(): Promise<void> {
+    try {
+      const accessToken = await this.storage.getAccessToken();
+      const expiry = await this.storage.getTokenExpiry();
+
+      if (accessToken && expiry) {
+        const expiryDate = new Date(expiry);
+        if (expiryDate > new Date()) {
+          const decoded = this.decodeToken(accessToken);
+          if (decoded) {
+            this.state.set({
+              userId: decoded.sub,
+              email: decoded.email,
+              userType: parseInt(decoded.userType) as UserType,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return;
+          }
+        } else {
+          // Token expired, try refresh
+          await this.tryRefreshToken();
+          return;
+        }
+      }
+    } catch (error) {
+      console.error('Auth initialization error:', error);
+    }
+
+    this.state.set({ ...INITIAL_STATE, isLoading: false });
+  }
+
+  private decodeToken(token: string): JwtPayload | null {
+    try {
+      return jwtDecode<JwtPayload>(token);
+    } catch {
+      return null;
+    }
+  }
+
+  private async tryRefreshToken(): Promise<void> {
+    const refreshToken = await this.storage.getRefreshToken();
+    if (!refreshToken) {
+      this.state.set({ ...INITIAL_STATE, isLoading: false });
+      return;
+    }
+
+    this.refreshToken(refreshToken).subscribe({
+      error: () => {
+        this.state.set({ ...INITIAL_STATE, isLoading: false });
+      },
+    });
+  }
+
+  login(request: LoginRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('auth', 'login', request).pipe(
+      switchMap((response) => {
+        if (!response.success || !response.data) {
+          return throwError(() => new Error(response.error?.message || 'Login failed'));
+        }
+        return from(this.handleAuthResponse(response.data)).pipe(
+          map(() => response.data!)
+        );
+      })
+    );
+  }
+
+  register(request: RegisterRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('auth', 'register', request).pipe(
+      switchMap((response) => {
+        if (!response.success || !response.data) {
+          return throwError(() => new Error(response.error?.message || 'Registration failed'));
+        }
+        return from(this.handleAuthResponse(response.data)).pipe(
+          map(() => response.data!)
+        );
+      })
+    );
+  }
+
+  refreshToken(refreshToken: string): Observable<AuthResponse> {
+    const request: RefreshTokenRequest = { refreshToken };
+    return this.api.post<AuthResponse>('auth', 'refresh', request).pipe(
+      switchMap((response) => {
+        if (!response.success || !response.data) {
+          return throwError(() => new Error(response.error?.message || 'Token refresh failed'));
+        }
+        return from(this.handleAuthResponse(response.data)).pipe(
+          map(() => response.data!)
+        );
+      }),
+      catchError((error) => {
+        this.logout();
+        return throwError(() => error);
+      })
+    );
+  }
+
+  forgotPassword(request: ForgotPasswordRequest): Observable<void> {
+    return this.api.post<void>('auth', 'forgot-password', request).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.error?.message || 'Request failed');
+        }
+      })
+    );
+  }
+
+  resetPassword(request: ResetPasswordRequest): Observable<void> {
+    return this.api.post<void>('auth', 'reset-password', request).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.error?.message || 'Password reset failed');
+        }
+      })
+    );
+  }
+
+  async logout(): Promise<void> {
+    await this.storage.clearAuthData();
+    this.state.set({ ...INITIAL_STATE, isLoading: false });
+    await this.router.navigate(['/auth/login']);
+    this.toast.info('You have been logged out');
+  }
+
+  private async handleAuthResponse(auth: AuthResponse): Promise<void> {
+    await Promise.all([
+      this.storage.setAccessToken(auth.accessToken),
+      this.storage.setRefreshToken(auth.refreshToken),
+      this.storage.setTokenExpiry(auth.accessTokenExpiry),
+      this.storage.setUserId(auth.userId),
+    ]);
+
+    this.state.set({
+      userId: auth.userId,
+      email: auth.email,
+      userType: auth.userType,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+  }
+
+  async getAccessToken(): Promise<string | null> {
+    const token = await this.storage.getAccessToken();
+    const expiry = await this.storage.getTokenExpiry();
+
+    if (!token || !expiry) {
+      return null;
+    }
+
+    const expiryDate = new Date(expiry);
+    const now = new Date();
+
+    // Refresh if token expires in less than 5 minutes
+    if (expiryDate.getTime() - now.getTime() < 5 * 60 * 1000) {
+      const refreshToken = await this.storage.getRefreshToken();
+      if (refreshToken) {
+        return new Promise((resolve) => {
+          this.refreshToken(refreshToken).subscribe({
+            next: (auth) => resolve(auth.accessToken),
+            error: () => resolve(null),
+          });
+        });
+      }
+      return null;
+    }
+
+    return token;
+  }
+}

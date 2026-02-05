@@ -1,0 +1,168 @@
+import { MediaType, PostStatus, UserType, VerificationStatus } from '../enums';
+
+// Post moderation
+export interface PendingPostResponse {
+  id: string;
+  title: string | null;
+  description: string | null;
+  mediaType: MediaType;
+  mediaUrls: string[];
+  status: PostStatus;
+  createdAt: string;
+  submittedAt: string | null;
+  creator: CreatorSummary;
+  products: PostProductSummary[];
+}
+
+export interface CreatorSummary {
+  id: string;
+  displayName: string;
+  isVerified: boolean;
+  totalPosts: number;
+  publishedPosts: number;
+}
+
+export interface PostProductSummary {
+  productId: string;
+  productName: string;
+  sizeWorn: string | null;
+  fitNotes: string | null;
+}
+
+export interface ModeratePostRequest {
+  approve: boolean;
+  rejectionReason?: string;
+}
+
+export interface PostModerationResponse {
+  id: string;
+  status: PostStatus;
+  moderationNotes: string | null;
+  moderatedAt: string | null;
+  moderatedByUserId: string | null;
+}
+
+// User management
+export interface UserListRequest {
+  userType?: UserType;
+  isActive?: boolean;
+  search?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface UserListResponse {
+  id: string;
+  email: string | null;
+  userName: string | null;
+  userType: UserType;
+  isActive: boolean;
+  emailConfirmed: boolean;
+  createdAt: string;
+  suspendedAt: string | null;
+  suspensionReason: string | null;
+}
+
+export interface UserDetailResponse {
+  id: string;
+  email: string | null;
+  userName: string | null;
+  userType: UserType;
+  isActive: boolean;
+  emailConfirmed: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+  suspendedAt: string | null;
+  suspendedByUserId: string | null;
+  suspensionReason: string | null;
+  hasBodyProfile: boolean;
+  isCreator: boolean;
+  creatorInfo: CreatorInfo | null;
+}
+
+export interface CreatorInfo {
+  creatorId: string;
+  displayName: string;
+  isVerified: boolean;
+  verificationStatus: VerificationStatus;
+  totalPosts: number;
+  publishedPosts: number;
+}
+
+export interface SuspendUserRequest {
+  reason: string;
+}
+
+export interface UserSuspensionResponse {
+  userId: string;
+  isActive: boolean;
+  suspendedAt: string | null;
+  suspendedByUserId: string | null;
+  suspensionReason: string | null;
+}
+
+// Verification management
+export interface PendingVerificationResponse {
+  creatorId: string;
+  displayName: string;
+  bio: string | null;
+  socialLinks: Record<string, string> | null;
+  status: VerificationStatus;
+  notes: string | null;
+  documentUrls: string[] | null;
+  requestedAt: string | null;
+  totalPosts: number;
+  publishedPosts: number;
+  createdAt: string;
+}
+
+export interface ReviewVerificationRequest {
+  approve: boolean;
+  rejectionReason?: string;
+}
+
+// Platform stats
+export interface PlatformStatsResponse {
+  users: UserStats;
+  content: ContentStats;
+  verifications: VerificationStats;
+  engagement: EngagementStats;
+}
+
+export interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  suspendedUsers: number;
+  shoppers: number;
+  creators: number;
+  retailers: number;
+  admins: number;
+  newUsersLast7Days: number;
+  newUsersLast30Days: number;
+}
+
+export interface ContentStats {
+  totalPosts: number;
+  publishedPosts: number;
+  pendingReviewPosts: number;
+  draftPosts: number;
+  rejectedPosts: number;
+  postsLast7Days: number;
+  postsLast30Days: number;
+}
+
+export interface VerificationStats {
+  pendingVerifications: number;
+  approvedCreators: number;
+  rejectedVerifications: number;
+  totalCreators: number;
+}
+
+export interface EngagementStats {
+  totalViews: number;
+  totalLikes: number;
+  totalSaves: number;
+  totalClicks: number;
+  viewsLast7Days: number;
+  clicksLast7Days: number;
+}
