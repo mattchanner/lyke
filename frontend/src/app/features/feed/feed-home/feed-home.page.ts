@@ -224,7 +224,7 @@ export class FeedHomePage implements OnInit {
 
     this.isLoading.set(true);
 
-    this.api.get<FeedPostResponse[]>('feed', 'posts', {
+    this.api.get<FeedPostResponse[]>('feed', '', {
       page: this.currentPage(),
       pageSize: 20,
       sortBy: this.sortBy(),

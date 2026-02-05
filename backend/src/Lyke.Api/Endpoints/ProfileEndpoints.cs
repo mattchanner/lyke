@@ -14,7 +14,7 @@ public static class ProfileEndpoints
             .WithTags("Profile")
             .RequireAuthorization();
 
-        group.MapGet("/", GetProfileAsync)
+        group.MapGet("/me", GetProfileAsync)
             .WithName("GetProfile")
             .WithSummary("Get current user's profile")
             .Produces<ApiResponse<UserProfileResponse>>(StatusCodes.Status200OK)

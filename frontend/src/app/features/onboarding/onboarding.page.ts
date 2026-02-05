@@ -412,7 +412,7 @@ export class OnboardingPage implements OnInit {
   }
 
   loadBodyTypes(): void {
-    this.api.get<BodyTypeResponse[]>('profile', 'body-types').subscribe({
+    this.api.get<BodyTypeResponse[]>('lookup', 'body-types').subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.bodyTypes.set(response.data);
@@ -504,7 +504,7 @@ export class OnboardingPage implements OnInit {
       fitPreference: this.selectedFitPreference(),
     };
 
-    this.api.post('profile', 'body-profile', request).subscribe({
+    this.api.post('profile', 'body', request).subscribe({
       next: (response) => {
         if (response.success) {
           this.toast.success('Profile complete!');
