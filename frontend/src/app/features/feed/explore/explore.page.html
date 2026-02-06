@@ -1,0 +1,57 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/feed"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Explore</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      [(ngModel)]="searchQuery"
+      (ionInput)="onSearch()"
+      placeholder="Search outfits, products, creators..."
+      debounce="300"
+    ></ion-searchbar>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="searchType()" (ionChange)="onTypeChange($event)">
+      <ion-segment-button value="0">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="1">
+        <ion-label>Posts</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="2">
+        <ion-label>Products</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="3">
+        <ion-label>Creators</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (!searchQuery) {
+    <div class="empty-state">
+      <p>Start typing to search...</p>
+    </div>
+  } @else if (results()?.posts?.length === 0 && results()?.products?.length === 0 && results()?.creators?.length === 0) {
+    <div class="empty-state">
+      <p>No results found for "{{ searchQuery }}"</p>
+    </div>
+  } @else {
+    @if (results()?.posts?.length) {
+      <h3>Posts</h3>
+      <div class="results-grid">
+        @for (post of results()!.posts; track post.id) {
+          <app-post-card [post]="post"></app-post-card>
+        }
+      </div>
+    }
+  }
+</ion-content>

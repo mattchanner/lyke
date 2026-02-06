@@ -1,0 +1,38 @@
+<div class="skeleton-post-card">
+  <!-- Image skeleton -->
+  <app-skeleton type="image" width="100%" [height]="imageHeight"></app-skeleton>
+
+  <!-- Content skeleton -->
+  <div class="content">
+    <!-- Creator row -->
+    <div class="creator-row">
+      <app-skeleton type="circle" width="36px" height="36px"></app-skeleton>
+      <div class="creator-info">
+        <app-skeleton type="text" width="120px" height="14px"></app-skeleton>
+        <app-skeleton type="text" width="80px" height="12px"></app-skeleton>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <app-skeleton type="text" width="90%" height="16px"></app-skeleton>
+
+    <!-- Products -->
+    <div class="products">
+      <app-skeleton type="custom" width="80px" height="24px" borderRadius="12px"></app-skeleton>
+      <app-skeleton type="custom" width="100px" height="24px" borderRadius="12px"></app-skeleton>
+    </div>
+
+    <!-- Engagement row -->
+    <div class="engagement-row">
+      <div class="stats">
+        <app-skeleton type="text" width="40px" height="12px"></app-skeleton>
+        <app-skeleton type="text" width="40px" height="12px"></app-skeleton>
+      </div>
+      <div class="actions">
+        <app-skeleton type="circle" width="24px" height="24px"></app-skeleton>
+        <app-skeleton type="circle" width="24px" height="24px"></app-skeleton>
+        <app-skeleton type="circle" width="24px" height="24px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+</div>

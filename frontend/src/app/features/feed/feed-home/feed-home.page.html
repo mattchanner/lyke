@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>LYKE</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/feed/explore">
+        <ion-icon name="search-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button routerLink="/feed/saved">
+        <ion-icon name="bookmark-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button routerLink="/profile">
+        <ion-icon name="person-circle-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <div class="sort-chips">
+      <ion-chip
+        [color]="sortBy() === FeedSortBy.Relevance ? 'primary' : 'medium'"
+        (click)="setSortBy(FeedSortBy.Relevance)"
+      >
+        <ion-label>For You</ion-label>
+      </ion-chip>
+      <ion-chip
+        [color]="sortBy() === FeedSortBy.Recent ? 'primary' : 'medium'"
+        (click)="setSortBy(FeedSortBy.Recent)"
+      >
+        <ion-label>Recent</ion-label>
+      </ion-chip>
+      <ion-chip
+        [color]="sortBy() === FeedSortBy.MostLiked ? 'primary' : 'medium'"
+        (click)="setSortBy(FeedSortBy.MostLiked)"
+      >
+        <ion-label>Popular</ion-label>
+      </ion-chip>
+    </div>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && posts().length === 0) {
+    <div class="skeleton-feed">
+      @for (i of [1, 2, 3]; track i) {
+        <app-skeleton-post-card></app-skeleton-post-card>
+      }
+    </div>
+  } @else if (!isLoading() && posts().length === 0) {
+    <div class="empty-state">
+      <h3>No posts yet</h3>
+      <!-- <p>Complete your body profile to see personalized outfit recommendations!</p>
+      <ion-button routerLink="/profile/body-profile">
+        Update Body Profile
+      </ion-button> -->
+    </div>
+  } @else {
+    <div class="feed-grid">
+      @for (post of posts(); track post.id) {
+        <app-post-card
+          [post]="post"
+          (liked)="onPostLiked($event)"
+          (saved)="onPostSaved($event)"
+        ></app-post-card>
+      }
+    </div>
+
+    <ion-infinite-scroll
+      (ionInfinite)="loadMore($event)"
+      [disabled]="!hasMore()"
+    >
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

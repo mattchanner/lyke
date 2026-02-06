@@ -1,0 +1,37 @@
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ion-color-light) 25%,
+    var(--ion-color-light-shade) 50%,
+    var(--ion-color-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.text {
+  height: 1em;
+  border-radius: 4px;
+}
+
+.circle {
+  border-radius: 50%;
+}
+
+.image {
+  border-radius: 8px;
+}
+
+.button {
+  border-radius: 8px;
+  height: 44px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

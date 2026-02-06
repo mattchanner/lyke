@@ -1,0 +1,128 @@
+<div class="carousel-container" [class.single]="media.length === 1">
+  @if (media.length === 1) {
+    <!-- Single media item - no swiper needed -->
+    <div class="media-item">
+      @if (media[0].type === MediaType.Video) {
+        <div class="video-container">
+          <video
+            #videoPlayer
+            [src]="media[0].url"
+            [poster]="media[0].thumbnailUrl"
+            playsinline
+            loop
+            [muted]="isMuted()"
+            (click)="togglePlay(videoPlayer)"
+            (loadeddata)="onMediaLoaded(0)"
+          ></video>
+          <div class="video-controls">
+            <ion-icon
+              [name]="isPlaying() ? 'pause-circle-outline' : 'play-circle-outline'"
+              (click)="togglePlay(videoPlayer); $event.stopPropagation()"
+            ></ion-icon>
+            <ion-icon
+              [name]="isMuted() ? 'volume-mute-outline' : 'volume-high-outline'"
+              (click)="toggleMute(); $event.stopPropagation()"
+            ></ion-icon>
+          </div>
+          @if (!mediaLoaded()[0]) {
+            <div class="loading-overlay">
+              <ion-spinner name="crescent"></ion-spinner>
+            </div>
+          }
+        </div>
+      } @else {
+        <img
+          [src]="media[0].url"
+          [alt]="alt"
+          loading="lazy"
+          (load)="onMediaLoaded(0)"
+          (click)="onMediaClick(0)"
+        />
+        @if (!mediaLoaded()[0]) {
+          <div class="loading-overlay">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
+        }
+      }
+    </div>
+  } @else {
+    <!-- Multiple media items - use swiper -->
+    <swiper-container
+      [attr.slides-per-view]="1"
+      [attr.pagination]="true"
+      [attr.pagination-clickable]="true"
+      (swiperslidechange)="onSlideChange($event)"
+    >
+      @for (item of media; track item.url; let i = $index) {
+        <swiper-slide>
+          <div class="media-item">
+            @if (item.type === MediaType.Video) {
+              <div class="video-container">
+                <video
+                  #videoPlayer
+                  [src]="item.url"
+                  [poster]="item.thumbnailUrl"
+                  playsinline
+                  loop
+                  [muted]="isMuted()"
+                  (click)="togglePlay(videoPlayer)"
+                  (loadeddata)="onMediaLoaded(i)"
+                ></video>
+                <div class="video-controls">
+                  <ion-icon
+                    [name]="isPlaying() && currentIndex() === i ? 'pause-circle-outline' : 'play-circle-outline'"
+                    (click)="togglePlay(videoPlayer); $event.stopPropagation()"
+                  ></ion-icon>
+                  <ion-icon
+                    [name]="isMuted() ? 'volume-mute-outline' : 'volume-high-outline'"
+                    (click)="toggleMute(); $event.stopPropagation()"
+                  ></ion-icon>
+                </div>
+                @if (!mediaLoaded()[i]) {
+                  <div class="loading-overlay">
+                    <ion-spinner name="crescent"></ion-spinner>
+                  </div>
+                }
+              </div>
+            } @else {
+              <img
+                [src]="item.url"
+                [alt]="alt + ' ' + (i + 1)"
+                loading="lazy"
+                (load)="onMediaLoaded(i)"
+                (click)="onMediaClick(i)"
+              />
+              @if (!mediaLoaded()[i]) {
+                <div class="loading-overlay">
+                  <ion-spinner name="crescent"></ion-spinner>
+                </div>
+              }
+            }
+          </div>
+        </swiper-slide>
+      }
+    </swiper-container>
+
+    <!-- Custom pagination indicator -->
+    <div class="pagination-dots">
+      @for (item of media; track item.url; let i = $index) {
+        <span
+          class="dot"
+          [class.active]="currentIndex() === i"
+        ></span>
+      }
+    </div>
+
+    <!-- Slide counter -->
+    <div class="slide-counter">
+      {{ currentIndex() + 1 }} / {{ media.length }}
+    </div>
+  }
+
+  <!-- Fullscreen button -->
+  @if (showFullscreenButton) {
+    <button class="fullscreen-btn" (click)="onFullscreen()">
+      <ion-icon name="expand-outline"></ion-icon>
+    </button>
+  }
+</div>

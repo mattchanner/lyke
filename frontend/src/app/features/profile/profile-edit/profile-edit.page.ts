@@ -21,18 +21,7 @@ import {
     IonBackButton,
     IonButtons,
   ],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/profile"></ion-back-button>
-        </ion-buttons>
-        <ion-title>Edit Profile</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <p>Profile edit form coming soon...</p>
-    </ion-content>
-  `,
+  templateUrl: './profile-edit.page.html',
+  styleUrls: ['./profile-edit.page.scss'],
 })
 export class ProfileEditPage {}

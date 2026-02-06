@@ -6,14 +6,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons 
   selector: 'app-earnings',
   standalone: true,
   imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
-        <ion-title>Earnings</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding"><p>Earnings dashboard coming soon...</p></ion-content>
-  `,
+  templateUrl: './earnings.page.html',
+  styleUrls: ['./earnings.page.scss'],
 })
 export class EarningsPage {}

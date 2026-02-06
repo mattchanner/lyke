@@ -1,0 +1,129 @@
+ion-card {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--ion-background-color);
+}
+
+.media-container {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--ion-color-light);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .media-count {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .similarity-badge {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    --background: rgba(var(--ion-color-success-rgb), 0.9);
+    font-size: 0.75rem;
+  }
+}
+
+ion-card-content {
+  padding: 0.75rem;
+}
+
+.creator-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+
+  ion-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .creator-info {
+    display: flex;
+    flex-direction: column;
+
+    .creator-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+
+    .body-info {
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+.post-title {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.products-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+
+  ion-chip {
+    height: 24px;
+    font-size: 0.75rem;
+    --background: var(--ion-color-light);
+  }
+}
+
+.engagement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--ion-color-light);
+
+  .engagement-stats {
+    display: flex;
+    gap: 1rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      color: var(--ion-color-medium);
+
+      ion-icon {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  .engagement-actions {
+    display: flex;
+
+    ion-button {
+      --padding-start: 0.5rem;
+      --padding-end: 0.5rem;
+    }
+  }
+}

@@ -6,14 +6,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons 
   selector: 'app-user-detail',
   standalone: true,
   imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/admin/users"></ion-back-button></ion-buttons>
-        <ion-title>User Detail</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding"><p>User details coming soon...</p></ion-content>
-  `,
+  templateUrl: './user-detail.page.html',
+  styleUrls: ['./user-detail.page.scss'],
 })
 export class UserDetailPage {}

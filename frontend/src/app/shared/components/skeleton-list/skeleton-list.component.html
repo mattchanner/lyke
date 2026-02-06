@@ -1,0 +1,15 @@
+<div class="skeleton-list">
+  @for (i of items; track i) {
+    <div class="list-item">
+      @if (showAvatar) {
+        <app-skeleton type="circle" [width]="avatarSize" [height]="avatarSize"></app-skeleton>
+      }
+      <div class="item-content">
+        <app-skeleton type="text" width="70%" height="16px"></app-skeleton>
+        @if (showSubtitle) {
+          <app-skeleton type="text" width="50%" height="14px"></app-skeleton>
+        }
+      </div>
+    </div>
+  }
+</div>

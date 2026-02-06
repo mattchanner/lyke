@@ -1,0 +1,67 @@
+.register-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-list {
+  background: transparent;
+  margin-bottom: 1rem;
+}
+
+ion-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.error-text {
+  display: block;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.password-toggle {
+  cursor: pointer;
+}
+
+ion-button {
+  --border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.terms-text {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--ion-color-medium);
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+  }
+}
+
+.login-link {
+  text-align: center;
+  margin-top: 2rem;
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+}

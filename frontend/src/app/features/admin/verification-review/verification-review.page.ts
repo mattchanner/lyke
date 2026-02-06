@@ -6,14 +6,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons 
   selector: 'app-verification-review',
   standalone: true,
   imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/admin"></ion-back-button></ion-buttons>
-        <ion-title>Verification Reviews</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding"><p>Verification review queue coming soon...</p></ion-content>
-  `,
+  templateUrl: './verification-review.page.html',
+  styleUrls: ['./verification-review.page.scss'],
 })
 export class VerificationReviewPage {}

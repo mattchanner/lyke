@@ -1,0 +1,72 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.logo-section {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-primary);
+  }
+
+  p {
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-list {
+  background: transparent;
+  margin-bottom: 1rem;
+}
+
+ion-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.error-text {
+  display: block;
+  padding-left: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.password-toggle {
+  cursor: pointer;
+}
+
+.forgot-password {
+  text-align: right;
+  margin-bottom: 1.5rem;
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+}
+
+ion-button {
+  --border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 2rem;
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+    font-weight: 600;
+  }
+}

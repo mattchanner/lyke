@@ -6,14 +6,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons 
   selector: 'app-analytics',
   standalone: true,
   imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
-        <ion-title>Analytics</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding"><p>Analytics dashboard coming soon...</p></ion-content>
-  `,
+  templateUrl: './analytics.page.html',
+  styleUrls: ['./analytics.page.scss'],
 })
 export class AnalyticsPage {}

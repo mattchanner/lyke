@@ -1,0 +1,96 @@
+<ion-card [routerLink]="['/feed/post', post.id]">
+  <div class="media-container">
+    @if (post.mediaUrls.length > 0) {
+      <img
+        [src]="post.mediaUrls[0]"
+        [alt]="post.title || 'Post image'"
+        loading="lazy"
+      />
+    }
+    @if (post.mediaUrls.length > 1) {
+      <ion-badge class="media-count">+{{ post.mediaUrls.length - 1 }}</ion-badge>
+    }
+    @if (post.similarityScore >= 0.8) {
+      <ion-chip class="similarity-badge" color="success">
+        <ion-label>{{ (post.similarityScore * 100).toFixed(0) }}% Match</ion-label>
+      </ion-chip>
+    }
+  </div>
+
+  <ion-card-content>
+    <div class="creator-row" (click)="$event.stopPropagation()">
+      <ion-avatar>
+        <img
+          src="assets/default-avatar.svg"
+          [alt]="post.creator.displayName"
+        />
+      </ion-avatar>
+      <div class="creator-info">
+        <span class="creator-name">
+          {{ post.creator.displayName }}
+          @if (post.creator.isVerified) {
+            <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+          }
+        </span>
+        @if (post.creator.bodyProfile) {
+          <span class="body-info">
+            {{ post.creator.bodyProfile.heightRange }} ·
+            {{ post.creator.bodyProfile.bodyTypeName }}
+          </span>
+        }
+      </div>
+    </div>
+
+    @if (post.title) {
+      <p class="post-title">{{ post.title }}</p>
+    }
+
+    @if (post.products.length > 0) {
+      <div class="products-preview">
+        @for (product of post.products.slice(0, 2); track product.id) {
+          <ion-chip>
+            <ion-label>{{ product.productName }} · {{ product.sizeWorn }}</ion-label>
+          </ion-chip>
+        }
+        @if (post.products.length > 2) {
+          <ion-chip>
+            <ion-label>+{{ post.products.length - 2 }} more</ion-label>
+          </ion-chip>
+        }
+      </div>
+    }
+
+    <div class="engagement-row" (click)="$event.stopPropagation()">
+      <div class="engagement-stats">
+        <span>
+          <ion-icon name="eye-outline"></ion-icon>
+          {{ formatCount(post.engagements.views) }}
+        </span>
+        <span>
+          <ion-icon [name]="post.isLiked ? 'heart' : 'heart-outline'"></ion-icon>
+          {{ formatCount(post.engagements.likes) }}
+        </span>
+      </div>
+
+      <div class="engagement-actions">
+        <ion-button fill="clear" size="small" (click)="toggleLike($event)">
+          <ion-icon
+            [name]="post.isLiked ? 'heart' : 'heart-outline'"
+            [color]="post.isLiked ? 'danger' : 'medium'"
+            slot="icon-only"
+          ></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="toggleSave($event)">
+          <ion-icon
+            [name]="post.isSaved ? 'bookmark' : 'bookmark-outline'"
+            [color]="post.isSaved ? 'primary' : 'medium'"
+            slot="icon-only"
+          ></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" (click)="share($event)">
+          <ion-icon name="share-social-outline" color="medium" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </ion-card-content>
+</ion-card>

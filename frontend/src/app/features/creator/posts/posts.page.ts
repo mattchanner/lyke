@@ -6,14 +6,7 @@ import { IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons 
   selector: 'app-creator-posts',
   standalone: true,
   imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonBackButton, IonButtons],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
-        <ion-title>My Posts</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding"><p>Posts list coming soon...</p></ion-content>
-  `,
+  templateUrl: './posts.page.html',
+  styleUrls: ['./posts.page.scss'],
 })
 export class PostsPage {}

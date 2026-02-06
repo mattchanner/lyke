@@ -1,0 +1,18 @@
+<div class="skeleton-profile">
+  <!-- Avatar and info -->
+  <div class="header">
+    <app-skeleton type="circle" width="100px" height="100px"></app-skeleton>
+    <app-skeleton type="text" width="180px" height="20px"></app-skeleton>
+    <app-skeleton type="text" width="140px" height="14px"></app-skeleton>
+  </div>
+
+  <!-- List items -->
+  <div class="list">
+    @for (i of [1, 2, 3, 4]; track i) {
+      <div class="list-item">
+        <app-skeleton type="circle" width="24px" height="24px"></app-skeleton>
+        <app-skeleton type="text" width="120px" height="16px"></app-skeleton>
+      </div>
+    }
+  </div>
+</div>
