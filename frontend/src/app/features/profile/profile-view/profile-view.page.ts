@@ -23,6 +23,7 @@ import {
   personOutline,
   logOutOutline,
   ribbonOutline,
+  starOutline,
 } from 'ionicons/icons';
 import { ApiService, AuthService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
@@ -67,6 +68,7 @@ export class ProfileViewPage implements OnInit {
       personOutline,
       logOutOutline,
       ribbonOutline,
+      starOutline,
     });
   }
 

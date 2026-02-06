@@ -3,6 +3,7 @@ import { Observable, map, catchError, of } from 'rxjs';
 import { ApiService } from './api.service';
 import {
   CreatorProfileResponse,
+  RegisterCreatorRequest,
   UpdateCreatorProfileRequest,
   CreatorPostResponse,
   CreatorPostsRequest,
@@ -24,6 +25,16 @@ import {
 export class CreatorService {
   private readonly api = inject(ApiService);
   private readonly resource = 'creators';
+
+  register(
+    request: RegisterCreatorRequest
+  ): Observable<ApiResponse<CreatorProfileResponse>> {
+    return this.api.post<CreatorProfileResponse>(
+      this.resource,
+      'register',
+      request
+    );
+  }
 
   getProfile(): Observable<CreatorProfileResponse | null> {
     return this.api.get<CreatorProfileResponse>(this.resource, 'profile').pipe(

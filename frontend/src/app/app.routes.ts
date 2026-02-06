@@ -157,6 +157,16 @@ export const routes: Routes = [
     ],
   },
 
+  // Creator registration (accessible to any authenticated user)
+  {
+    path: 'creator/register',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/creator/register/register.page').then(
+        (m) => m.RegisterPage
+      ),
+  },
+
   // Creator routes (requires creator role)
   {
     path: 'creator',

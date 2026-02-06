@@ -49,7 +49,7 @@ export class ExplorePage {
   readonly results = signal<SearchResponse | null>(null);
 
   onTypeChange(event: CustomEvent): void {
-    this.searchType.set(parseInt(event.detail.value));
+    this.searchType.set(event.detail.value);
     this.onSearch();
   }
 

@@ -1,0 +1,30 @@
+Key Files                                                                                                            │
+│ ┌───────────────────────────────────────────────────────────────────────┬─────────────────────────────┐              │
+│ │                                 File                                  │           Action            │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/core/services/creator.service.ts                     │ Add register() method       │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/core/services/auth.service.ts                        │ Add refreshSession() method │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/features/creator/register/register.page.ts           │ Create                      │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/features/creator/register/register.page.html         │ Create                      │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/features/creator/register/register.page.scss         │ Create                      │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/app.routes.ts                                        │ Add /creator/register route │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/features/profile/profile-view/profile-view.page.html │ Add "Become a Creator" link │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ frontend/src/app/features/profile/profile-view/profile-view.page.ts   │ Add icon import             │              │
+│ ├───────────────────────────────────────────────────────────────────────┼─────────────────────────────┤              │
+│ │ specs/implementation-plan.md                                          │ Update progress             │              │
+│ └───────────────────────────────────────────────────────────────────────┴─────────────────────────────┘              │
+│ Verification                                                                                                         │
+│                                                                                                                      │
+│ 1. cd frontend && npx ng build — no compilation errors                                                               │
+│ 2. Navigate to Profile as a Shopper → "Become a Creator" item visible                                                │
+│ 3. Tap → registration form loads with display name, bio, social links                                                │
+│ 4. Submit → calls API, refreshes session, navigates to Creator Dashboard                                             │
+│ 5. Profile page now shows "Creator Dashboard" instead of "Become a Creator"                                          │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

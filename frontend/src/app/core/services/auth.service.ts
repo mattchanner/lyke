@@ -19,7 +19,7 @@ import {
 interface JwtPayload {
   sub: string;
   email: string;
-  userType: string;
+  user_type: string;
   exp: number;
   iat: number;
 }
@@ -80,7 +80,7 @@ export class AuthService {
             this.state.set({
               userId: decoded.sub,
               email: decoded.email,
-              userType: parseInt(decoded.userType) as UserType,
+              userType: decoded.user_type as UserType,
               isAuthenticated: true,
               isLoading: false,
             });
@@ -207,6 +207,17 @@ export class AuthService {
       isAuthenticated: true,
       isLoading: false,
     });
+  }
+
+  refreshSession(): Observable<AuthResponse> {
+    return from(this.storage.getRefreshToken()).pipe(
+      switchMap((token) => {
+        if (!token) {
+          return throwError(() => new Error('No refresh token available'));
+        }
+        return this.refreshToken(token);
+      })
+    );
   }
 
   async getAccessToken(): Promise<string | null> {

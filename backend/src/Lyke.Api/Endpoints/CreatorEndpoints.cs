@@ -11,8 +11,7 @@ public static class CreatorEndpoints
     public static IEndpointRouteBuilder MapCreatorEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/creators/v1")
-            .WithTags("Creators")
-            .RequireAuthorization("CreatorOnly");
+            .WithTags("Creators");
 
         // Registration & Profile
         // Note: Registration allows any authenticated user (Shopper becoming Creator)
@@ -29,6 +28,7 @@ public static class CreatorEndpoints
             .MapGet("/profile", GetCreatorProfileAsync)
             .WithName("GetCreatorProfile")
             .WithSummary("Get current creator's profile")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -37,6 +37,7 @@ public static class CreatorEndpoints
             .MapPut("/profile", UpdateCreatorProfileAsync)
             .WithName("UpdateCreatorProfile")
             .WithSummary("Update current creator's profile")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
@@ -47,6 +48,7 @@ public static class CreatorEndpoints
             .MapPost("/posts", CreatePostAsync)
             .WithName("CreateCreatorPost")
             .WithSummary("Create a new post (draft)")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorPostResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
@@ -56,6 +58,7 @@ public static class CreatorEndpoints
             .MapGet("/posts", GetCreatorPostsAsync)
             .WithName("GetCreatorPosts")
             .WithSummary("Get creator's posts with optional status filter")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<IReadOnlyList<CreatorPostResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -64,6 +67,7 @@ public static class CreatorEndpoints
             .MapGet("/posts/{id:guid}", GetCreatorPostAsync)
             .WithName("GetCreatorPost")
             .WithSummary("Get a specific post by ID")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorPostResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -72,6 +76,7 @@ public static class CreatorEndpoints
             .MapPut("/posts/{id:guid}", UpdatePostAsync)
             .WithName("UpdateCreatorPost")
             .WithSummary("Update a draft post")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorPostResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
@@ -81,6 +86,7 @@ public static class CreatorEndpoints
             .MapDelete("/posts/{id:guid}", DeletePostAsync)
             .WithName("DeleteCreatorPost")
             .WithSummary("Delete a post")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -89,6 +95,7 @@ public static class CreatorEndpoints
             .MapPost("/posts/{id:guid}/submit", SubmitPostForReviewAsync)
             .WithName("SubmitPostForReview")
             .WithSummary("Submit a draft post for review")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorPostResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
@@ -99,6 +106,7 @@ public static class CreatorEndpoints
             .MapGet("/analytics", GetAnalyticsAsync)
             .WithName("GetCreatorAnalytics")
             .WithSummary("Get creator performance metrics")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<CreatorAnalyticsResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -107,6 +115,7 @@ public static class CreatorEndpoints
             .MapGet("/earnings", GetEarningsSummaryAsync)
             .WithName("GetCreatorEarningsSummary")
             .WithSummary("Get earnings summary")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<EarningsSummaryResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -115,6 +124,7 @@ public static class CreatorEndpoints
             .MapGet("/earnings/history", GetEarningsHistoryAsync)
             .WithName("GetCreatorEarningsHistory")
             .WithSummary("Get detailed earnings history")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<IReadOnlyList<EarningDetailResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -124,6 +134,7 @@ public static class CreatorEndpoints
             .MapGet("/verification", GetVerificationStatusAsync)
             .WithName("GetCreatorVerificationStatus")
             .WithSummary("Get current verification status")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<VerificationStatusResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
@@ -132,6 +143,7 @@ public static class CreatorEndpoints
             .MapPost("/verification", SubmitVerificationAsync)
             .WithName("SubmitCreatorVerification")
             .WithSummary("Submit verification request")
+            .RequireAuthorization("CreatorOnly")
             .Produces<ApiResponse<VerificationStatusResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)

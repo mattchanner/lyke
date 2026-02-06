@@ -1,78 +1,78 @@
 // User & Auth
 export enum UserType {
-  Shopper = 0,
-  Creator = 1,
-  Retailer = 2,
-  Admin = 3,
+  Shopper = "Shopper",
+  Creator = "Creator",
+  Retailer = "Retailer",
+  Admin = "Admin",
 }
 
 // Profile
 export enum FitPreference {
-  Fitted = 0,
-  Regular = 1,
-  Relaxed = 2,
+  Fitted = "Fitted",
+  Regular = "Regular",
+  Relaxed = "Relaxed",
 }
 
 // Post & Content
 export enum PostStatus {
-  Draft = 0,
-  PendingReview = 1,
-  Published = 2,
-  Rejected = 3,
+  Draft = "Draft",
+  PendingReview = "PendingReview",
+  Published = "Published",
+  Rejected = "Rejected",
 }
 
 export enum MediaType {
-  Image = 0,
-  Video = 1,
+  Image = "Image",
+  Video = "Video",
 }
 
 // Engagement
 export enum EngagementType {
-  View = 0,
-  Like = 1,
-  Save = 2,
-  Share = 3,
+  View = "View",
+  Like = "Like",
+  Save = "Save",
+  Share = "Share",
 }
 
 // Commerce
 export enum FitRating {
-  TooSmall = 0,
-  SlightlySmall = 1,
-  TrueToSize = 2,
-  SlightlyLarge = 3,
-  TooLarge = 4,
+  TooSmall = "TooSmall",
+  SlightlySmall = "SlightlySmall",
+  TrueToSize = "TrueToSize",
+  SlightlyLarge = "SlightlyLarge",
+  TooLarge = "TooLarge",
 }
 
 // Earnings
 export enum EarningType {
-  Affiliate = 0,
-  Sponsored = 1,
+  Affiliate = "Affiliate",
+  Sponsored = "Sponsored",
 }
 
 export enum EarningStatus {
-  Pending = 0,
-  Confirmed = 1,
-  Paid = 2,
+  Pending = "Pending",
+  Confirmed = "Confirmed",
+  Paid = "Paid",
 }
 
 // Verification
 export enum VerificationStatus {
-  NotSubmitted = 0,
-  Pending = 1,
-  Approved = 2,
-  Rejected = 3,
+  NotSubmitted = "NotSubmitted",
+  Pending = "Pending",
+  Approved = "Approved",
+  Rejected = "Rejected",
 }
 
 // Feed & Search (local to DTOs)
 export enum FeedSortBy {
-  Relevance = 0,
-  Recent = 1,
-  MostLiked = 2,
+  Relevance = "Relevance",
+  Recent = "Recent",
+  MostLiked = "MostLiked",
 }
 
 export enum SearchType {
-  All = 0,
-  Posts = 1,
-  Products = 2,
-  Creators = 3,
+  All = "All",
+  Posts = "Posts",
+  Products = "Products",
+  Creators = "Creators",
 }

@@ -54,8 +54,8 @@ public static class MediaEndpoints
 
     private static async Task<IResult> UploadMediaAsync(
         IFormFile file,
-        ClaimsPrincipal user,
-        IMediaService mediaService,
+        [FromServices] ClaimsPrincipal user,
+        [FromServices] IMediaService mediaService,
         CancellationToken cancellationToken
     )
     {
