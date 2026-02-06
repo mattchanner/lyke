@@ -3,9 +3,161 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/profile"></ion-back-button>
     </ion-buttons>
-    <ion-title>Body Profile</ion-title>
+    <ion-title>Edit Body Profile</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content class="ion-padding">
-  <p>Body profile editor coming soon...</p>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else {
+    <div class="form-container">
+      <!-- Height Section -->
+      <section class="form-section">
+        <h3>Height</h3>
+
+        <div class="unit-toggle">
+          <ion-segment [value]="heightUnit()" (ionChange)="onHeightUnitChange($event)">
+            <ion-segment-button value="cm">
+              <ion-label>cm</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="ft">
+              <ion-label>ft/in</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        @if (heightUnit() === 'cm') {
+          <ion-item>
+            <ion-input
+              type="number"
+              [formControl]="heightCmControl"
+              placeholder="Height in cm"
+              min="100"
+              max="250"
+            ></ion-input>
+            <ion-text slot="end">cm</ion-text>
+          </ion-item>
+        } @else {
+          <div class="feet-inches">
+            <ion-item>
+              <ion-input
+                type="number"
+                [formControl]="heightFtControl"
+                placeholder="Feet"
+                min="3"
+                max="8"
+              ></ion-input>
+              <ion-text slot="end">ft</ion-text>
+            </ion-item>
+            <ion-item>
+              <ion-input
+                type="number"
+                [formControl]="heightInControl"
+                placeholder="Inches"
+                min="0"
+                max="11"
+              ></ion-input>
+              <ion-text slot="end">in</ion-text>
+            </ion-item>
+          </div>
+        }
+      </section>
+
+      <!-- Weight Section -->
+      <section class="form-section">
+        <h3>Weight</h3>
+
+        <div class="unit-toggle">
+          <ion-segment [value]="weightUnit()" (ionChange)="onWeightUnitChange($event)">
+            <ion-segment-button value="kg">
+              <ion-label>kg</ion-label>
+            </ion-segment-button>
+            <ion-segment-button value="lbs">
+              <ion-label>lbs</ion-label>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <ion-item>
+          <ion-input
+            type="number"
+            [formControl]="weightControl"
+            [placeholder]="'Weight in ' + weightUnit()"
+            min="30"
+            [max]="weightUnit() === 'kg' ? 300 : 660"
+          ></ion-input>
+          <ion-text slot="end">{{ weightUnit() }}</ion-text>
+        </ion-item>
+      </section>
+
+      <!-- Body Type Section -->
+      <section class="form-section">
+        <h3>Body Type</h3>
+
+        <div class="body-type-grid">
+          @for (bodyType of bodyTypes(); track bodyType.id) {
+            <div
+              class="body-type-card"
+              [class.selected]="selectedBodyTypeId() === bodyType.id"
+              (click)="selectBodyType(bodyType.id)"
+            >
+              <span class="body-type-name">{{ bodyType.name }}</span>
+              @if (bodyType.description) {
+                <span class="body-type-desc">{{ bodyType.description }}</span>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Fit Preference Section -->
+      <section class="form-section">
+        <h3>Fit Preference</h3>
+
+        <div class="fit-preference-grid">
+          <div
+            class="fit-card"
+            [class.selected]="selectedFitPreference() === FitPreference.Fitted"
+            (click)="selectFitPreference(FitPreference.Fitted)"
+          >
+            <span class="fit-name">Fitted</span>
+            <span class="fit-desc">Close to the body</span>
+          </div>
+          <div
+            class="fit-card"
+            [class.selected]="selectedFitPreference() === FitPreference.Regular"
+            (click)="selectFitPreference(FitPreference.Regular)"
+          >
+            <span class="fit-name">Regular</span>
+            <span class="fit-desc">Standard fit</span>
+          </div>
+          <div
+            class="fit-card"
+            [class.selected]="selectedFitPreference() === FitPreference.Relaxed"
+            (click)="selectFitPreference(FitPreference.Relaxed)"
+          >
+            <span class="fit-name">Relaxed</span>
+            <span class="fit-desc">Loose and comfortable</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Save Button -->
+      <ion-button
+        expand="block"
+        [disabled]="!isFormValid || !hasChanges || isSaving()"
+        (click)="onSubmit()"
+        class="save-button"
+      >
+        @if (isSaving()) {
+          <ion-spinner name="crescent"></ion-spinner>
+        } @else {
+          Save
+        }
+      </ion-button>
+    </div>
+  }
 </ion-content>

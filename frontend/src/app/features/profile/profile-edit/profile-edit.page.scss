@@ -1,0 +1,27 @@
+.loading-container {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.form-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+ion-item {
+  --background: var(--ion-color-light);
+  --border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.validation-error {
+  font-size: 0.85rem;
+  padding-left: 1rem;
+  margin-top: 0.25rem;
+}
+
+.save-button {
+  margin-top: 2rem;
+  --border-radius: 8px;
+}

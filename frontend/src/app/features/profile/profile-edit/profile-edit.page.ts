@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -7,21 +8,96 @@ import {
   IonToolbar,
   IonBackButton,
   IonButtons,
+  IonButton,
+  IonInput,
+  IonItem,
+  IonSpinner,
+  IonText,
 } from '@ionic/angular/standalone';
+import { ApiService, ToastService } from '../../../core';
+import {
+  UserProfileResponse,
+  UpdateProfileRequest,
+} from '../../../models';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
   imports: [
-    CommonModule,
+    ReactiveFormsModule,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     IonBackButton,
     IonButtons,
+    IonButton,
+    IonInput,
+    IonItem,
+    IonSpinner,
+    IonText,
   ],
   templateUrl: './profile-edit.page.html',
   styleUrls: ['./profile-edit.page.scss'],
 })
-export class ProfileEditPage {}
+export class ProfileEditPage implements OnInit {
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+
+  readonly isLoading = signal(false);
+  readonly isSaving = signal(false);
+
+  readonly form = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+  });
+
+  private originalEmail = '';
+
+  ngOnInit(): void {
+    this.loadProfile();
+  }
+
+  get isDirty(): boolean {
+    return this.form.value.email !== this.originalEmail;
+  }
+
+  loadProfile(): void {
+    this.isLoading.set(true);
+    this.api.get<UserProfileResponse>('profile', 'me').subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.originalEmail = response.data.email;
+          this.form.patchValue({ email: response.data.email });
+        }
+      },
+      complete: () => this.isLoading.set(false),
+    });
+  }
+
+  onSubmit(): void {
+    if (this.form.invalid || !this.isDirty || this.isSaving()) return;
+
+    this.isSaving.set(true);
+    const request: UpdateProfileRequest = {
+      email: this.form.value.email!,
+    };
+
+    this.api.put<UserProfileResponse>('profile', '', request).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.toast.success('Profile updated');
+          this.router.navigate(['/profile']);
+        } else {
+          this.toast.error(response.error?.message || 'Failed to update profile');
+        }
+      },
+      error: () => {
+        this.toast.error('Failed to update profile');
+        this.isSaving.set(false);
+      },
+      complete: () => this.isSaving.set(false),
+    });
+  }
+}
