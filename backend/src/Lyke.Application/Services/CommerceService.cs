@@ -23,7 +23,8 @@ public class CommerceService : ICommerceService
     public CommerceService(
         DbContext dbContext,
         IOptions<CommerceSettings> settings,
-        ILogger<CommerceService> logger)
+        ILogger<CommerceService> logger
+    )
     {
         _dbContext = dbContext;
         _settings = settings.Value;
@@ -35,15 +36,19 @@ public class CommerceService : ICommerceService
         TrackClickRequest request,
         string? userAgent,
         string? ipAddress,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // Validate PostProduct exists and get product/retailer data
-        var postProduct = await _dbContext.Set<PostProduct>()
+        var postProduct = await _dbContext
+            .Set<PostProduct>()
             .Include(pp => pp.Product)
-                .ThenInclude(p => p.Retailer)
+            .ThenInclude(p => p.Retailer)
             .Include(pp => pp.Post)
-            .FirstOrDefaultAsync(pp => pp.Id == request.PostProductId
-                && pp.PostId == request.PostId, cancellationToken);
+            .FirstOrDefaultAsync(
+                pp => pp.Id == request.PostProductId && pp.PostId == request.PostId,
+                cancellationToken
+            );
 
         if (postProduct == null)
         {
@@ -53,10 +58,14 @@ public class CommerceService : ICommerceService
         // Check for duplicate clicks within deduplication window
         if (_settings.EnableClickDeduplication && !string.IsNullOrEmpty(request.SessionId))
         {
-            var recentClick = await _dbContext.Set<ClickEvent>()
-                .Where(ce => ce.SessionId == request.SessionId
+            var recentClick = await _dbContext
+                .Set<ClickEvent>()
+                .Where(ce =>
+                    ce.SessionId == request.SessionId
                     && ce.PostProductId == request.PostProductId
-                    && ce.CreatedAt > DateTime.UtcNow.AddSeconds(-_settings.DeduplicationWindowSeconds))
+                    && ce.CreatedAt
+                        > DateTime.UtcNow.AddSeconds(-_settings.DeduplicationWindowSeconds)
+                )
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (recentClick != null)
@@ -65,13 +74,15 @@ public class CommerceService : ICommerceService
                 var existingUrl = GenerateAffiliateUrl(
                     postProduct.Product.Retailer,
                     postProduct.Product.ProductUrl,
-                    recentClick.Id);
+                    recentClick.Id
+                );
 
                 return new TrackClickResponse(
                     recentClick.Id,
                     existingUrl,
                     postProduct.Product.Retailer.Name,
-                    postProduct.Product.Name);
+                    postProduct.Product.Name
+                );
             }
         }
 
@@ -90,14 +101,15 @@ public class CommerceService : ICommerceService
             searchQuery = request.SearchQuery,
             creatorId = postProduct.Post.CreatorId,
             timestamp = DateTime.UtcNow,
-            ipAddress = ipAddress != null ? HashIpAddress(ipAddress) : null
+            ipAddress = ipAddress != null ? HashIpAddress(ipAddress) : null,
         };
 
         // Generate affiliate URL
         var affiliateUrl = GenerateAffiliateUrl(
             postProduct.Product.Retailer,
             postProduct.Product.ProductUrl,
-            clickId);
+            clickId
+        );
 
         // Create ClickEvent record
         var clickEvent = new ClickEvent
@@ -108,7 +120,7 @@ public class CommerceService : ICommerceService
             PostProductId = request.PostProductId,
             SessionId = request.SessionId,
             CreatedAt = DateTime.UtcNow,
-            AttributionData = JsonSerializer.Serialize(attributionData)
+            AttributionData = JsonSerializer.Serialize(attributionData),
         };
 
         await _dbContext.Set<ClickEvent>().AddAsync(clickEvent, cancellationToken);
@@ -116,20 +128,26 @@ public class CommerceService : ICommerceService
 
         _logger.LogInformation(
             "Click tracked: {ClickId} for PostProduct {PostProductId} by User {UserId}",
-            clickId, request.PostProductId, userId);
+            clickId,
+            request.PostProductId,
+            userId
+        );
 
         return new TrackClickResponse(
             clickId,
             affiliateUrl,
             postProduct.Product.Retailer.Name,
-            postProduct.Product.Name);
+            postProduct.Product.Name
+        );
     }
 
     public async Task<ProductResponse> GetProductAsync(
         Guid productId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var product = await _dbContext.Set<Product>()
+        var product = await _dbContext
+            .Set<Product>()
             .Include(p => p.Retailer)
             .Include(p => p.PostProducts)
             .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
@@ -142,22 +160,28 @@ public class CommerceService : ICommerceService
         return MapToProductResponse(product);
     }
 
-    public async Task<(IReadOnlyList<ProductResponse> Products, PaginationMeta Meta)> SearchProductsAsync(
+    public async Task<(
+        IReadOnlyList<ProductResponse> Products,
+        PaginationMeta Meta
+    )> SearchProductsAsync(
         ProductSearchRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var searchTerm = request.Query.ToLower();
 
-        var query = _dbContext.Set<Product>()
+        var query = _dbContext
+            .Set<Product>()
             .Include(p => p.Retailer)
             .Include(p => p.PostProducts)
             .Where(p => p.IsActive);
 
         // Apply search filter
         query = query.Where(p =>
-            p.Name.ToLower().Contains(searchTerm) ||
-            (p.Description != null && p.Description.ToLower().Contains(searchTerm)) ||
-            p.ExternalSku.ToLower().Contains(searchTerm));
+            p.Name.ToLower().Contains(searchTerm)
+            || (p.Description != null && p.Description.ToLower().Contains(searchTerm))
+            || p.ExternalSku.ToLower().Contains(searchTerm)
+        );
 
         // Apply retailer filter
         if (request.RetailerId.HasValue)
@@ -185,16 +209,18 @@ public class CommerceService : ICommerceService
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (productResponses, meta);
     }
 
     public async Task<IReadOnlyList<RetailerResponse>> GetRetailersAsync(
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var retailers = await _dbContext.Set<Retailer>()
+        var retailers = await _dbContext
+            .Set<Retailer>()
             .Where(r => r.IsActive)
             .Include(r => r.Products.Where(p => p.IsActive))
             .OrderBy(r => r.Name)
@@ -202,35 +228,50 @@ public class CommerceService : ICommerceService
 
         // Get post counts per retailer
         var retailerIds = retailers.Select(r => r.Id).ToList();
-        var postCounts = await _dbContext.Set<PostProduct>()
+        var postCounts = await _dbContext
+            .Set<PostProduct>()
             .Include(pp => pp.Product)
             .Include(pp => pp.Post)
-            .Where(pp => retailerIds.Contains(pp.Product.RetailerId) && pp.Post.Status == PostStatus.Published)
+            .Where(pp =>
+                retailerIds.Contains(pp.Product.RetailerId)
+                && pp.Post.Status == PostStatus.Published
+            )
             .GroupBy(pp => pp.Product.RetailerId)
-            .Select(g => new { RetailerId = g.Key, Count = g.Select(pp => pp.PostId).Distinct().Count() })
+            .Select(g => new
+            {
+                RetailerId = g.Key,
+                Count = g.Select(pp => pp.PostId).Distinct().Count(),
+            })
             .ToListAsync(cancellationToken);
 
         var postCountDict = postCounts.ToDictionary(x => x.RetailerId, x => x.Count);
 
-        return retailers.Select(r => new RetailerResponse(
-            r.Id,
-            r.Name,
-            r.LogoUrl,
-            r.WebsiteUrl,
-            r.IsActive,
-            r.Products.Count,
-            postCountDict.GetValueOrDefault(r.Id, 0)
-        )).ToList();
+        return retailers
+            .Select(r => new RetailerResponse(
+                r.Id,
+                r.Name,
+                r.LogoUrl,
+                r.WebsiteUrl,
+                r.IsActive,
+                r.Products.Count,
+                postCountDict.GetValueOrDefault(r.Id, 0)
+            ))
+            .ToList();
     }
 
-    public async Task<(RetailerProductsResponse Data, PaginationMeta Meta)> GetRetailerProductsAsync(
+    public async Task<(
+        RetailerProductsResponse Data,
+        PaginationMeta Meta
+    )> GetRetailerProductsAsync(
         Guid retailerId,
         int page,
         int pageSize,
         string? category,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var retailer = await _dbContext.Set<Retailer>()
+        var retailer = await _dbContext
+            .Set<Retailer>()
             .FirstOrDefaultAsync(r => r.Id == retailerId, cancellationToken);
 
         if (retailer == null)
@@ -238,7 +279,8 @@ public class CommerceService : ICommerceService
             throw new NotFoundException(nameof(Retailer), retailerId);
         }
 
-        var query = _dbContext.Set<Product>()
+        var query = _dbContext
+            .Set<Product>()
             .Include(p => p.Retailer)
             .Include(p => p.PostProducts)
             .Where(p => p.RetailerId == retailerId && p.IsActive);
@@ -258,17 +300,13 @@ public class CommerceService : ICommerceService
 
         var productResponses = products.Select(MapToProductResponse).ToList();
 
-        var data = new RetailerProductsResponse(
-            retailerId,
-            retailer.Name,
-            productResponses
-        );
+        var data = new RetailerProductsResponse(retailerId, retailer.Name, productResponses);
 
         var meta = new PaginationMeta
         {
             Page = page,
             PageSize = pageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (data, meta);
@@ -277,10 +315,12 @@ public class CommerceService : ICommerceService
     public async Task<bool> ProcessConversionAsync(
         Guid retailerId,
         ConversionWebhookRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // Get retailer and verify webhook signature
-        var retailer = await _dbContext.Set<Retailer>()
+        var retailer = await _dbContext
+            .Set<Retailer>()
             .FirstOrDefaultAsync(r => r.Id == retailerId, cancellationToken);
 
         if (retailer == null)
@@ -302,9 +342,10 @@ public class CommerceService : ICommerceService
             return false;
         }
 
-        var clickEvent = await _dbContext.Set<ClickEvent>()
+        var clickEvent = await _dbContext
+            .Set<ClickEvent>()
             .Include(ce => ce.PostProduct)
-                .ThenInclude(pp => pp.Post)
+            .ThenInclude(pp => pp.Post)
             .FirstOrDefaultAsync(ce => ce.Id == clickId, cancellationToken);
 
         if (clickEvent == null)
@@ -333,7 +374,7 @@ public class CommerceService : ICommerceService
             Amount = request.CommissionAmount * _settings.CreatorCommissionShare,
             Currency = request.Currency,
             Status = EarningStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         await _dbContext.Set<CreatorEarning>().AddAsync(creatorEarning, cancellationToken);
@@ -341,7 +382,11 @@ public class CommerceService : ICommerceService
 
         _logger.LogInformation(
             "Conversion processed: Click {ClickId}, Order {OrderId}, Earnings {Amount} {Currency}",
-            clickId, request.OrderId, creatorEarning.Amount, request.Currency);
+            clickId,
+            request.OrderId,
+            creatorEarning.Amount,
+            request.Currency
+        );
 
         return true;
     }
@@ -391,10 +436,10 @@ public class CommerceService : ICommerceService
 
         try
         {
-            return JsonSerializer.Deserialize<AffiliateConfig>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            return JsonSerializer.Deserialize<AffiliateConfig>(
+                json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            );
         }
         catch
         {

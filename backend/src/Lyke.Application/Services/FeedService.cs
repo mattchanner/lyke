@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Feed;
@@ -9,7 +10,6 @@ using Lyke.Core.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 
 namespace Lyke.Application.Services;
 
@@ -22,7 +22,8 @@ public class FeedService : IFeedService
     public FeedService(
         DbContext dbContext,
         IOptions<MatchingSettings> matchingSettings,
-        ILogger<FeedService> logger)
+        ILogger<FeedService> logger
+    )
     {
         _dbContext = dbContext;
         _matchingSettings = matchingSettings.Value;
@@ -32,9 +33,11 @@ public class FeedService : IFeedService
     public async Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetFeedAsync(
         Guid userId,
         FeedRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var userBodyProfile = await _dbContext.Set<BodyProfile>()
+        var userBodyProfile = await _dbContext
+            .Set<BodyProfile>()
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         var query = BuildFeedQuery(request);
@@ -45,15 +48,15 @@ public class FeedService : IFeedService
         // Get posts with creator body profiles for matching
         var posts = await query
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                    .ThenInclude(prod => prod.Retailer)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                    .ThenInclude(pft => pft.FitTag)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .OrderByDescending(p => p.PublishedAt)
             .ToListAsync(cancellationToken);
@@ -63,16 +66,26 @@ public class FeedService : IFeedService
             .Select(p => new
             {
                 Post = p,
-                SimilarityScore = CalculateSimilarityScore(userBodyProfile, p.Creator.User.BodyProfile),
-                RecencyScore = CalculateRecencyScore(p.PublishedAt)
+                SimilarityScore = CalculateSimilarityScore(
+                    userBodyProfile,
+                    p.Creator.User.BodyProfile
+                ),
+                RecencyScore = CalculateRecencyScore(p.PublishedAt),
             })
-            .Where(x => userBodyProfile == null || x.SimilarityScore >= _matchingSettings.MinimumSimilarityScore)
-            .OrderByDescending(x => request.SortBy switch
-            {
-                FeedSortBy.Recent => x.RecencyScore,
-                FeedSortBy.MostLiked => x.Post.Engagements.Count(e => e.Type == EngagementType.Like),
-                _ => x.SimilarityScore * 0.6 + x.RecencyScore * 0.4 // Relevance
-            })
+            .Where(x =>
+                userBodyProfile == null
+                || x.SimilarityScore >= _matchingSettings.MinimumSimilarityScore
+            )
+            .OrderByDescending(x =>
+                request.SortBy switch
+                {
+                    FeedSortBy.Recent => x.RecencyScore,
+                    FeedSortBy.MostLiked => x.Post.Engagements.Count(e =>
+                        e.Type == EngagementType.Like
+                    ),
+                    _ => x.SimilarityScore * 0.6 + x.RecencyScore * 0.4, // Relevance
+                }
+            )
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToList();
@@ -89,16 +102,20 @@ public class FeedService : IFeedService
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (feedPosts, meta);
     }
 
-    public async Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetExploreFeedAsync(
+    public async Task<(
+        IReadOnlyList<FeedPostResponse> Posts,
+        PaginationMeta Meta
+    )> GetExploreFeedAsync(
         Guid? userId,
         FeedRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var query = BuildFeedQuery(request);
 
@@ -106,15 +123,15 @@ public class FeedService : IFeedService
 
         var posts = await query
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                    .ThenInclude(prod => prod.Retailer)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                    .ThenInclude(pft => pft.FitTag)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .ToListAsync(cancellationToken);
 
@@ -122,8 +139,10 @@ public class FeedService : IFeedService
         var sortedPosts = request.SortBy switch
         {
             FeedSortBy.Recent => posts.OrderByDescending(p => p.PublishedAt).ToList(),
-            FeedSortBy.MostLiked => posts.OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like)).ToList(),
-            _ => posts.OrderByDescending(p => p.PublishedAt).ToList()
+            FeedSortBy.MostLiked => posts
+                .OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like))
+                .ToList(),
+            _ => posts.OrderByDescending(p => p.PublishedAt).ToList(),
         };
 
         posts = sortedPosts
@@ -136,15 +155,13 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        var feedPosts = posts
-            .Select(p => MapToFeedPostResponse(p, 0, userEngagements))
-            .ToList();
+        var feedPosts = posts.Select(p => MapToFeedPostResponse(p, 0, userEngagements)).ToList();
 
         var meta = new PaginationMeta
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (feedPosts, meta);
@@ -153,23 +170,28 @@ public class FeedService : IFeedService
     public async Task<PostDetailResponse> GetPostAsync(
         Guid postId,
         Guid? userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var post = await _dbContext.Set<Post>()
+        var post = await _dbContext
+            .Set<Post>()
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.Creator)
-                .ThenInclude(c => c.Posts)
+            .ThenInclude(c => c.Posts)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                    .ThenInclude(prod => prod.Retailer)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                    .ThenInclude(pft => pft.FitTag)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
-            .FirstOrDefaultAsync(p => p.Id == postId && p.Status == PostStatus.Published, cancellationToken);
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.Status == PostStatus.Published,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -180,9 +202,13 @@ public class FeedService : IFeedService
         double similarityScore = 0;
         if (userId.HasValue)
         {
-            var userBodyProfile = await _dbContext.Set<BodyProfile>()
+            var userBodyProfile = await _dbContext
+                .Set<BodyProfile>()
                 .FirstOrDefaultAsync(bp => bp.UserId == userId.Value, cancellationToken);
-            similarityScore = CalculateSimilarityScore(userBodyProfile, post.Creator.User.BodyProfile);
+            similarityScore = CalculateSimilarityScore(
+                userBodyProfile,
+                post.Creator.User.BodyProfile
+            );
         }
 
         var userEngagements = userId.HasValue
@@ -196,14 +222,16 @@ public class FeedService : IFeedService
         Guid postId,
         Guid? userId,
         int limit = 10,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var post = await _dbContext.Set<Post>()
+        var post = await _dbContext
+            .Set<Post>()
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
+            .ThenInclude(pp => pp.Product)
             .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
         if (post == null)
@@ -212,21 +240,25 @@ public class FeedService : IFeedService
         }
 
         var creatorBodyProfile = post.Creator.User.BodyProfile;
-        var productCategories = post.PostProducts.Select(pp => pp.Product.Category).Distinct().ToList();
+        var productCategories = post
+            .PostProducts.Select(pp => pp.Product.Category)
+            .Distinct()
+            .ToList();
 
         // Find similar posts by creator body profile and product categories
-        var similarPosts = await _dbContext.Set<Post>()
+        var similarPosts = await _dbContext
+            .Set<Post>()
             .Where(p => p.Id != postId && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                    .ThenInclude(prod => prod.Retailer)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                    .ThenInclude(pft => pft.FitTag)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .ToListAsync(cancellationToken);
 
@@ -234,8 +266,13 @@ public class FeedService : IFeedService
             .Select(p => new
             {
                 Post = p,
-                Score = CalculateSimilarityScore(creatorBodyProfile, p.Creator.User.BodyProfile) * 0.7
-                    + (p.PostProducts.Any(pp => productCategories.Contains(pp.Product.Category)) ? 0.3 : 0)
+                Score = CalculateSimilarityScore(creatorBodyProfile, p.Creator.User.BodyProfile)
+                    * 0.7
+                    + (
+                        p.PostProducts.Any(pp => productCategories.Contains(pp.Product.Category))
+                            ? 0.3
+                            : 0
+                    ),
             })
             .OrderByDescending(x => x.Score)
             .Take(limit)
@@ -246,19 +283,22 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        return scored
-            .Select(x => MapToFeedPostResponse(x.Post, x.Score, userEngagements))
-            .ToList();
+        return scored.Select(x => MapToFeedPostResponse(x.Post, x.Score, userEngagements)).ToList();
     }
 
     public async Task EngageAsync(
         Guid postId,
         Guid userId,
         EngageRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var post = await _dbContext.Set<Post>()
-            .FirstOrDefaultAsync(p => p.Id == postId && p.Status == PostStatus.Published, cancellationToken);
+        var post = await _dbContext
+            .Set<Post>()
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.Status == PostStatus.Published,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -270,8 +310,10 @@ public class FeedService : IFeedService
         // Check if engagement already exists (for Like/Save)
         if (request.Type == EngagementType.Like || request.Type == EngagementType.Save)
         {
-            var existing = await engagements
-                .FirstOrDefaultAsync(e => e.PostId == postId && e.UserId == userId && e.Type == request.Type, cancellationToken);
+            var existing = await engagements.FirstOrDefaultAsync(
+                e => e.PostId == postId && e.UserId == userId && e.Type == request.Type,
+                cancellationToken
+            );
 
             if (existing != null)
             {
@@ -285,41 +327,59 @@ public class FeedService : IFeedService
             PostId = postId,
             UserId = userId,
             Type = request.Type,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         await engagements.AddAsync(engagement, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("User {UserId} engaged with post {PostId}: {Type}", userId, postId, request.Type);
+        _logger.LogInformation(
+            "User {UserId} engaged with post {PostId}: {Type}",
+            userId,
+            postId,
+            request.Type
+        );
     }
 
     public async Task RemoveEngagementAsync(
         Guid postId,
         Guid userId,
         EngageRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var engagements = _dbContext.Set<Engagement>();
 
-        var engagement = await engagements
-            .FirstOrDefaultAsync(e => e.PostId == postId && e.UserId == userId && e.Type == request.Type, cancellationToken);
+        var engagement = await engagements.FirstOrDefaultAsync(
+            e => e.PostId == postId && e.UserId == userId && e.Type == request.Type,
+            cancellationToken
+        );
 
         if (engagement != null)
         {
             engagements.Remove(engagement);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            _logger.LogInformation("User {UserId} removed engagement from post {PostId}: {Type}", userId, postId, request.Type);
+            _logger.LogInformation(
+                "User {UserId} removed engagement from post {PostId}: {Type}",
+                userId,
+                postId,
+                request.Type
+            );
         }
     }
 
-    public async Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetSavedPostsAsync(
+    public async Task<(
+        IReadOnlyList<FeedPostResponse> Posts,
+        PaginationMeta Meta
+    )> GetSavedPostsAsync(
         Guid userId,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var savedPostIds = await _dbContext.Set<Engagement>()
+        var savedPostIds = await _dbContext
+            .Set<Engagement>()
             .Where(e => e.UserId == userId && e.Type == EngagementType.Save)
             .OrderByDescending(e => e.CreatedAt)
             .Select(e => e.PostId)
@@ -327,23 +387,21 @@ public class FeedService : IFeedService
 
         var totalCount = savedPostIds.Count;
 
-        var pagedPostIds = savedPostIds
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
+        var pagedPostIds = savedPostIds.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-        var posts = await _dbContext.Set<Post>()
+        var posts = await _dbContext
+            .Set<Post>()
             .Where(p => pagedPostIds.Contains(p.Id) && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                    .ThenInclude(prod => prod.Retailer)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                    .ThenInclude(pft => pft.FitTag)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .ToListAsync(cancellationToken);
 
@@ -353,7 +411,11 @@ public class FeedService : IFeedService
             .Where(p => p != null)
             .ToList();
 
-        var userEngagements = await GetUserEngagementsAsync(userId, pagedPostIds, cancellationToken);
+        var userEngagements = await GetUserEngagementsAsync(
+            userId,
+            pagedPostIds,
+            cancellationToken
+        );
 
         var feedPosts = orderedPosts
             .Select(p => MapToFeedPostResponse(p!, 0, userEngagements))
@@ -363,7 +425,7 @@ public class FeedService : IFeedService
         {
             Page = page,
             PageSize = pageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (feedPosts, meta);
@@ -372,7 +434,8 @@ public class FeedService : IFeedService
     public async Task<SearchResponse> SearchAsync(
         SearchRequest request,
         Guid? userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var searchTerm = request.Query.ToLower();
         var posts = new List<FeedPostResponse>();
@@ -380,22 +443,31 @@ public class FeedService : IFeedService
         var creators = new List<CreatorSearchResult>();
 
         // Search posts
-        if (request.Type == null || request.Type == SearchType.All || request.Type == SearchType.Posts)
+        if (
+            request.Type == null
+            || request.Type == SearchType.All
+            || request.Type == SearchType.Posts
+        )
         {
-            var postQuery = _dbContext.Set<Post>()
-                .Where(p => p.Status == PostStatus.Published &&
-                    (p.Title != null && p.Title.ToLower().Contains(searchTerm) ||
-                     p.Description != null && p.Description.ToLower().Contains(searchTerm)))
+            var postQuery = _dbContext
+                .Set<Post>()
+                .Where(p =>
+                    p.Status == PostStatus.Published
+                    && (
+                        p.Title != null && p.Title.ToLower().Contains(searchTerm)
+                        || p.Description != null && p.Description.ToLower().Contains(searchTerm)
+                    )
+                )
                 .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile)
-                            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                .ThenInclude(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.BodyType)
                 .Include(p => p.PostProducts)
-                    .ThenInclude(pp => pp.Product)
-                        .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                .ThenInclude(prod => prod.Retailer)
                 .Include(p => p.PostProducts)
-                    .ThenInclude(pp => pp.FitTags)
-                        .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                .ThenInclude(pft => pft.FitTag)
                 .Include(p => p.Engagements)
                 .OrderByDescending(p => p.PublishedAt)
                 .Take(request.PageSize);
@@ -410,46 +482,66 @@ public class FeedService : IFeedService
         }
 
         // Search products
-        if (request.Type == null || request.Type == SearchType.All || request.Type == SearchType.Products)
+        if (
+            request.Type == null
+            || request.Type == SearchType.All
+            || request.Type == SearchType.Products
+        )
         {
-            var productQuery = _dbContext.Set<Product>()
-                .Where(p => p.IsActive &&
-                    (p.Name.ToLower().Contains(searchTerm) ||
-                     p.Description != null && p.Description.ToLower().Contains(searchTerm)))
+            var productQuery = _dbContext
+                .Set<Product>()
+                .Where(p =>
+                    p.IsActive
+                    && (
+                        p.Name.ToLower().Contains(searchTerm)
+                        || p.Description != null && p.Description.ToLower().Contains(searchTerm)
+                    )
+                )
                 .Include(p => p.Retailer)
                 .Include(p => p.PostProducts)
                 .OrderBy(p => p.Name)
                 .Take(request.PageSize);
 
             var foundProducts = await productQuery.ToListAsync(cancellationToken);
-            products = foundProducts.Select(p => new ProductSearchResult(
-                p.Id,
-                p.Name,
-                ParseMediaUrls(p.ImageUrls).FirstOrDefault(),
-                p.Price,
-                p.Currency,
-                p.Retailer.Name,
-                p.PostProducts.Count
-            )).ToList();
+            products = foundProducts
+                .Select(p => new ProductSearchResult(
+                    p.Id,
+                    p.Name,
+                    ParseMediaUrls(p.ImageUrls).FirstOrDefault(),
+                    p.Price,
+                    p.Currency,
+                    p.Retailer.Name,
+                    p.PostProducts.Count
+                ))
+                .ToList();
         }
 
         // Search creators
-        if (request.Type == null || request.Type == SearchType.All || request.Type == SearchType.Creators)
+        if (
+            request.Type == null
+            || request.Type == SearchType.All
+            || request.Type == SearchType.Creators
+        )
         {
-            var creatorQuery = _dbContext.Set<Creator>()
-                .Where(c => c.DisplayName.ToLower().Contains(searchTerm) ||
-                    c.Bio != null && c.Bio.ToLower().Contains(searchTerm))
+            var creatorQuery = _dbContext
+                .Set<Creator>()
+                .Where(c =>
+                    c.DisplayName.ToLower().Contains(searchTerm)
+                    || c.Bio != null && c.Bio.ToLower().Contains(searchTerm)
+                )
                 .Include(c => c.Posts)
                 .OrderBy(c => c.DisplayName)
                 .Take(request.PageSize);
 
             var foundCreators = await creatorQuery.ToListAsync(cancellationToken);
-            creators = foundCreators.Select(c => new CreatorSearchResult(
-                c.Id,
-                c.DisplayName,
-                c.IsVerified,
-                c.Posts.Count(p => p.Status == PostStatus.Published)
-            )).ToList();
+            creators = foundCreators
+                .Select(c => new CreatorSearchResult(
+                    c.Id,
+                    c.DisplayName,
+                    c.IsVerified,
+                    c.Posts.Count(p => p.Status == PostStatus.Published)
+                ))
+                .ToList();
         }
 
         return new SearchResponse(
@@ -464,23 +556,29 @@ public class FeedService : IFeedService
 
     private IQueryable<Post> BuildFeedQuery(FeedRequest request)
     {
-        var query = _dbContext.Set<Post>()
-            .Where(p => p.Status == PostStatus.Published);
+        var query = _dbContext.Set<Post>().Where(p => p.Status == PostStatus.Published);
 
         if (!string.IsNullOrEmpty(request.Category))
         {
-            query = query.Where(p => p.PostProducts.Any(pp => pp.Product.Category == request.Category));
+            query = query.Where(p =>
+                p.PostProducts.Any(pp => pp.Product.Category == request.Category)
+            );
         }
 
         if (request.RetailerId.HasValue)
         {
-            query = query.Where(p => p.PostProducts.Any(pp => pp.Product.RetailerId == request.RetailerId.Value));
+            query = query.Where(p =>
+                p.PostProducts.Any(pp => pp.Product.RetailerId == request.RetailerId.Value)
+            );
         }
 
         if (request.FitTagIds != null && request.FitTagIds.Any())
         {
-            query = query.Where(p => p.PostProducts.Any(pp =>
-                pp.FitTags.Any(ft => request.FitTagIds.Contains(ft.FitTagId))));
+            query = query.Where(p =>
+                p.PostProducts.Any(pp =>
+                    pp.FitTags.Any(ft => request.FitTagIds.Contains(ft.FitTagId))
+                )
+            );
         }
 
         return query;
@@ -495,17 +593,24 @@ public class FeedService : IFeedService
 
         // Height similarity (0-1)
         var heightDiff = Math.Abs(userProfile.HeightCm - creatorProfile.HeightCm);
-        var heightScore = Math.Max(0, 1 - (heightDiff / (double)(_matchingSettings.HeightToleranceCm * 4)));
+        var heightScore = Math.Max(
+            0,
+            1 - (heightDiff / (double)(_matchingSettings.HeightToleranceCm * 4))
+        );
 
         // Weight similarity (0-1)
         var weightDiff = Math.Abs(userProfile.WeightKg - creatorProfile.WeightKg);
-        var weightScore = Math.Max(0, 1 - ((double)weightDiff / (double)(_matchingSettings.WeightToleranceKg * 4)));
+        var weightScore = Math.Max(
+            0,
+            1 - ((double)weightDiff / (double)(_matchingSettings.WeightToleranceKg * 4))
+        );
 
         // Body type similarity (0 or 1)
         var bodyTypeScore = userProfile.BodyTypeId == creatorProfile.BodyTypeId ? 1.0 : 0.3;
 
         // Weighted average
-        var score = (heightScore * _matchingSettings.HeightWeight)
+        var score =
+            (heightScore * _matchingSettings.HeightWeight)
             + (weightScore * _matchingSettings.WeightWeight)
             + (bodyTypeScore * _matchingSettings.BodyTypeWeight);
 
@@ -520,8 +625,10 @@ public class FeedService : IFeedService
         }
 
         var daysSincePublished = (DateTime.UtcNow - publishedAt.Value).TotalDays;
-        if (daysSincePublished <= 0) return 1;
-        if (daysSincePublished >= _matchingSettings.RecencyDecayDays) return 0.1;
+        if (daysSincePublished <= 0)
+            return 1;
+        if (daysSincePublished >= _matchingSettings.RecencyDecayDays)
+            return 0.1;
 
         return 1 - (daysSincePublished / _matchingSettings.RecencyDecayDays * 0.9);
     }
@@ -529,24 +636,24 @@ public class FeedService : IFeedService
     private async Task<Dictionary<Guid, HashSet<EngagementType>>> GetUserEngagementsAsync(
         Guid userId,
         IEnumerable<Guid> postIds,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var engagements = await _dbContext.Set<Engagement>()
+        var engagements = await _dbContext
+            .Set<Engagement>()
             .Where(e => e.UserId == userId && postIds.Contains(e.PostId))
             .ToListAsync(cancellationToken);
 
         return engagements
             .GroupBy(e => e.PostId)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(e => e.Type).ToHashSet()
-            );
+            .ToDictionary(g => g.Key, g => g.Select(e => e.Type).ToHashSet());
     }
 
     private FeedPostResponse MapToFeedPostResponse(
         Post post,
         double similarityScore,
-        Dictionary<Guid, HashSet<EngagementType>> userEngagements)
+        Dictionary<Guid, HashSet<EngagementType>> userEngagements
+    )
     {
         var engagementCounts = new EngagementCountsResponse(
             post.Engagements.Count(e => e.Type == EngagementType.View),
@@ -555,7 +662,10 @@ public class FeedService : IFeedService
             post.Engagements.Count(e => e.Type == EngagementType.Share)
         );
 
-        var userPostEngagements = userEngagements.GetValueOrDefault(post.Id, new HashSet<EngagementType>());
+        var userPostEngagements = userEngagements.GetValueOrDefault(
+            post.Id,
+            new HashSet<EngagementType>()
+        );
 
         var creatorBodyProfile = post.Creator.User.BodyProfile;
         AnonymizedBodyProfileResponse? anonymizedProfile = null;
@@ -576,18 +686,20 @@ public class FeedService : IFeedService
             anonymizedProfile
         );
 
-        var products = post.PostProducts.Select(pp => new PostProductSummaryResponse(
-            pp.Id,
-            pp.ProductId,
-            pp.Product.Name,
-            ParseMediaUrls(pp.Product.ImageUrls).FirstOrDefault(),
-            pp.Product.Price,
-            pp.Product.Currency,
-            pp.SizeWorn,
-            pp.FitRating,
-            pp.FitNotes,
-            pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
-        )).ToList();
+        var products = post
+            .PostProducts.Select(pp => new PostProductSummaryResponse(
+                pp.Id,
+                pp.ProductId,
+                pp.Product.Name,
+                ParseMediaUrls(pp.Product.ImageUrls).FirstOrDefault(),
+                pp.Product.Price,
+                pp.Product.Currency,
+                pp.SizeWorn,
+                pp.FitRating,
+                pp.FitNotes,
+                pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
+            ))
+            .ToList();
 
         return new FeedPostResponse(
             post.Id,
@@ -608,7 +720,8 @@ public class FeedService : IFeedService
     private PostDetailResponse MapToPostDetailResponse(
         Post post,
         double similarityScore,
-        Dictionary<Guid, HashSet<EngagementType>> userEngagements)
+        Dictionary<Guid, HashSet<EngagementType>> userEngagements
+    )
     {
         var engagementCounts = new EngagementCountsResponse(
             post.Engagements.Count(e => e.Type == EngagementType.View),
@@ -617,7 +730,10 @@ public class FeedService : IFeedService
             post.Engagements.Count(e => e.Type == EngagementType.Share)
         );
 
-        var userPostEngagements = userEngagements.GetValueOrDefault(post.Id, new HashSet<EngagementType>());
+        var userPostEngagements = userEngagements.GetValueOrDefault(
+            post.Id,
+            new HashSet<EngagementType>()
+        );
 
         var creatorBodyProfile = post.Creator.User.BodyProfile;
         AnonymizedBodyProfileResponse? anonymizedProfile = null;
@@ -640,22 +756,29 @@ public class FeedService : IFeedService
             post.Creator.Posts.Count(p => p.Status == PostStatus.Published)
         );
 
-        var products = post.PostProducts.Select(pp => new PostProductDetailResponse(
-            pp.Id,
-            pp.ProductId,
-            pp.Product.Name,
-            pp.Product.Description,
-            ParseMediaUrls(pp.Product.ImageUrls),
-            pp.Product.ProductUrl,
-            pp.Product.Price,
-            pp.Product.Currency,
-            pp.Product.Retailer.Name,
-            pp.SizeWorn,
-            pp.FitRating,
-            pp.FitNotes,
-            pp.StylingNotes,
-            pp.FitTags.Select(ft => new FitTagResponse(ft.FitTag.Id, ft.FitTag.Name, ft.FitTag.Category)).ToList()
-        )).ToList();
+        var products = post
+            .PostProducts.Select(pp => new PostProductDetailResponse(
+                pp.Id,
+                pp.ProductId,
+                pp.Product.Name,
+                pp.Product.Description,
+                ParseMediaUrls(pp.Product.ImageUrls),
+                pp.Product.ProductUrl,
+                pp.Product.Price,
+                pp.Product.Currency,
+                pp.Product.Retailer.Name,
+                pp.SizeWorn,
+                pp.FitRating,
+                pp.FitNotes,
+                pp.StylingNotes,
+                pp.FitTags.Select(ft => new FitTagResponse(
+                        ft.FitTag.Id,
+                        ft.FitTag.Name,
+                        ft.FitTag.Category
+                    ))
+                    .ToList()
+            ))
+            .ToList();
 
         return new PostDetailResponse(
             post.Id,
@@ -703,7 +826,7 @@ public class FeedService : IFeedService
             < 180 => "175-179cm (5'9\"-5'10\")",
             < 185 => "180-184cm (5'11\"-6'0\")",
             < 190 => "185-189cm (6'1\"-6'2\")",
-            _ => "190cm+ (6'3\"+)"
+            _ => "190cm+ (6'3\"+)",
         };
     }
 
@@ -722,7 +845,7 @@ public class FeedService : IFeedService
             < 90 => "85-89kg (187-196lbs)",
             < 95 => "90-94kg (198-207lbs)",
             < 100 => "95-99kg (209-218lbs)",
-            _ => "100kg+ (220lbs+)"
+            _ => "100kg+ (220lbs+)",
         };
     }
 

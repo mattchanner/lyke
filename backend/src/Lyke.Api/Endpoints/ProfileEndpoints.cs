@@ -10,38 +10,41 @@ public static class ProfileEndpoints
 {
     public static IEndpointRouteBuilder MapProfileEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/profile/v1")
-            .WithTags("Profile")
-            .RequireAuthorization();
+        var group = app.MapGroup("/api/profile/v1").WithTags("Profile").RequireAuthorization();
 
-        group.MapGet("/me", GetProfileAsync)
+        group
+            .MapGet("/me", GetProfileAsync)
             .WithName("GetProfile")
             .WithSummary("Get current user's profile")
             .Produces<ApiResponse<UserProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapPut("/", UpdateProfileAsync)
+        group
+            .MapPut("/", UpdateProfileAsync)
             .WithName("UpdateProfile")
             .WithSummary("Update current user's profile")
             .Produces<ApiResponse<UserProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapGet("/body", GetBodyProfileAsync)
+        group
+            .MapGet("/body", GetBodyProfileAsync)
             .WithName("GetBodyProfile")
             .WithSummary("Get current user's body profile")
             .Produces<ApiResponse<BodyProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapPost("/body", CreateBodyProfileAsync)
+        group
+            .MapPost("/body", CreateBodyProfileAsync)
             .WithName("CreateBodyProfile")
             .WithSummary("Create body profile for current user")
             .Produces<ApiResponse<BodyProfileResponse>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapPut("/body", UpdateBodyProfileAsync)
+        group
+            .MapPut("/body", UpdateBodyProfileAsync)
             .WithName("UpdateBodyProfile")
             .WithSummary("Update current user's body profile")
             .Produces<ApiResponse<BodyProfileResponse>>(StatusCodes.Status200OK)
@@ -49,7 +52,8 @@ public static class ProfileEndpoints
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapDelete("/body", DeleteBodyProfileAsync)
+        group
+            .MapDelete("/body", DeleteBodyProfileAsync)
             .WithName("DeleteBodyProfile")
             .WithSummary("Delete current user's body profile")
             .Produces<ApiResponse>(StatusCodes.Status200OK)
@@ -61,16 +65,17 @@ public static class ProfileEndpoints
 
     public static IEndpointRouteBuilder MapLookupEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/lookup/v1")
-            .WithTags("Lookups");
+        var group = app.MapGroup("/api/lookup/v1").WithTags("Lookups");
 
-        group.MapGet("/body-types", GetBodyTypesAsync)
+        group
+            .MapGet("/body-types", GetBodyTypesAsync)
             .WithName("GetBodyTypes")
             .WithSummary("Get available body types")
             .Produces<ApiResponse<IReadOnlyList<BodyTypeResponse>>>(StatusCodes.Status200OK)
             .AllowAnonymous();
 
-        group.MapGet("/fit-preferences", GetFitPreferencesAsync)
+        group
+            .MapGet("/fit-preferences", GetFitPreferencesAsync)
             .WithName("GetFitPreferences")
             .WithSummary("Get available fit preferences")
             .Produces<ApiResponse<IReadOnlyList<FitPreferenceResponse>>>(StatusCodes.Status200OK)
@@ -82,10 +87,12 @@ public static class ProfileEndpoints
     private static async Task<IResult> GetProfileAsync(
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         var result = await profileService.GetProfileAsync(userId.Value, cancellationToken);
         return Results.Ok(ApiResponse<UserProfileResponse>.Ok(result));
@@ -95,22 +102,30 @@ public static class ProfileEndpoints
         [FromBody] UpdateProfileRequest request,
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
-        var result = await profileService.UpdateProfileAsync(userId.Value, request, cancellationToken);
+        var result = await profileService.UpdateProfileAsync(
+            userId.Value,
+            request,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<UserProfileResponse>.Ok(result));
     }
 
     private static async Task<IResult> GetBodyProfileAsync(
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         var result = await profileService.GetBodyProfileAsync(userId.Value, cancellationToken);
         if (result == null)
@@ -125,12 +140,18 @@ public static class ProfileEndpoints
         [FromBody] CreateBodyProfileRequest request,
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
-        var result = await profileService.CreateBodyProfileAsync(userId.Value, request, cancellationToken);
+        var result = await profileService.CreateBodyProfileAsync(
+            userId.Value,
+            request,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<BodyProfileResponse>.Ok(result));
     }
 
@@ -138,22 +159,30 @@ public static class ProfileEndpoints
         [FromBody] UpdateBodyProfileRequest request,
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
-        var result = await profileService.UpdateBodyProfileAsync(userId.Value, request, cancellationToken);
+        var result = await profileService.UpdateBodyProfileAsync(
+            userId.Value,
+            request,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<BodyProfileResponse>.Ok(result));
     }
 
     private static async Task<IResult> DeleteBodyProfileAsync(
         ClaimsPrincipal user,
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         await profileService.DeleteBodyProfileAsync(userId.Value, cancellationToken);
         return Results.Ok(ApiResponse.Ok());
@@ -161,7 +190,8 @@ public static class ProfileEndpoints
 
     private static async Task<IResult> GetBodyTypesAsync(
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var result = await profileService.GetBodyTypesAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<BodyTypeResponse>>.Ok(result));
@@ -169,7 +199,8 @@ public static class ProfileEndpoints
 
     private static async Task<IResult> GetFitPreferencesAsync(
         IProfileService profileService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var result = await profileService.GetFitPreferencesAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<FitPreferenceResponse>>.Ok(result));
@@ -177,8 +208,8 @@ public static class ProfileEndpoints
 
     private static Guid? GetUserId(ClaimsPrincipal user)
     {
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? user.FindFirst("sub")?.Value;
+        var userIdClaim =
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {

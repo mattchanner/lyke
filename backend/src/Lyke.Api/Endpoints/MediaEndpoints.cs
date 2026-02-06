@@ -15,7 +15,8 @@ public static class MediaEndpoints
             .RequireAuthorization("CreatorOnly")
             .DisableAntiforgery();
 
-        group.MapPost("/upload", UploadMediaAsync)
+        group
+            .MapPost("/upload", UploadMediaAsync)
             .WithName("UploadMedia")
             .WithSummary("Upload a single media file (image or video)")
             .Accepts<IFormFile>("multipart/form-data")
@@ -23,7 +24,8 @@ public static class MediaEndpoints
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapPost("/upload/bulk", UploadMediaBulkAsync)
+        group
+            .MapPost("/upload/bulk", UploadMediaBulkAsync)
             .WithName("UploadMediaBulk")
             .WithSummary("Upload multiple media files (up to 10)")
             .Accepts<IFormFileCollection>("multipart/form-data")
@@ -31,14 +33,16 @@ public static class MediaEndpoints
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapDelete("/", DeleteMediaAsync)
+        group
+            .MapDelete("/", DeleteMediaAsync)
             .WithName("DeleteMedia")
             .WithSummary("Delete media files by their IDs")
             .Produces<ApiResponse>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
-        group.MapGet("/secure-url", GetSecureUrlAsync)
+        group
+            .MapGet("/secure-url", GetSecureUrlAsync)
             .WithName("GetSecureMediaUrl")
             .WithSummary("Get a time-limited secure URL for media access")
             .Produces<ApiResponse<string>>(StatusCodes.Status200OK)
@@ -52,10 +56,12 @@ public static class MediaEndpoints
         IFormFile file,
         ClaimsPrincipal user,
         IMediaService mediaService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         var result = await mediaService.UploadMediaAsync(userId.Value, file, cancellationToken);
         return Results.Ok(ApiResponse<MediaUploadResponse>.Ok(result));
@@ -65,12 +71,18 @@ public static class MediaEndpoints
         IFormFileCollection files,
         ClaimsPrincipal user,
         IMediaService mediaService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
-        var result = await mediaService.UploadMediaBulkAsync(userId.Value, files, cancellationToken);
+        var result = await mediaService.UploadMediaBulkAsync(
+            userId.Value,
+            files,
+            cancellationToken
+        );
         return Results.Ok(ApiResponse<BulkMediaUploadResponse>.Ok(result));
     }
 
@@ -78,10 +90,12 @@ public static class MediaEndpoints
         [FromBody] MediaDeleteRequest request,
         ClaimsPrincipal user,
         IMediaService mediaService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         await mediaService.DeleteMediaAsync(userId.Value, request.MediaIds, cancellationToken);
         return Results.Ok(ApiResponse.Ok());
@@ -91,10 +105,12 @@ public static class MediaEndpoints
         [FromQuery] string url,
         ClaimsPrincipal user,
         IMediaService mediaService,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var userId = GetUserId(user);
-        if (userId == null) return Results.Unauthorized();
+        if (userId == null)
+            return Results.Unauthorized();
 
         var secureUrl = await mediaService.GetSecureUrlAsync(url, cancellationToken);
         return Results.Ok(ApiResponse<string>.Ok(secureUrl));
@@ -102,8 +118,8 @@ public static class MediaEndpoints
 
     private static Guid? GetUserId(ClaimsPrincipal user)
     {
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? user.FindFirst("sub")?.Value;
+        var userIdClaim =
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
         {
