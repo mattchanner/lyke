@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.Configure<CommerceSettings>(configuration.GetSection(CommerceSettings.SectionName));
         services.Configure<CreatorSettings>(configuration.GetSection(CreatorSettings.SectionName));
         services.Configure<MediaUploadSettings>(configuration.GetSection(MediaUploadSettings.SectionName));
+        services.Configure<RetailerSettings>(configuration.GetSection(RetailerSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<ICreatorService, CreatorService>();
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IRetailerService, RetailerService>();
 
         return services;
     }

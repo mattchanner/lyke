@@ -1,7 +1,150 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/creator"></ion-back-button>
+    </ion-buttons>
     <ion-title>Analytics</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Analytics dashboard coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Date Range Selector -->
+  <div class="date-range-chips">
+    <ion-chip
+      [color]="dateRange() === '7d' ? 'primary' : 'medium'"
+      (click)="setDateRange('7d')"
+    >
+      <ion-label>7 Days</ion-label>
+    </ion-chip>
+    <ion-chip
+      [color]="dateRange() === '30d' ? 'primary' : 'medium'"
+      (click)="setDateRange('30d')"
+    >
+      <ion-label>30 Days</ion-label>
+    </ion-chip>
+    <ion-chip
+      [color]="dateRange() === '90d' ? 'primary' : 'medium'"
+      (click)="setDateRange('90d')"
+    >
+      <ion-label>90 Days</ion-label>
+    </ion-chip>
+  </div>
+
+  @if (isLoading() && !analytics()) {
+    <!-- Skeleton -->
+    <div class="stats-grid">
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" style="width: 50%; height: 24px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 70%; height: 12px; margin-top: 4px"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (analytics(); as a) {
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="eye-outline" color="primary"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalViews | number }}</div>
+          <div class="stat-label">Views</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="heart-outline" color="danger"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalLikes | number }}</div>
+          <div class="stat-label">Likes</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="bookmark-outline" color="tertiary"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalSaves | number }}</div>
+          <div class="stat-label">Saves</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="hand-left-outline" color="warning"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalClicks | number }}</div>
+          <div class="stat-label">Clicks</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card earnings-stat">
+        <ion-card-content>
+          <ion-icon name="cash-outline" color="success"></ion-icon>
+          <div class="stat-value">{{ a.summary.currency }}{{ a.summary.totalEarnings | number:'1.2-2' }}</div>
+          <div class="stat-label">Earnings</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Daily Metrics -->
+    @if (a.dailyMetrics.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="trending-up-outline"></ion-icon>
+            Daily Views
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="chart-container">
+            @for (day of a.dailyMetrics; track day.date) {
+              <div class="chart-row">
+                <span class="chart-date">{{ day.date | date:'M/d' }}</span>
+                <div class="chart-bar-container">
+                  <div class="chart-bar" [style.width.%]="getBarWidth(day.views)"></div>
+                </div>
+                <span class="chart-value">{{ day.views | number }}</span>
+              </div>
+            }
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Top Posts -->
+    @if (a.topPosts.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Top Posts</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="top-posts">
+          @for (post of a.topPosts; track post.postId; let i = $index) {
+            <div class="top-post-row" [routerLink]="'/creator/posts/' + post.postId + '/edit'">
+              <span class="rank">#{{ i + 1 }}</span>
+              @if (post.thumbnailUrl) {
+                <img [src]="post.thumbnailUrl" class="top-post-thumb" alt="Post thumbnail" />
+              } @else {
+                <div class="top-post-thumb placeholder"></div>
+              }
+              <div class="top-post-info">
+                <div class="top-post-title">{{ post.title || 'Untitled Post' }}</div>
+                <div class="top-post-metrics">
+                  <span><ion-icon name="eye-outline"></ion-icon> {{ post.views | number }}</span>
+                  <span><ion-icon name="heart-outline"></ion-icon> {{ post.likes | number }}</span>
+                  <span><ion-icon name="hand-left-outline"></ion-icon> {{ post.clicks | number }}</span>
+                </div>
+              </div>
+              <div class="top-post-earnings">{{ a.summary.currency }}{{ post.earnings | number:'1.2-2' }}</div>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+  } @else {
+    <div class="empty-state">
+      <ion-icon name="trending-up-outline" class="empty-icon"></ion-icon>
+      <h3>No analytics data yet</h3>
+      <p>Start creating content to see your analytics here.</p>
+    </div>
+  }
+</ion-content>

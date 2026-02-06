@@ -6,7 +6,160 @@
     <ion-title>Creator Dashboard</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Profile Summary Card -->
+  @if (isLoading() && !profile()) {
+    <ion-card>
+      <ion-card-header>
+        <ion-skeleton-text [animated]="true" style="width: 60%; height: 20px"></ion-skeleton-text>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-skeleton-text [animated]="true" style="width: 40%; height: 14px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 80%; height: 14px; margin-top: 8px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  } @else if (profile(); as p) {
+    <ion-card class="profile-card">
+      <ion-card-header>
+        <ion-card-title>
+          {{ p.displayName }}
+          @if (p.isVerified) {
+            <ion-icon name="shield-checkmark-outline" color="primary" class="verified-badge"></ion-icon>
+          }
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (p.bio) {
+          <p class="bio">{{ p.bio }}</p>
+        }
+        <div class="post-counts">
+          <span><strong>{{ p.publishedPosts }}</strong> Published</span>
+          <span><strong>{{ p.draftPosts }}</strong> Drafts</span>
+          <span><strong>{{ p.pendingReviewPosts }}</strong> Pending</span>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Quick Stats -->
+  @if (isLoading() && !analytics()) {
+    <div class="stats-row">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" style="width: 50%; height: 24px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 70%; height: 12px; margin-top: 4px"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (analytics(); as a) {
+    <div class="stats-row">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="eye-outline" color="primary"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalViews | number }}</div>
+          <div class="stat-label">Views</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="heart-outline" color="danger"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalLikes | number }}</div>
+          <div class="stat-label">Likes</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="hand-left-outline" color="tertiary"></ion-icon>
+          <div class="stat-value">{{ a.summary.totalClicks | number }}</div>
+          <div class="stat-label">Clicks</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="cash-outline" color="success"></ion-icon>
+          <div class="stat-value">{{ a.summary.currency }}{{ a.summary.totalEarnings | number:'1.2-2' }}</div>
+          <div class="stat-label">Earnings</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
+
+  <!-- Earnings Card -->
+  @if (earnings(); as e) {
+    <ion-card class="earnings-card">
+      <ion-card-header>
+        <ion-card-title>Earnings</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <div class="earnings-breakdown">
+          <div class="earnings-item">
+            <span class="label">Total</span>
+            <span class="value">{{ e.currency }}{{ e.totalEarnings | number:'1.2-2' }}</span>
+          </div>
+          <div class="earnings-item">
+            <span class="label">Pending</span>
+            <span class="value pending">{{ e.currency }}{{ e.pendingEarnings | number:'1.2-2' }}</span>
+          </div>
+          <div class="earnings-item">
+            <span class="label">Confirmed</span>
+            <span class="value confirmed">{{ e.currency }}{{ e.confirmedEarnings | number:'1.2-2' }}</span>
+          </div>
+        </div>
+        @if (e.eligibleForPayout) {
+          <ion-badge color="success" class="payout-badge">Eligible for Payout</ion-badge>
+        } @else {
+          <div class="payout-threshold">
+            <span>{{ e.currency }}{{ (e.minPayoutThreshold - e.confirmedEarnings) | number:'1.2-2' }} more to payout threshold</span>
+            <div class="threshold-bar">
+              <div class="threshold-fill" [style.width.%]="(e.confirmedEarnings / e.minPayoutThreshold) * 100"></div>
+            </div>
+          </div>
+        }
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Recent Posts -->
+  @if (recentPosts().length > 0) {
+    <div class="section-header">
+      <h3>Recent Posts</h3>
+      <a routerLink="/creator/posts">View All</a>
+    </div>
+    @for (post of recentPosts(); track post.id) {
+      <ion-card class="recent-post-card" [routerLink]="'/creator/posts/' + post.id + '/edit'">
+        <ion-card-content class="post-row">
+          @if (post.mediaUrls.length > 0) {
+            <img [src]="post.mediaUrls[0]" class="post-thumb" alt="Post thumbnail" />
+          } @else {
+            <div class="post-thumb placeholder"></div>
+          }
+          <div class="post-info">
+            <div class="post-title">{{ post.title || 'Untitled Post' }}</div>
+            <div class="post-meta">
+              <ion-badge [color]="getStatusColor(post.status)">{{ getStatusLabel(post.status) }}</ion-badge>
+              <span class="post-date">{{ post.createdAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+          <div class="post-stats">
+            <span>{{ post.engagements.views }} views</span>
+            <span>{{ post.engagements.likes }} likes</span>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+  }
+
+  <!-- Navigation Menu -->
+  <div class="section-header">
+    <h3>Manage</h3>
+  </div>
   <ion-list>
     <ion-item routerLink="/creator/posts" detail>
       <ion-icon name="images-outline" slot="start"></ion-icon>

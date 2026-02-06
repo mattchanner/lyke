@@ -5,7 +5,8 @@ namespace Lyke.Api.Workers;
 
 public class MigrateDatabaseBackgroundWorker(
     IServiceProvider provider,
-    ILogger<MigrateDatabaseBackgroundWorker> logger) : BackgroundService
+    ILogger<MigrateDatabaseBackgroundWorker> logger
+) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -13,8 +14,9 @@ public class MigrateDatabaseBackgroundWorker(
 
         LykeDbContext context = scope.ServiceProvider.GetRequiredService<LykeDbContext>();
 
-        IEnumerable<string> pendingMigrations = 
-            await context.Database.GetPendingMigrationsAsync(stoppingToken);
+        IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync(
+            stoppingToken
+        );
 
         if (pendingMigrations.Any())
         {

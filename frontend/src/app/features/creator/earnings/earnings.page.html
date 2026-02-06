@@ -1,7 +1,137 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/creator"></ion-back-button>
+    </ion-buttons>
     <ion-title>Earnings</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Earnings dashboard coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Summary Cards -->
+  @if (!summary()) {
+    <div class="summary-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <ion-card class="summary-card">
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" style="width: 60%; height: 24px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 40%; height: 12px; margin-top: 4px"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (summary(); as s) {
+    <div class="summary-grid">
+      <ion-card class="summary-card total">
+        <ion-card-content>
+          <div class="summary-value">{{ s.currency }}{{ s.totalEarnings | number:'1.2-2' }}</div>
+          <div class="summary-label">Total Earnings</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="summary-card">
+        <ion-card-content>
+          <div class="summary-value pending">{{ s.currency }}{{ s.pendingEarnings | number:'1.2-2' }}</div>
+          <div class="summary-label">Pending</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="summary-card">
+        <ion-card-content>
+          <div class="summary-value confirmed">{{ s.currency }}{{ s.confirmedEarnings | number:'1.2-2' }}</div>
+          <div class="summary-label">Confirmed</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="summary-card">
+        <ion-card-content>
+          <div class="summary-value paid">{{ s.currency }}{{ s.paidEarnings | number:'1.2-2' }}</div>
+          <div class="summary-label">Paid</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Payout Eligibility -->
+    <ion-card class="payout-card">
+      <ion-card-content>
+        @if (s.eligibleForPayout) {
+          <ion-badge color="success">Eligible for Payout</ion-badge>
+        } @else {
+          <div class="payout-progress">
+            <span class="payout-text">{{ s.currency }}{{ s.confirmedEarnings | number:'1.2-2' }} / {{ s.currency }}{{ s.minPayoutThreshold | number:'1.2-2' }} payout threshold</span>
+            <div class="threshold-bar">
+              <div class="threshold-fill" [style.width.%]="(s.confirmedEarnings / s.minPayoutThreshold) * 100"></div>
+            </div>
+          </div>
+        }
+      </ion-card-content>
+    </ion-card>
+  }
+
+  <!-- Filter Tabs -->
+  <ion-toolbar>
+    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($any($event).detail.value)">
+      <ion-segment-button value="all"><ion-label>All</ion-label></ion-segment-button>
+      <ion-segment-button value="pending"><ion-label>Pending</ion-label></ion-segment-button>
+      <ion-segment-button value="confirmed"><ion-label>Confirmed</ion-label></ion-segment-button>
+      <ion-segment-button value="paid"><ion-label>Paid</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+  <!-- Earnings History -->
+  @if (isLoading() && earnings().length === 0) {
+    <ion-list>
+      @for (i of [1, 2, 3, 4, 5]; track i) {
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text [animated]="true" style="width: 50%; height: 14px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 70%; height: 12px; margin-top: 4px"></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (!isLoading() && earnings().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="cash-outline" class="empty-icon"></ion-icon>
+      <h3>No earnings yet</h3>
+      <p>Start creating content to earn through affiliate links and sponsorships.</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (earning of earnings(); track earning.id) {
+        <ion-item class="earning-item">
+          <div class="earning-row">
+            <div class="earning-info">
+              <div class="earning-header">
+                <ion-badge [color]="getEarningTypeColor(earning.earningType)">
+                  <ion-icon [name]="earning.earningType === EarningType.Affiliate ? 'link-outline' : 'megaphone-outline'"></ion-icon>
+                  {{ getEarningTypeLabel(earning.earningType) }}
+                </ion-badge>
+                <ion-badge [color]="getStatusColor(earning.status)">{{ getStatusLabel(earning.status) }}</ion-badge>
+              </div>
+              @if (earning.postTitle) {
+                <div class="earning-post">{{ earning.postTitle }}</div>
+              }
+              <div class="earning-product">{{ earning.productName }}</div>
+              <div class="earning-date">{{ earning.createdAt | date:'mediumDate' }}</div>
+            </div>
+            <div class="earning-amount">
+              {{ earning.currency }}{{ earning.amount | number:'1.2-2' }}
+            </div>
+          </div>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll
+      (ionInfinite)="loadMore($event)"
+      [disabled]="!hasMore()"
+    >
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

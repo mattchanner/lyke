@@ -1,7 +1,102 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/creator"></ion-back-button>
+    </ion-buttons>
     <ion-title>My Posts</ion-title>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($any($event).detail.value)">
+      <ion-segment-button value="all"><ion-label>All</ion-label></ion-segment-button>
+      <ion-segment-button value="draft"><ion-label>Draft</ion-label></ion-segment-button>
+      <ion-segment-button value="pending"><ion-label>Pending</ion-label></ion-segment-button>
+      <ion-segment-button value="published"><ion-label>Published</ion-label></ion-segment-button>
+      <ion-segment-button value="rejected"><ion-label>Rejected</ion-label></ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Posts list coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && posts().length === 0) {
+    <div class="skeleton-list">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <ion-card>
+          <ion-card-content class="post-row">
+            <ion-skeleton-text [animated]="true" class="thumb-skeleton"></ion-skeleton-text>
+            <div class="info-skeleton">
+              <ion-skeleton-text [animated]="true" style="width: 70%; height: 16px"></ion-skeleton-text>
+              <ion-skeleton-text [animated]="true" style="width: 90%; height: 12px; margin-top: 6px"></ion-skeleton-text>
+              <ion-skeleton-text [animated]="true" style="width: 40%; height: 12px; margin-top: 6px"></ion-skeleton-text>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (!isLoading() && posts().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="create-outline" class="empty-icon"></ion-icon>
+      <h3>{{ getEmptyMessage() }}</h3>
+      <ion-button routerLink="/creator/posts/create" fill="outline">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Create Post
+      </ion-button>
+    </div>
+  } @else {
+    @for (post of posts(); track post.id) {
+      <ion-item-sliding>
+        <ion-item
+          [routerLink]="'/creator/posts/' + post.id + '/edit'"
+          detail
+          class="post-item"
+        >
+          <div class="post-row">
+            @if (post.mediaUrls.length > 0) {
+              <img [src]="post.mediaUrls[0]" class="post-thumb" alt="Post thumbnail" />
+            } @else {
+              <div class="post-thumb placeholder"></div>
+            }
+            <div class="post-info">
+              <div class="post-title">{{ post.title || 'Untitled Post' }}</div>
+              @if (post.description) {
+                <div class="post-desc">{{ post.description }}</div>
+              }
+              <div class="post-meta">
+                <ion-badge [color]="getStatusColor(post.status)">{{ getStatusLabel(post.status) }}</ion-badge>
+                <span class="meta-stats">
+                  <ion-icon name="eye-outline"></ion-icon> {{ post.engagements.views | number }}
+                  <ion-icon name="heart-outline"></ion-icon> {{ post.engagements.likes | number }}
+                </span>
+                <span class="post-date">{{ post.createdAt | date:'shortDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+        <ion-item-options side="end">
+          <ion-item-option color="danger" (click)="deletePost(post)">
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-item-option>
+        </ion-item-options>
+      </ion-item-sliding>
+    }
+
+    <ion-infinite-scroll
+      (ionInfinite)="loadMore($event)"
+      [disabled]="!hasMore()"
+    >
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/creator/posts/create">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

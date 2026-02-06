@@ -1,7 +1,130 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/creator"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/creator"></ion-back-button>
+    </ion-buttons>
     <ion-title>Verification</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Verification status coming soon...</p></ion-content>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <ion-card>
+      <ion-card-content>
+        <ion-skeleton-text [animated]="true" style="width: 40%; height: 20px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 80%; height: 14px; margin-top: 12px"></ion-skeleton-text>
+        <ion-skeleton-text [animated]="true" style="width: 60%; height: 14px; margin-top: 8px"></ion-skeleton-text>
+      </ion-card-content>
+    </ion-card>
+  } @else if (verification(); as v) {
+    <!-- Status Card -->
+    <ion-card class="status-card">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon
+            [name]="v.status === VerificationStatus.Approved ? 'shield-checkmark-outline' : v.status === VerificationStatus.Rejected ? 'close-circle-outline' : 'time-outline'"
+            [color]="getStatusColor(v.status)"
+          ></ion-icon>
+          Verification Status
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-badge [color]="getStatusColor(v.status)" class="status-badge">
+          {{ getStatusLabel(v.status) }}
+        </ion-badge>
+
+        @if (v.status === VerificationStatus.Pending && v.requestedAt) {
+          <p class="status-info">Submitted on {{ v.requestedAt | date:'mediumDate' }}. We'll review your application shortly.</p>
+        }
+
+        @if (v.status === VerificationStatus.Approved && v.reviewedAt) {
+          <p class="status-info">Approved on {{ v.reviewedAt | date:'mediumDate' }}. You are now a verified creator!</p>
+        }
+
+        @if (v.status === VerificationStatus.Rejected) {
+          @if (v.rejectionReason) {
+            <div class="rejection-reason">
+              <strong>Reason:</strong>
+              <p>{{ v.rejectionReason }}</p>
+            </div>
+          }
+          @if (v.reviewedAt) {
+            <p class="status-info">Reviewed on {{ v.reviewedAt | date:'mediumDate' }}</p>
+          }
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Submit Form (shown for NotSubmitted or Rejected) -->
+    @if (v.status === VerificationStatus.NotSubmitted || v.status === VerificationStatus.Rejected) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="document-text-outline"></ion-icon>
+            {{ v.status === VerificationStatus.Rejected ? 'Resubmit Verification' : 'Submit Verification' }}
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <p class="form-description">Please provide document URLs to verify your identity as a content creator.</p>
+
+          <ion-list>
+            @for (url of documentUrls(); track $index; let i = $index) {
+              <ion-item>
+                <ion-input
+                  label="Document URL"
+                  labelPlacement="stacked"
+                  placeholder="https://..."
+                  [value]="url"
+                  (ionInput)="updateDocumentUrl(i, $event.detail.value || '')"
+                  type="url"
+                ></ion-input>
+                @if (documentUrls().length > 1) {
+                  <ion-button fill="clear" slot="end" color="danger" (click)="removeDocumentUrl(i)">
+                    <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+                }
+              </ion-item>
+            }
+          </ion-list>
+
+          <ion-button fill="clear" size="small" (click)="addDocumentUrl()">
+            <ion-icon name="add-outline" slot="start"></ion-icon>
+            Add Another Document
+          </ion-button>
+
+          <ion-item class="notes-item">
+            <ion-textarea
+              label="Notes (optional)"
+              labelPlacement="stacked"
+              placeholder="Any additional information..."
+              [value]="notes()"
+              (ionInput)="notes.set($event.detail.value || '')"
+              [autoGrow]="true"
+              [rows]="3"
+            ></ion-textarea>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            class="submit-btn"
+            (click)="submitVerification()"
+            [disabled]="isSubmitting()"
+          >
+            @if (isSubmitting()) {
+              <ion-spinner name="crescent"></ion-spinner>
+            } @else {
+              Submit for Verification
+            }
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+    }
+  } @else {
+    <!-- Fallback: no verification data -->
+    <ion-card>
+      <ion-card-content>
+        <p>Unable to load verification status. Please try again later.</p>
+      </ion-card-content>
+    </ion-card>
+  }
+</ion-content>

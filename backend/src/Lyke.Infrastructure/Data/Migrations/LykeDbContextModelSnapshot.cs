@@ -59,7 +59,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("BodyTypeId", "HeightCm", "WeightKg")
                         .HasDatabaseName("IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg");
 
-                    b.ToTable("BodyProfiles");
+                    b.ToTable("BodyProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.BodyType", b =>
@@ -84,7 +84,7 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BodyTypes");
+                    b.ToTable("BodyTypes", (string)null);
 
                     b.HasData(
                         new
@@ -185,7 +185,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("PostId", "CreatedAt")
                         .HasDatabaseName("IX_ClickEvents_PostId_CreatedAt");
 
-                    b.ToTable("ClickEvents");
+                    b.ToTable("ClickEvents", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.Creator", b =>
@@ -256,7 +256,7 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasIndex("VerificationStatus");
 
-                    b.ToTable("Creators");
+                    b.ToTable("Creators", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.CreatorEarning", b =>
@@ -304,7 +304,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("CreatorId", "Status")
                         .HasDatabaseName("IX_CreatorEarnings_CreatorId_Status");
 
-                    b.ToTable("CreatorEarnings");
+                    b.ToTable("CreatorEarnings", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.Engagement", b =>
@@ -335,7 +335,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("UserId", "PostId", "Type")
                         .HasDatabaseName("IX_Engagements_UserId_PostId_Type");
 
-                    b.ToTable("Engagements");
+                    b.ToTable("Engagements", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.FitTag", b =>
@@ -360,7 +360,7 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FitTags");
+                    b.ToTable("FitTags", (string)null);
 
                     b.HasData(
                         new
@@ -511,7 +511,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("CreatorId", "Status", "PublishedAt")
                         .HasDatabaseName("IX_Posts_CreatorId_Status_PublishedAt");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.PostFitTag", b =>
@@ -526,7 +526,7 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasIndex("FitTagId");
 
-                    b.ToTable("PostFitTags");
+                    b.ToTable("PostFitTags", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.PostProduct", b =>
@@ -572,7 +572,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_PostProducts_PostId_ProductId");
 
-                    b.ToTable("PostProducts");
+                    b.ToTable("PostProducts", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.Product", b =>
@@ -645,7 +645,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("RetailerId", "Category", "IsActive")
                         .HasDatabaseName("IX_Products_RetailerId_Category_IsActive");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.RefreshToken", b =>
@@ -684,7 +684,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("UserId", "ExpiresAt")
                         .HasDatabaseName("IX_RefreshTokens_UserId_ExpiresAt");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.Retailer", b =>
@@ -731,7 +731,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("IX_Retailers_UserId");
 
-                    b.ToTable("Retailers");
+                    b.ToTable("Retailers", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.SponsoredPlacement", b =>
@@ -784,7 +784,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.HasIndex("IsActive", "StartDate", "EndDate")
                         .HasDatabaseName("IX_SponsoredPlacements_IsActive_Dates");
 
-                    b.ToTable("SponsoredPlacements");
+                    b.ToTable("SponsoredPlacements", (string)null);
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.User", b =>

@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json.Serialization;
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
 using Lyke.Api.Workers;
@@ -8,8 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
-using System.Text;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +25,9 @@ builder.Host.UseSerilog();
 // Aspire defaults
 builder.AddServiceDefaults();
 
-builder.Services.ConfigureHttpJsonOptions(
-    options => options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.ConfigureHttpJsonOptions(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
+);
 
 // Add services
 builder.Services.AddApplication(builder.Configuration);
@@ -65,25 +66,32 @@ builder
 builder.Services.AddAuthorization(options =>
 {
     // Role-based policies using user_type claim from JWT
-    options.AddPolicy("CreatorOnly", policy =>
-        policy.RequireClaim("user_type", "Creator"));
+    options.AddPolicy("CreatorOnly", policy => policy.RequireClaim("user_type", "Creator"));
 
-    options.AddPolicy("AdminOnly", policy =>
-        policy.RequireClaim("user_type", "Admin"));
+    options.AddPolicy("AdminOnly", policy => policy.RequireClaim("user_type", "Admin"));
 
-    options.AddPolicy("RetailerOnly", policy =>
-        policy.RequireClaim("user_type", "Retailer"));
+    options.AddPolicy("RetailerOnly", policy => policy.RequireClaim("user_type", "Retailer"));
 
     // Combined policies for flexibility
-    options.AddPolicy("CreatorOrAdmin", policy =>
-        policy.RequireAssertion(context =>
-            context.User.HasClaim(c => c.Type == "user_type" &&
-                (c.Value == "Creator" || c.Value == "Admin"))));
+    options.AddPolicy(
+        "CreatorOrAdmin",
+        policy =>
+            policy.RequireAssertion(context =>
+                context.User.HasClaim(c =>
+                    c.Type == "user_type" && (c.Value == "Creator" || c.Value == "Admin")
+                )
+            )
+    );
 
-    options.AddPolicy("RetailerOrAdmin", policy =>
-        policy.RequireAssertion(context =>
-            context.User.HasClaim(c => c.Type == "user_type" &&
-                (c.Value == "Retailer" || c.Value == "Admin"))));
+    options.AddPolicy(
+        "RetailerOrAdmin",
+        policy =>
+            policy.RequireAssertion(context =>
+                context.User.HasClaim(c =>
+                    c.Type == "user_type" && (c.Value == "Retailer" || c.Value == "Admin")
+                )
+            )
+    );
 });
 
 // Controllers
@@ -158,6 +166,7 @@ app.MapCommerceEndpoints();
 app.MapCreatorEndpoints();
 app.MapMediaEndpoints();
 app.MapAdminEndpoints();
+app.MapRetailerEndpoints();
 
 app.Run();
 

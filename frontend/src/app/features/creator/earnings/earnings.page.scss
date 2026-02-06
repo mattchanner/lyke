@@ -1,0 +1,150 @@
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 8px;
+}
+
+.summary-card {
+  margin: 0;
+
+  &.total {
+    grid-column: 1 / -1;
+  }
+
+  ion-card-content {
+    text-align: center;
+    padding: 12px;
+  }
+
+  .summary-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+
+    &.pending { color: var(--ion-color-warning-shade); }
+    &.confirmed { color: var(--ion-color-success-shade); }
+    &.paid { color: var(--ion-color-primary); }
+  }
+
+  .summary-label {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    margin-top: 2px;
+  }
+}
+
+.payout-card {
+  ion-card-content {
+    text-align: center;
+  }
+
+  .payout-progress {
+    .payout-text {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium);
+    }
+
+    .threshold-bar {
+      height: 8px;
+      background: var(--ion-color-light);
+      border-radius: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .threshold-fill {
+      height: 100%;
+      background: var(--ion-color-primary);
+      border-radius: 4px;
+      max-width: 100%;
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+.earning-item {
+  --padding-start: 12px;
+  --padding-end: 12px;
+}
+
+.earning-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 0;
+  gap: 12px;
+}
+
+.earning-info {
+  flex: 1;
+  min-width: 0;
+
+  .earning-header {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+
+    ion-badge {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+
+      ion-icon {
+        font-size: 0.75rem;
+      }
+    }
+  }
+
+  .earning-post {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .earning-product {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+
+  .earning-date {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+    margin-top: 2px;
+  }
+}
+
+.earning-amount {
+  font-weight: 700;
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 40vh;
+  padding: 2rem;
+  text-align: center;
+
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.9rem;
+  }
+}
