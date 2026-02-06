@@ -1,0 +1,81 @@
+<ion-modal
+  [isOpen]="isOpen()"
+  (didPresent)="onModalPresented()"
+  (didDismiss)="close()"
+  [initialBreakpoint]="0.75"
+  [breakpoints]="[0, 0.5, 0.75, 1]"
+>
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="close()">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Filters</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="reset()" fill="clear" size="small">Reset</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <div class="filter-section">
+        <h3 class="section-title">Category</h3>
+        <div class="chip-list">
+          @for (category of categories; track category) {
+            <ion-chip
+              [color]="selectedCategory() === category ? 'primary' : 'medium'"
+              (click)="toggleCategory(category)"
+            >
+              <ion-label>{{ category }}</ion-label>
+            </ion-chip>
+          }
+        </div>
+      </div>
+
+      @if (retailers().length > 0) {
+        <div class="filter-section">
+          <h3 class="section-title">Retailer</h3>
+          <div class="chip-list">
+            @for (retailer of retailers(); track retailer.id) {
+              <ion-chip
+                [color]="selectedRetailerId() === retailer.id ? 'primary' : 'medium'"
+                (click)="toggleRetailer(retailer.id)"
+              >
+                <ion-label>{{ retailer.name }}</ion-label>
+              </ion-chip>
+            }
+          </div>
+        </div>
+      }
+
+      @for (group of fitTagGroups(); track group.category) {
+        <div class="filter-section">
+          <h3 class="section-title">{{ group.category }}</h3>
+          <div class="chip-list">
+            @for (tag of group.tags; track tag.id) {
+              <ion-chip
+                [color]="isFitTagSelected(tag.id) ? 'primary' : 'medium'"
+                (click)="toggleFitTag(tag.id)"
+              >
+                <ion-label>{{ tag.name }}</ion-label>
+              </ion-chip>
+            }
+          </div>
+        </div>
+      }
+    </ion-content>
+
+    <ion-footer class="ion-padding">
+      <ion-button expand="block" (click)="apply()">
+        @if (activeCount() > 0) {
+          Apply Filters ({{ activeCount() }})
+        } @else {
+          Apply Filters
+        }
+      </ion-button>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

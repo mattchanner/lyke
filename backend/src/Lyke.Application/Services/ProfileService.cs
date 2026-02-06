@@ -1,3 +1,4 @@
+using Lyke.Application.DTOs.Feed;
 using Lyke.Application.DTOs.Profile;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
@@ -247,6 +248,24 @@ public class ProfileService : IProfileService
         };
 
         return Task.FromResult<IReadOnlyList<FitPreferenceResponse>>(preferences);
+    }
+
+    public async Task<IReadOnlyList<FitTagResponse>> GetFitTagsAsync(CancellationToken cancellationToken = default)
+    {
+        var fitTags = _dbContext.Set<FitTag>();
+
+        var tags = await fitTags
+            .Where(ft => ft.IsActive)
+            .OrderBy(ft => ft.Category)
+            .ThenBy(ft => ft.Name)
+            .Select(ft => new FitTagResponse(
+                ft.Id,
+                ft.Name,
+                ft.Category
+            ))
+            .ToListAsync(cancellationToken);
+
+        return tags;
     }
 
     private static BodyProfileResponse MapToBodyProfileResponse(BodyProfile profile)

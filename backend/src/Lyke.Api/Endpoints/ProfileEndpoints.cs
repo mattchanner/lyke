@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Lyke.Application.DTOs;
+using Lyke.Application.DTOs.Feed;
 using Lyke.Application.DTOs.Profile;
 using Lyke.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -79,6 +80,13 @@ public static class ProfileEndpoints
             .WithName("GetFitPreferences")
             .WithSummary("Get available fit preferences")
             .Produces<ApiResponse<IReadOnlyList<FitPreferenceResponse>>>(StatusCodes.Status200OK)
+            .AllowAnonymous();
+
+        group
+            .MapGet("/fit-tags", GetFitTagsAsync)
+            .WithName("GetFitTags")
+            .WithSummary("Get available fit tags")
+            .Produces<ApiResponse<IReadOnlyList<FitTagResponse>>>(StatusCodes.Status200OK)
             .AllowAnonymous();
 
         return app;
@@ -204,6 +212,15 @@ public static class ProfileEndpoints
     {
         var result = await profileService.GetFitPreferencesAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<FitPreferenceResponse>>.Ok(result));
+    }
+
+    private static async Task<IResult> GetFitTagsAsync(
+        IProfileService profileService,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await profileService.GetFitTagsAsync(cancellationToken);
+        return Results.Ok(ApiResponse<IReadOnlyList<FitTagResponse>>.Ok(result));
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)

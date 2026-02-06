@@ -34,9 +34,48 @@
       >
         <ion-label>Popular</ion-label>
       </ion-chip>
+
+      <ion-button fill="clear" size="small" (click)="openFilter()" class="filter-button">
+        <ion-icon name="filter-outline" slot="icon-only"></ion-icon>
+        @if (activeFilterCount() > 0) {
+          <ion-badge color="primary">{{ activeFilterCount() }}</ion-badge>
+        }
+      </ion-button>
     </div>
   </ion-toolbar>
+
+  @if (activeFilterCount() > 0) {
+    <ion-toolbar class="active-filters-toolbar">
+      <div class="active-filter-chips">
+        @if (filterCategory()) {
+          <ion-chip color="primary" (click)="removeCategory()">
+            <ion-label>{{ filterCategory() }}</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        }
+        @if (filterRetailerId()) {
+          <ion-chip color="primary" (click)="removeRetailer()">
+            <ion-label>Retailer</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        }
+        @for (tagId of filterFitTagIds(); track tagId) {
+          <ion-chip color="primary" (click)="removeFitTag(tagId)">
+            <ion-label>Fit Tag</ion-label>
+            <ion-icon name="close-circle"></ion-icon>
+          </ion-chip>
+        }
+      </div>
+    </ion-toolbar>
+  }
 </ion-header>
+
+<app-feed-filter-modal
+  [isOpen]="isFilterOpen()"
+  [currentFilters]="currentFilters()"
+  (filtersChanged)="onFiltersChanged($event)"
+  (dismissed)="closeFilter()"
+></app-feed-filter-modal>
 
 <ion-content>
   <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">

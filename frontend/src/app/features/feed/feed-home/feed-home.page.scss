@@ -1,11 +1,45 @@
 .sort-chips {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   padding: 0 1rem;
   overflow-x: auto;
 
   ion-chip {
     flex-shrink: 0;
+  }
+}
+
+.filter-button {
+  position: relative;
+  margin-left: auto;
+  flex-shrink: 0;
+
+  ion-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.625rem;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+  }
+}
+
+.active-filters-toolbar {
+  --min-height: 40px;
+}
+
+.active-filter-chips {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 1rem;
+  overflow-x: auto;
+
+  ion-chip {
+    flex-shrink: 0;
+    --background: var(--ion-color-primary);
+    --color: var(--ion-color-primary-contrast);
   }
 }
 
