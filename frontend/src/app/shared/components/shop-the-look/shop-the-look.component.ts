@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { IonBadge } from '@ionic/angular/standalone';
 import { PostProductDetailResponse } from '../../../models';
-import { ProductCardComponent } from '../product-card/product-card.component';
+import { ProductCardComponent } from '../product-card';
 
 @Component({
   selector: 'app-shop-the-look',

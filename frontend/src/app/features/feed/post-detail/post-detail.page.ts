@@ -25,7 +25,7 @@ import {
 import { ApiService, ToastService } from '../../../core';
 import { PostDetailResponse, EngagementType } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
-import { ShopTheLookComponent } from '../../../shared/components/shop-the-look/shop-the-look.component';
+import { ShopTheLookComponent } from '../../../shared/components/shop-the-look';
 
 @Component({
   selector: 'app-post-detail',
