@@ -48,7 +48,7 @@
     @if (post.products.length > 0) {
       <div class="products-preview">
         @for (product of post.products.slice(0, 2); track product.id) {
-          <ion-chip>
+          <ion-chip (click)="onProductTap($event, product)">
             <ion-label>{{ product.productName }} · {{ product.sizeWorn }}</ion-label>
           </ion-chip>
         }

@@ -75,59 +75,10 @@
           </div>
         }
 
-        <h3>Products in this outfit</h3>
-        @for (product of post()!.products; track product.id) {
-          <ion-card>
-            <ion-card-content>
-              <div class="product-row">
-                @if (product.productImageUrls.length > 0) {
-                  <img
-                    [src]="product.productImageUrls[0]"
-                    [alt]="product.productName"
-                    class="product-image"
-                  />
-                }
-                <div class="product-info">
-                  <span class="product-name">{{ product.productName }}</span>
-                  <span class="product-retailer">{{ product.retailerName }}</span>
-                  <span class="product-price">
-                    {{ product.currency }} {{ product.price.toFixed(2) }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="fit-info">
-                <ion-chip>
-                  <ion-label>Size worn: {{ product.sizeWorn }}</ion-label>
-                </ion-chip>
-                @if (product.fitRating !== null) {
-                  <ion-chip [color]="getFitRatingColor(product.fitRating)">
-                    <ion-label>{{ getFitRatingLabel(product.fitRating) }}</ion-label>
-                  </ion-chip>
-                }
-              </div>
-
-              @if (product.fitNotes) {
-                <p class="fit-notes">"{{ product.fitNotes }}"</p>
-              }
-
-              @if (product.fitTags.length > 0) {
-                <div class="fit-tags">
-                  @for (tag of product.fitTags; track tag.id) {
-                    <ion-chip size="small">
-                      <ion-label>{{ tag.name }}</ion-label>
-                    </ion-chip>
-                  }
-                </div>
-              }
-
-              <ion-button expand="block" (click)="shopProduct(product.productUrl)">
-                <ion-icon name="cart-outline" slot="start"></ion-icon>
-                Shop Now
-              </ion-button>
-            </ion-card-content>
-          </ion-card>
-        }
+        <app-shop-the-look
+          [products]="post()!.products"
+          [postId]="post()!.id"
+        ></app-shop-the-look>
       </div>
     </div>
   }

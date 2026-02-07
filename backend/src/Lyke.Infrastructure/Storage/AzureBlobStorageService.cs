@@ -16,15 +16,25 @@ public class AzureBlobStorageService : IStorageService
     private readonly ILogger<AzureBlobStorageService> _logger;
 
     public AzureBlobStorageService(
-        IOptions<AzureBlobSettings> settings,
+        AzureBlobSettings settings,
         ILogger<AzureBlobStorageService> logger
     )
     {
-        _settings = settings.Value;
+        _settings = settings;
         _logger = logger;
 
+        _logger.LogInformation("Using connection string {String}", _settings.ConnectionString);
+        _logger.LogInformation("Using container {String}", _settings.ContainerName);
+
+        _logger.LogInformation("Constructing client");
+
         var blobServiceClient = new BlobServiceClient(_settings.ConnectionString);
+
+        _logger.LogInformation("Blob Service Client constructed");
+
         _containerClient = blobServiceClient.GetBlobContainerClient(_settings.ContainerName);
+
+        _logger.LogInformation("Container client constructed");
     }
 
     public async Task<StorageUploadResult> UploadAsync(
@@ -34,7 +44,11 @@ public class AzureBlobStorageService : IStorageService
         CancellationToken cancellationToken = default
     )
     {
+        _logger.LogInformation("Getting blob client for {Path}", blobPath);
+
         var blobClient = _containerClient.GetBlobClient(blobPath);
+
+        _logger.LogInformation("Creating container if it doesn't exist: {Container}", _containerClient.Name);
 
         await _containerClient.CreateIfNotExistsAsync(
             PublicAccessType.None,
@@ -45,6 +59,8 @@ public class AzureBlobStorageService : IStorageService
         {
             HttpHeaders = new BlobHttpHeaders { ContentType = contentType },
         };
+
+        _logger.LogInformation("Uploading blob");
 
         content.Position = 0;
         await blobClient.UploadAsync(content, options, cancellationToken);

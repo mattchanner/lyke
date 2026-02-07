@@ -38,9 +38,12 @@ public class MediaService : IMediaService
         IFormFile file,
         CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Upload media called with file {FileName}", file.FileName);
+
         var validation = _validator.Validate(file);
         if (!validation.IsValid)
         {
+            _logger.LogWarning("Invalid file detected for file {FileName}", file.FileName);
             throw new InvalidOperationException($"{validation.ErrorCode}: {validation.ErrorMessage}");
         }
 
@@ -49,15 +52,19 @@ public class MediaService : IMediaService
         var contentType = file.ContentType.ToLowerInvariant();
         var isVideo = _validator.IsVideo(contentType);
 
+        _logger.LogDebug("Reading file into memory");
+
         using var inputStream = new MemoryStream();
         await file.CopyToAsync(inputStream, cancellationToken);
         inputStream.Position = 0;
 
         if (isVideo)
         {
+            _logger.LogDebug("Video processing...");
             return await ProcessVideoUploadAsync(userId, mediaId, basePath, inputStream, contentType, cancellationToken);
         }
 
+        _logger.LogDebug("Image processing...");
         return await ProcessImageUploadAsync(userId, mediaId, basePath, inputStream, contentType, cancellationToken);
     }
 
@@ -160,11 +167,16 @@ public class MediaService : IMediaService
     {
         var extension = GetExtensionFromContentType(contentType);
 
+        _logger.LogDebug("File extension from content type {ContentType} is {Extension}", contentType, extension);
+
         // Get original dimensions
         var dimensions = await _imageProcessingService.GetImageDimensionsAsync(inputStream, cancellationToken);
 
         // Upload original
         inputStream.Position = 0;
+
+
+        _logger.LogDebug("Uploading file to storage");
         var originalResult = await _storageService.UploadAsync(
             inputStream,
             $"{basePath}_original{extension}",
@@ -173,6 +185,8 @@ public class MediaService : IMediaService
 
         // Process and upload standard size
         inputStream.Position = 0;
+
+        _logger.LogDebug("Processing image");
         var processed = await _imageProcessingService.ProcessImageAsync(
             inputStream,
             _settings.StandardWidth,
@@ -180,6 +194,7 @@ public class MediaService : IMediaService
             _settings.ImageQuality,
             cancellationToken);
 
+        _logger.LogDebug("Uploading webp file");
         var standardResult = await _storageService.UploadAsync(
             processed.Content,
             $"{basePath}_standard.webp",
@@ -188,12 +203,15 @@ public class MediaService : IMediaService
 
         // Create and upload thumbnail
         inputStream.Position = 0;
+
+        _logger.LogDebug("Creating image thumbnail");
         var thumbnail = await _imageProcessingService.CreateThumbnailAsync(
             inputStream,
             _settings.ThumbnailWidth,
             _settings.ThumbnailHeight,
             cancellationToken);
 
+        _logger.LogDebug("Uploading thumbnail");
         var thumbnailResult = await _storageService.UploadAsync(
             thumbnail.Content,
             $"{basePath}_thumb.jpg",

@@ -53,8 +53,8 @@ public static class MediaEndpoints
     }
 
     private static async Task<IResult> UploadMediaAsync(
-        IFormFile file,
-        [FromServices] ClaimsPrincipal user,
+        [FromForm] IFormFile files,
+        ClaimsPrincipal user,
         [FromServices] IMediaService mediaService,
         CancellationToken cancellationToken
     )
@@ -63,12 +63,12 @@ public static class MediaEndpoints
         if (userId == null)
             return Results.Unauthorized();
 
-        var result = await mediaService.UploadMediaAsync(userId.Value, file, cancellationToken);
+        var result = await mediaService.UploadMediaAsync(userId.Value, files, cancellationToken);
         return Results.Ok(ApiResponse<MediaUploadResponse>.Ok(result));
     }
 
     private static async Task<IResult> UploadMediaBulkAsync(
-        IFormFileCollection files,
+        [FromForm] IFormFileCollection files,
         ClaimsPrincipal user,
         IMediaService mediaService,
         CancellationToken cancellationToken

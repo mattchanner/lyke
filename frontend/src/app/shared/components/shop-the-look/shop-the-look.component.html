@@ -1,0 +1,11 @@
+<div class="shop-the-look-header">
+  <h3>Shop the Look</h3>
+  <ion-badge color="primary">{{ products.length }}</ion-badge>
+</div>
+
+@for (product of products; track product.id) {
+  <app-product-card
+    [product]="product"
+    [postId]="postId"
+  ></app-product-card>
+}

@@ -4,14 +4,25 @@ var postgres = builder.AddPostgres("postgres")
     .WithDataVolume()
     .WithPgAdmin(x => x.WithHostPort(56652));
 
-var storage = builder.AddAzureStorage("azure-storage").RunAsEmulator().AddBlobContainer("media");
+var storage = builder.AddAzureStorage("storage")
+  .RunAsEmulator(azurite =>
+  {
+      azurite.WithBlobPort(27000)
+             .WithQueuePort(27001)
+             .WithTablePort(27002);
+
+      azurite.WithLifetime(ContainerLifetime.Persistent);
+      azurite.WithDataVolume();
+  });
+
+var blob = storage.AddBlobContainer("media");
 
 var postgresDb = postgres.AddDatabase("postgresdb");
 
 builder.AddProject<Projects.Lyke_Api>("lyke-api")
     .WaitFor(postgresDb)
     .WithReference(postgresDb, connectionName: "DefaultConnection")
-    .WaitFor(storage)
-    .WithReference(storage, connectionName: "AzureBlob:ConnectionString");
+    .WaitFor(blob)
+    .WithReference(blob, connectionName: "AzureStorage");
 
 builder.Build().Run();

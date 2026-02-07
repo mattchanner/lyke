@@ -58,9 +58,29 @@ public static class DependencyInjection
     )
     {
         // Configuration
-        services.Configure<AzureBlobSettings>(
-            configuration.GetSection(AzureBlobSettings.SectionName)
-        );
+        // Aspire appends ";ContainerName=..." to the connection string which
+        // BlobServiceClient doesn't understand — strip it out and use it separately.
+        var rawConnectionString = configuration.GetConnectionString("AzureStorage")!;
+        var containerName = configuration.GetSection(AzureBlobSettings.SectionName)
+            .GetValue("ContainerName", "media");
+
+        var parts = rawConnectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
+        var connStringParts = new List<string>();
+        foreach (var part in parts)
+        {
+            if (part.StartsWith("ContainerName=", StringComparison.OrdinalIgnoreCase))
+                containerName = part["ContainerName=".Length..];
+            else
+                connStringParts.Add(part);
+        }
+
+        AzureBlobSettings blobSettings = new()
+        {
+            ConnectionString = string.Join(';', connStringParts),
+            ContainerName = containerName
+        };
+
+        services.AddSingleton(blobSettings);
 
         // Services
         services.AddSingleton<IStorageService, AzureBlobStorageService>();

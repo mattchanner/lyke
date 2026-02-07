@@ -11,10 +11,6 @@ import {
   IonSpinner,
   IonButton,
   IonIcon,
-  IonCard,
-  IonCardContent,
-  IonChip,
-  IonLabel,
   IonAvatar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -25,11 +21,11 @@ import {
   bookmark,
   shareSocialOutline,
   checkmarkCircle,
-  cartOutline,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { PostDetailResponse, EngagementType, FitRating } from '../../../models';
+import { PostDetailResponse, EngagementType } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
+import { ShopTheLookComponent } from '../../../shared/components/shop-the-look/shop-the-look.component';
 
 @Component({
   selector: 'app-post-detail',
@@ -46,12 +42,9 @@ import { SkeletonPostDetailComponent } from '../../../shared/components/loading-
     IonSpinner,
     IonButton,
     IonIcon,
-    IonCard,
-    IonCardContent,
-    IonChip,
-    IonLabel,
     IonAvatar,
     SkeletonPostDetailComponent,
+    ShopTheLookComponent,
   ],
   templateUrl: './post-detail.page.html',
   styleUrls: ['./post-detail.page.scss'],
@@ -72,7 +65,6 @@ export class PostDetailPage implements OnInit {
       bookmark,
       shareSocialOutline,
       checkmarkCircle,
-      cartOutline,
     });
   }
 
@@ -165,25 +157,4 @@ export class PostDetailPage implements OnInit {
     }
   }
 
-  getFitRatingLabel(rating: FitRating): string {
-    const labels: Record<FitRating, string> = {
-      [FitRating.TooSmall]: 'Too Small',
-      [FitRating.SlightlySmall]: 'Slightly Small',
-      [FitRating.TrueToSize]: 'True to Size',
-      [FitRating.SlightlyLarge]: 'Slightly Large',
-      [FitRating.TooLarge]: 'Too Large',
-    };
-    return labels[rating];
-  }
-
-  getFitRatingColor(rating: FitRating): string {
-    if (rating === FitRating.TrueToSize) return 'success';
-    if (rating === FitRating.SlightlySmall || rating === FitRating.SlightlyLarge)
-      return 'warning';
-    return 'danger';
-  }
-
-  shopProduct(url: string): void {
-    window.open(url, '_blank');
-  }
 }

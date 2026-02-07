@@ -24,7 +24,7 @@ import {
   eyeOutline,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { FeedPostResponse, EngagementType } from '../../../models';
+import { FeedPostResponse, PostProductSummaryResponse, EngagementType } from '../../../models';
 
 @Component({
   selector: 'app-post-card',
@@ -53,6 +53,7 @@ export class PostCardComponent {
   @Input({ required: true }) post!: FeedPostResponse;
   @Output() liked = new EventEmitter<{ postId: string; liked: boolean }>();
   @Output() saved = new EventEmitter<{ postId: string; saved: boolean }>();
+  @Output() productTapped = new EventEmitter<{ postId: string; product: PostProductSummaryResponse }>();
 
   constructor() {
     addIcons({
@@ -115,6 +116,12 @@ export class PostCardComponent {
           this.toast.error('Failed to save post');
         },
       });
+  }
+
+  onProductTap(event: Event, product: PostProductSummaryResponse): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.productTapped.emit({ postId: this.post.id, product });
   }
 
   share(event: Event): void {

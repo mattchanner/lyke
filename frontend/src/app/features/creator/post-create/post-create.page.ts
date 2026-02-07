@@ -191,11 +191,11 @@ export class PostCreatePage {
     this.uploadProgress.set(0);
 
     this.apiService
-      .uploadFile<MediaUploadResponse[]>('media', 'upload', formData)
+      .uploadFile<MediaUploadResponse>('media', 'upload', formData)
       .subscribe({
         next: (r) => {
           if (r.success && r.data) {
-            this.uploadedMedia.update((current) => [...current, ...r.data!]);
+            this.uploadedMedia.update((current) => [...current, r.data!]);
             this.toast.success('Media uploaded successfully');
           } else {
             this.toast.error(r.error?.message || 'Upload failed');
