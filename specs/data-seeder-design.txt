@@ -1,0 +1,84 @@
+DataSeeder Design                                                                                                    │
+│                                                                                                                      │
+│ Class: DataSeeder with a static SeedAsync(IServiceProvider) method.                                                  │
+│                                                                                                                      │
+│ Uses a scoped UserManager<User> for user creation, and LykeDbContext for everything else. Idempotent — skips if any  │
+│ Creator already exists.                                                                                              │
+│                                                                                                                      │
+│ Seed data volume (enough for realistic UI, not overwhelming)                                                         │
+│ ┌──────────────────┬───────┬────────────────────────────────────┐                                                    │
+│ │      Entity      │ Count │               Notes                │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Users (Shopper)  │ 5     │ For engagement data                │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Users (Creator)  │ 4     │ Content producers                  │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Users (Retailer) │ 3     │ One per retailer                   │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Users (Admin)    │ 1     │ For moderation                     │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ BodyProfiles     │ 9     │ One per non-admin user             │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Creators         │ 4     │ Linked to creator users            │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Retailers        │ 3     │ Zara, H&M, ASOS style              │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Products         │ 18    │ ~6 per retailer, across categories │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Posts            │ 12    │ 3 per creator, all Published       │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ PostProducts     │ 24    │ ~2 products per post               │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ PostFitTags      │ ~36   │ ~1-2 tags per post-product         │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ Engagements      │ ~80   │ Likes, saves, views across posts   │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ ClickEvents      │ 20    │ Spread across post-products        │                                                    │
+│ ├──────────────────┼───────┼────────────────────────────────────┤                                                    │
+│ │ CreatorEarnings  │ 12    │ Mix of pending/confirmed/paid      │                                                    │
+│ └──────────────────┴───────┴────────────────────────────────────┘                                                    │
+│ Seed order (respects FK constraints)                                                                                 │
+│                                                                                                                      │
+│ 1. Users (admin, shoppers, creators, retailers) — via UserManager                                                    │
+│ 2. BodyProfiles                                                                                                      │
+│ 3. Creators                                                                                                          │
+│ 4. Retailers                                                                                                         │
+│ 5. Products                                                                                                          │
+│ 6. Posts (Status = Published, PublishedAt set)                                                                       │
+│ 7. PostProducts                                                                                                      │
+│ 8. PostFitTags                                                                                                       │
+│ 9. Engagements                                                                                                       │
+│ 10. ClickEvents                                                                                                      │
+│ 11. CreatorEarnings                                                                                                  │
+│                                                                                                                      │
+│ Deterministic GUIDs                                                                                                  │
+│                                                                                                                      │
+│ Use Guid.Parse("00000000-0000-0000-0000-00000000XXXX") pattern for all IDs so relationships are clear and the seeder │
+│  is idempotent.                                                                                                      │
+│                                                                                                                      │
+│ Password                                                                                                             │
+│                                                                                                                      │
+│ All seed users get password Test1234 (meets policy: 8+ chars, digit, upper, lower, no special required).             │
+│                                                                                                                      │
+│ Image URLs                                                                                                           │
+│                                                                                                                      │
+│ Use https://picsum.photos/seed/{name}/400/500 for post media and product images — provides deterministic placeholder │
+│  images without needing blob storage.                                                                                │
+│                                                                                                                      │
+│ Program.cs change                                                                                                    │
+│                                                                                                                      │
+│ // After app.Build(), before app.Run():                                                                              │
+│ if (app.Environment.IsDevelopment())                                                                                 │
+│ {                                                                                                                    │
+│     await DataSeeder.SeedAsync(app.Services);                                                                        │
+│ }                                                                                                                    │
+│                                                                                                                      │
+│ This requires changing app.Run() to await app.RunAsync() (minor — already async context).                            │
+│                                                                                                                      │
+│ Verification                                                                                                         │
+│                                                                                                                      │
+│ 1. dotnet build Lyke.slnx — compiles                                                                                 │
+│ 2. Run the API (dotnet run --project src/Lyke.Api) — seeder populates DB                                             │
+│ 3. Hit GET /api/feed/v1/explore — returns posts with products, creators, engagement counts                           │
+│ 4. Hit GET /api/feed/v1/{postId} — returns full post detail with shop-the-look products                              │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯

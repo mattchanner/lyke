@@ -5,6 +5,7 @@ using Lyke.Api.Middleware;
 using Lyke.Api.Workers;
 using Lyke.Application;
 using Lyke.Infrastructure;
+using Lyke.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
@@ -125,6 +126,12 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
+// Seed development data
+if (app.Environment.IsDevelopment())
+{
+    await DataSeeder.SeedAsync(app.Services);
+}
+
 // Configure pipeline
 if (app.Environment.IsDevelopment())
 {
@@ -168,7 +175,7 @@ app.MapMediaEndpoints();
 app.MapAdminEndpoints();
 app.MapRetailerEndpoints();
 
-app.Run();
+await app.RunAsync();
 
 // Make Program class accessible for integration tests
 public partial class Program { }
