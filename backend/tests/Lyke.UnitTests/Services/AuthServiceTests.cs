@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs.Auth;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -19,6 +20,7 @@ public class AuthServiceTests : IDisposable
     private readonly LykeDbContext _context;
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IOptions<JwtSettings> _jwtSettings;
+    private readonly Mock<ISocialTokenValidator> _socialTokenValidatorMock;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly AuthService _sut;
 
@@ -34,12 +36,14 @@ public class AuthServiceTests : IDisposable
             ExpiryMinutes = 60,
             RefreshTokenExpiryDays = 30
         });
+        _socialTokenValidatorMock = new Mock<ISocialTokenValidator>();
         _loggerMock = new Mock<ILogger<AuthService>>();
 
         _sut = new AuthService(
             _userManagerMock.Object,
             _context,
             _jwtSettings,
+            _socialTokenValidatorMock.Object,
             _loggerMock.Object);
     }
 

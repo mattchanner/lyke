@@ -8,6 +8,7 @@ using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -164,7 +165,7 @@ public class CommerceService : ICommerceService
         IReadOnlyList<ProductResponse> Products,
         PaginationMeta Meta
     )> SearchProductsAsync(
-        ProductSearchRequest request,
+        [AsParameters] ProductSearchRequest request,
         CancellationToken cancellationToken = default
     )
     {

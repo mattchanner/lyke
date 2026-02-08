@@ -16,8 +16,8 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline } from 'ionicons/icons';
-import { AuthService, ToastService } from '../../../core';
+import { eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline, logoGoogle, logoApple } from 'ionicons/icons';
+import { AuthService, ToastService, SocialAuthService } from '../../../core';
 import { LoginRequest } from '../../../models';
 
 @Component({
@@ -45,10 +45,12 @@ import { LoginRequest } from '../../../models';
 export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly socialAuth = inject(SocialAuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
   readonly isLoading = signal(false);
+  readonly socialLoading = signal(false);
   readonly showPassword = signal(false);
 
   readonly form = this.fb.nonNullable.group({
@@ -57,7 +59,7 @@ export class LoginPage {
   });
 
   constructor() {
-    addIcons({ eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline });
+    addIcons({ eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline, logoGoogle, logoApple });
   }
 
   togglePassword(): void {
@@ -90,5 +92,41 @@ export class LoginPage {
         this.isLoading.set(false);
       },
     });
+  }
+
+  async onGoogleSignIn(): Promise<void> {
+    this.socialLoading.set(true);
+    try {
+      const { idToken } = await this.socialAuth.googleSignIn();
+      this.authService.socialLogin({ provider: 'Google', idToken }).subscribe({
+        next: () => {
+          this.toast.success('Welcome back!');
+          this.router.navigate(['/feed']);
+        },
+        error: () => this.socialLoading.set(false),
+        complete: () => this.socialLoading.set(false),
+      });
+    } catch (error) {
+      this.socialLoading.set(false);
+      this.toast.error('Google sign-in failed');
+    }
+  }
+
+  async onAppleSignIn(): Promise<void> {
+    this.socialLoading.set(true);
+    try {
+      const { idToken } = await this.socialAuth.appleSignIn();
+      this.authService.socialLogin({ provider: 'Apple', idToken }).subscribe({
+        next: () => {
+          this.toast.success('Welcome back!');
+          this.router.navigate(['/feed']);
+        },
+        error: () => this.socialLoading.set(false),
+        complete: () => this.socialLoading.set(false),
+      });
+    } catch (error) {
+      this.socialLoading.set(false);
+      this.toast.error('Apple sign-in failed');
+    }
   }
 }

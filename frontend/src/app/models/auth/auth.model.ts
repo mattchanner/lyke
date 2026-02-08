@@ -13,6 +13,11 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface SocialLoginRequest {
+  provider: 'Google' | 'Apple';
+  idToken: string;
+}
+
 export interface RefreshTokenRequest {
   refreshToken: string;
 }

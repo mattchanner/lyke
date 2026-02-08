@@ -13,6 +13,7 @@ import {
   RefreshTokenRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  SocialLoginRequest,
   UserType,
 } from '../../models';
 
@@ -126,6 +127,19 @@ export class AuthService {
       switchMap((response) => {
         if (!response.success || !response.data) {
           return throwError(() => new Error(response.error?.message || 'Login failed'));
+        }
+        return from(this.handleAuthResponse(response.data)).pipe(
+          map(() => response.data!)
+        );
+      })
+    );
+  }
+
+  socialLogin(request: SocialLoginRequest): Observable<AuthResponse> {
+    return this.api.post<AuthResponse>('auth', 'social-login', request).pipe(
+      switchMap((response) => {
+        if (!response.success || !response.data) {
+          return throwError(() => new Error(response.error?.message || 'Social login failed'));
         }
         return from(this.handleAuthResponse(response.data)).pipe(
           map(() => response.data!)

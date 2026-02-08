@@ -6,6 +6,7 @@ using Lyke.Application.Configuration;
 using Lyke.Application.DTOs.Auth;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
+using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,17 +21,20 @@ public class AuthService : IAuthService
     private readonly UserManager<User> _userManager;
     private readonly DbContext _dbContext;
     private readonly JwtSettings _jwtSettings;
+    private readonly ISocialTokenValidator _socialTokenValidator;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
         UserManager<User> userManager,
         DbContext dbContext,
         IOptions<JwtSettings> jwtSettings,
+        ISocialTokenValidator socialTokenValidator,
         ILogger<AuthService> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _jwtSettings = jwtSettings.Value;
+        _socialTokenValidator = socialTokenValidator;
         _logger = logger;
     }
 
@@ -212,6 +216,72 @@ public class AuthService : IAuthService
         await _userManager.UpdateAsync(user);
 
         _logger.LogInformation("Account {UserId} deleted (soft delete)", userId);
+    }
+
+    public async Task<AuthResponse> SocialLoginAsync(SocialLoginRequest request, CancellationToken cancellationToken = default)
+    {
+        var socialUser = await _socialTokenValidator.ValidateAsync(request.Provider, request.IdToken, cancellationToken);
+
+        // 1. Check if this social login is already linked
+        var existingUser = await _userManager.FindByLoginAsync(request.Provider, socialUser.ProviderKey);
+        if (existingUser != null)
+        {
+            if (!existingUser.IsActive)
+            {
+                throw new UnauthorizedException("Account is deactivated");
+            }
+
+            _logger.LogInformation("Social login for existing linked user {Email} via {Provider}", existingUser.Email, request.Provider);
+            return await GenerateAuthResponseAsync(existingUser, cancellationToken);
+        }
+
+        // 2. Check if email already exists (link the provider)
+        var emailUser = await _userManager.FindByEmailAsync(socialUser.Email);
+        if (emailUser != null)
+        {
+            if (!emailUser.IsActive)
+            {
+                throw new UnauthorizedException("Account is deactivated");
+            }
+
+            var loginInfo = new UserLoginInfo(request.Provider, socialUser.ProviderKey, request.Provider);
+            var linkResult = await _userManager.AddLoginAsync(emailUser, loginInfo);
+            if (!linkResult.Succeeded)
+            {
+                _logger.LogWarning("Failed to link {Provider} to existing user {Email}", request.Provider, socialUser.Email);
+                throw new ValidationException("Provider", "Failed to link social account");
+            }
+
+            _logger.LogInformation("Linked {Provider} to existing user {Email}", request.Provider, emailUser.Email);
+            return await GenerateAuthResponseAsync(emailUser, cancellationToken);
+        }
+
+        // 3. Create new user
+        var newUser = new User
+        {
+            Email = socialUser.Email,
+            UserName = socialUser.Email,
+            EmailConfirmed = true,
+            UserType = UserType.Shopper,
+            IsActive = true
+        };
+
+        var createResult = await _userManager.CreateAsync(newUser);
+        if (!createResult.Succeeded)
+        {
+            var errors = createResult.Errors.Select(e => e.Description).ToArray();
+            throw new ValidationException("User", string.Join(", ", errors));
+        }
+
+        var addLoginResult = await _userManager.AddLoginAsync(
+            newUser, new UserLoginInfo(request.Provider, socialUser.ProviderKey, request.Provider));
+        if (!addLoginResult.Succeeded)
+        {
+            _logger.LogWarning("Failed to add {Provider} login for new user {Email}", request.Provider, socialUser.Email);
+        }
+
+        _logger.LogInformation("Created new user {Email} via {Provider} social login", socialUser.Email, request.Provider);
+        return await GenerateAuthResponseAsync(newUser, cancellationToken);
     }
 
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)

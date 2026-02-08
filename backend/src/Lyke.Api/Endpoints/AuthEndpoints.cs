@@ -59,6 +59,14 @@ public static class AuthEndpoints
             .AllowAnonymous();
 
         group
+            .MapPost("/social-login", SocialLoginAsync)
+            .WithName("SocialLogin")
+            .WithSummary("Login or register with a social provider (Google, Apple)")
+            .Produces<ApiResponse<AuthResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .AllowAnonymous();
+
+        group
             .MapDelete("/account", DeleteAccountAsync)
             .WithName("DeleteAccount")
             .WithSummary("Delete user account (GDPR)")
@@ -127,6 +135,16 @@ public static class AuthEndpoints
     {
         await authService.ResetPasswordAsync(request, cancellationToken);
         return Results.Ok(ApiResponse.Ok());
+    }
+
+    private static async Task<IResult> SocialLoginAsync(
+        [FromBody] SocialLoginRequest request,
+        IAuthService authService,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await authService.SocialLoginAsync(request, cancellationToken);
+        return Results.Ok(ApiResponse<AuthResponse>.Ok(result));
     }
 
     private static async Task<IResult> DeleteAccountAsync(

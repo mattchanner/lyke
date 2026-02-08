@@ -19,6 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     '/auth/v1/forgot-password',
     '/auth/v1/reset-password',
     '/auth/v1/refresh',
+    '/auth/v1/social-login',
   ];
 
   if (publicEndpoints.some((endpoint) => req.url.includes(endpoint))) {

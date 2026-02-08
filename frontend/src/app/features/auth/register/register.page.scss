@@ -44,6 +44,34 @@ ion-button {
   margin-top: 1rem;
 }
 
+.social-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--ion-color-light-shade);
+  }
+
+  span {
+    padding: 0 1rem;
+    color: var(--ion-color-medium);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+  }
+}
+
+.social-buttons {
+  ion-button {
+    --border-radius: 8px;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+  }
+}
+
 .terms-text {
   text-align: center;
   margin-top: 1.5rem;

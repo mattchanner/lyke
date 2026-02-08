@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.Configure<CreatorSettings>(configuration.GetSection(CreatorSettings.SectionName));
         services.Configure<MediaUploadSettings>(configuration.GetSection(MediaUploadSettings.SectionName));
         services.Configure<RetailerSettings>(configuration.GetSection(RetailerSettings.SectionName));
+        services.Configure<SocialAuthSettings>(configuration.GetSection(SocialAuthSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();
@@ -33,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IRetailerService, RetailerService>();
+        services.AddHttpClient<ISocialTokenValidator, SocialTokenValidator>();
 
         return services;
     }
