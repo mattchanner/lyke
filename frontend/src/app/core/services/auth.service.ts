@@ -185,6 +185,16 @@ export class AuthService {
     );
   }
 
+  deleteAccount(): Observable<void> {
+    return this.api.delete<void>('auth', 'account').pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.error?.message || 'Account deletion failed');
+        }
+      })
+    );
+  }
+
   async logout(): Promise<void> {
     await this.storage.clearAuthData();
     this.state.set({ ...INITIAL_STATE, isLoading: false });

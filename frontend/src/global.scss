@@ -33,5 +33,52 @@
  */
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+ @import "@ionic/angular/css/palettes/dark.class.css"; 
+/*@import '@ionic/angular/css/palettes/dark.system.css';*/
+
+// ── LYKE Brand Overrides ──
+
+// Buttons: pill-shaped with bolder weight
+ion-button {
+  --border-radius: 24px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+// Cards: subtle shadow, softer radius
+ion-card {
+  --border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+// Chips: pill-shaped
+ion-chip {
+  --border-radius: 20px;
+}
+
+// Toolbar: clean, editorial
+ion-toolbar {
+  --border-width: 0;
+
+  ion-title {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: 1.15rem;
+  }
+}
+
+// Headings: tighter tracking for editorial feel
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+// Segment buttons: pill-shaped
+ion-segment-button {
+  --border-radius: 20px;
+}
+
+// Input items: softer radius
+ion-item {
+  --border-radius: 12px;
+}

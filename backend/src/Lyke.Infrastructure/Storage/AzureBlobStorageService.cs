@@ -37,7 +37,13 @@ public class AzureBlobStorageService : IStorageService
         var blobClient = _containerClient.GetBlobClient(blobPath);
 
         await _containerClient.CreateIfNotExistsAsync(
-            PublicAccessType.None,
+            PublicAccessType.Blob,
+            cancellationToken: cancellationToken
+        );
+
+        // Ensure access level is correct even if the container already existed
+        await _containerClient.SetAccessPolicyAsync(
+            PublicAccessType.Blob,
             cancellationToken: cancellationToken
         );
 

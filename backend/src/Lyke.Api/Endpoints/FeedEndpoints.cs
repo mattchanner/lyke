@@ -31,7 +31,7 @@ public static class FeedEndpoints
 
     public static IEndpointRouteBuilder MapPostEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/feed/v1/posts").WithTags("Posts");
+        var group = app.MapGroup("/api/posts/v1").WithTags("Posts");
 
         group
             .MapGet("/{id:guid}", GetPostAsync)
@@ -76,7 +76,7 @@ public static class FeedEndpoints
 
     public static IEndpointRouteBuilder MapSearchEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/search/v1").WithTags("Search");
+        var group = app.MapGroup("/api/feed/v1/search").WithTags("Search");
 
         group
             .MapGet("/", SearchAsync)

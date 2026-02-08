@@ -6,11 +6,52 @@
     <ion-title>Delete Account</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content class="ion-padding">
-  <h2>Delete Your Account</h2>
-  <p>This action is permanent and cannot be undone.</p>
-  <p>All your data including body profile, saved posts, and history will be permanently deleted.</p>
-  <ion-button color="danger" expand="block">
-    Delete My Account
-  </ion-button>
+  <div class="warning-section">
+    <ion-icon name="warning-outline" color="danger" class="warning-icon"></ion-icon>
+    <h2>Delete Your Account</h2>
+    <p>This action is <strong>permanent</strong> and cannot be undone.</p>
+  </div>
+
+  <h3>What will be deleted</h3>
+  <ion-list lines="full">
+    <ion-item>
+      <ion-label>Your profile and body data</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>All posts and media</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>Saved content and history</ion-label>
+    </ion-item>
+    <ion-item>
+      <ion-label>Connected services and preferences</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div class="confirmation-section">
+    <p>Type <strong>DELETE</strong> to confirm:</p>
+    <ion-item>
+      <ion-input
+        placeholder="Type DELETE"
+        [value]="confirmationText()"
+        (ionInput)="confirmationText.set($event.detail.value || '')"
+        [disabled]="isDeleting()"
+      ></ion-input>
+    </ion-item>
+
+    <ion-button
+      expand="block"
+      color="danger"
+      [disabled]="!isConfirmed() || isDeleting()"
+      (click)="onDelete()"
+    >
+      @if (isDeleting()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        Delete My Account
+      }
+    </ion-button>
+  </div>
 </ion-content>

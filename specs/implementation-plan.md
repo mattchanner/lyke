@@ -51,7 +51,7 @@
 | Frontend Shared Components | ✅ Complete (PostCard, MediaCarousel, LoadingSkeleton) |
 | Frontend Profile Module | ✅ Complete (ProfileView, ProfileEdit, BodyProfileEdit) |
 | Frontend Creator Module | ✅ Complete (8 pages: Dashboard, Posts, PostCreate, PostEdit, Analytics, Earnings, Verification, Register) |
-| Frontend Settings | 🔄 Partial (Settings hub done, Privacy/DeleteAccount are stubs) |
+| Frontend Settings | ✅ Complete (Settings hub, Privacy, DeleteAccount) |
 | Frontend Admin Module | 🔄 Stubs Only (5 pages scaffolded, no implementation) |
 | Frontend Commerce Pages | 🔄 Not Started |
 | Frontend Retailer Module | 🔄 Not Started |
@@ -407,10 +407,10 @@ POST   /api/retailers/{id}/conversions - Conversion webhook ✅
 - [ ] Build click analytics aggregation (deferred to Phase 10)
 
 ### 6.3 Frontend Tasks
-- [ ] Create product card component
-- [ ] Implement click tracking before redirect
+- [x] Create product card component
+- [x] Implement click tracking before redirect
 - [ ] Build in-app browser for product views (optional)
-- [ ] Create "Shop the Look" component
+- [x] Create "Shop the Look" component
 - [ ] Add deep linking support
 
 ---
@@ -625,10 +625,10 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [ ] Implement cookie consent tracking
 
 ### 11.2 Frontend Tasks
-- [ ] Create privacy settings page
+- [x] Create privacy settings page
 - [ ] Build consent collection UI
 - [ ] Implement data export request flow
-- [ ] Create account deletion confirmation flow
+- [x] Create account deletion confirmation flow
 - [ ] Add privacy policy acceptance tracking
 
 ---
@@ -873,12 +873,12 @@ ANALYTICS_KEY=<key>
 | Phase 3: Authentication | 17 | 16 | Critical | 94% |
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
-| Phase 6: Commerce | 13 | 7 | Critical | 54% (backend complete, frontend not started) |
+| Phase 6: Commerce | 13 | 10 | Critical | 77% (backend complete, frontend partial) |
 | Phase 7: Creator | 22 | 22 | High | 100% |
 | Phase 8: Retailer Portal | 18 | 10 | High | 56% (backend complete, frontend not started) |
 | Phase 9: Admin | 16 | 7 | High | 44% (backend complete, frontend stubs only) |
 | Phase 10: Analytics | 10 | 0 | Medium | 0% |
-| Phase 11: Privacy | 12 | 0 | Critical | 0% |
+| Phase 11: Privacy | 12 | 2 | Critical | 17% |
 | Phase 12: Testing | 10 | 7 | High | 70% |
 | Phase 13: Performance | 12 | 0 | Medium | 0% |
 | Phase 14: Deployment | 10 | 0 | High | 0% |

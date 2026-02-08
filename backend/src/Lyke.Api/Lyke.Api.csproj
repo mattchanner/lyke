@@ -4,6 +4,9 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <DockerfileContext>..\..\..</DockerfileContext>
+    <UserSecretsId>95aec8b7-edaf-4f1c-9967-731e23892ace</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +17,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.33" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="SharpGrip.FluentValidation.AutoValidation.Endpoints" Version="1.5.0" />
@@ -22,6 +26,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Lyke.Application\Lyke.Application.csproj" />
     <ProjectReference Include="..\Lyke.Infrastructure\Lyke.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="AppBin\ffmpeg.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="AppBin\ffprobe.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -32,7 +32,7 @@ public class CreatorServiceTests : IDisposable
             MaxMediaPerPost = 10,
             MaxProductsPerPost = 20,
             MinPayoutThreshold = 50.00m,
-            DefaultCurrency = "USD"
+            DefaultCurrency = "GBP"
         });
         _loggerMock = new Mock<ILogger<CreatorService>>();
 

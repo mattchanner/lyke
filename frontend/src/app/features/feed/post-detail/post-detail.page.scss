@@ -2,6 +2,8 @@
   img {
     width: 100%;
     display: block;
+    padding: var(--media-border-padding, 1rem);
+    border-radius: var(--media-border-radius, 1rem);
   }
 }
 

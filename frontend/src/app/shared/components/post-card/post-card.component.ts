@@ -84,7 +84,7 @@ export class PostCardComponent {
     const newLikedState = !this.post.isLiked;
 
     this.api
-      .post(`feed`, `posts/${this.post.id}/engage`, {
+      .post(`posts`, `${this.post.id}/engage`, {
         type: EngagementType.Like,
       })
       .subscribe({
@@ -104,7 +104,7 @@ export class PostCardComponent {
     const newSavedState = !this.post.isSaved;
 
     this.api
-      .post(`feed`, `posts/${this.post.id}/engage`, {
+      .post(`posts`, `${this.post.id}/engage`, {
         type: EngagementType.Save,
       })
       .subscribe({

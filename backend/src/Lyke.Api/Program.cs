@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json.Serialization;
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
 using Lyke.Api.Workers;
@@ -11,6 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
+using System.Reflection;
+using System.Text;
+using System.Text.Json.Serialization;
+using Xabe.FFmpeg;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -125,6 +127,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+FileInfo entryAseemblyFile = new(Assembly.GetEntryAssembly()!.Location);
+
+//FFmpeg.SetExecutablesPath(Path.Combine(entryAseemblyFile.Directory!.FullName, "AppBin"));
 
 // Seed development data
 if (app.Environment.IsDevelopment())

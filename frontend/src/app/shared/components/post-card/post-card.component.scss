@@ -1,8 +1,8 @@
 ion-card {
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: var(--ion-background-color);
+  margin: 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0px 1px 16px rgba(0, 0, 0, 0.1);
+  background: var(--ion-card-background);
 }
 
 .media-container {
@@ -33,7 +33,7 @@ ion-card {
 }
 
 ion-card-content {
-  padding: 0.75rem;
+  padding: 0.875rem;
 }
 
 .creator-row {
@@ -73,7 +73,9 @@ ion-card-content {
 .post-title {
   margin: 0.5rem 0;
   font-size: 0.9rem;
-  line-height: 1.4;
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;

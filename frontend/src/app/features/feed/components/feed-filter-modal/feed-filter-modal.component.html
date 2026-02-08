@@ -15,7 +15,13 @@
         </ion-buttons>
         <ion-title>Filters</ion-title>
         <ion-buttons slot="end">
-          <ion-button (click)="reset()" fill="clear" size="small">Reset</ion-button>
+          <ion-button (click)="apply()" fill="solid" size="small" color="primary" shape="round">
+            @if (activeCount() > 0) {
+              Apply Filters ({{ activeCount() }})
+            } @else {
+              Apply Filters
+            }  
+          </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -69,13 +75,7 @@
     </ion-content>
 
     <ion-footer class="ion-padding">
-      <ion-button expand="block" (click)="apply()">
-        @if (activeCount() > 0) {
-          Apply Filters ({{ activeCount() }})
-        } @else {
-          Apply Filters
-        }
-      </ion-button>
+      <ion-button expand="block" (click)="reset()" >Reset</ion-button>      
     </ion-footer>
   </ng-template>
 </ion-modal>

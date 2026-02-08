@@ -146,11 +146,11 @@ public class MediaService : IMediaService
         var uri = new Uri(mediaUrl);
         var blobPath = uri.AbsolutePath.TrimStart('/');
 
-        // Remove container name from path if present
-        var containerPrefix = _settings.SasTokenExpiryMinutes + "/";
-        if (blobPath.StartsWith(containerPrefix))
+        // Remove container name (first path segment) from path
+        var slashIndex = blobPath.IndexOf('/');
+        if (slashIndex > 0)
         {
-            blobPath = blobPath[containerPrefix.Length..];
+            blobPath = blobPath[(slashIndex + 1)..];
         }
 
         var expiry = TimeSpan.FromMinutes(_settings.SasTokenExpiryMinutes);

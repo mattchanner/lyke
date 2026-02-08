@@ -19,7 +19,7 @@ public static class CommerceEndpoints
 
     private static void MapClickEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/clicks/v1").WithTags("Click Tracking");
+        var group = app.MapGroup("/api/commerce/v1/clicks").WithTags("Click Tracking");
 
         group
             .MapPost("/track", TrackClickAsync)
@@ -32,7 +32,7 @@ public static class CommerceEndpoints
 
     private static void MapProductEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/products/v1").WithTags("Products");
+        var group = app.MapGroup("/api/commerce/v1/products").WithTags("Products");
 
         group
             .MapGet("/{id:guid}", GetProductAsync)
@@ -52,7 +52,7 @@ public static class CommerceEndpoints
 
     private static void MapRetailerEndpoints(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/retailers/v1").WithTags("Retailers");
+        var group = app.MapGroup("/api/commerce/v1/retailers").WithTags("Retailers");
 
         group
             .MapGet("/", GetRetailersAsync)

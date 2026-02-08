@@ -78,7 +78,7 @@ export class PostDetailPage implements OnInit {
   loadPost(id: string): void {
     this.isLoading.set(true);
 
-    this.api.get<PostDetailResponse>('feed', `posts/${id}`).subscribe({
+    this.api.get<PostDetailResponse>('posts', `${id}`).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.post.set(response.data);
@@ -93,7 +93,7 @@ export class PostDetailPage implements OnInit {
     if (!currentPost) return;
 
     this.api
-      .post(`feed`, `posts/${currentPost.id}/engage`, {
+      .post(`posts`, `${currentPost.id}/engage`, {
         type: EngagementType.Like,
       })
       .subscribe({
@@ -119,7 +119,7 @@ export class PostDetailPage implements OnInit {
     if (!currentPost) return;
 
     this.api
-      .post(`feed`, `posts/${currentPost.id}/engage`, {
+      .post(`posts`, `${currentPost.id}/engage`, {
         type: EngagementType.Save,
       })
       .subscribe({

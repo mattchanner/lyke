@@ -73,7 +73,7 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 1px;
-  background: var(--ion-color-light);
+  background: var(--panel-background);
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
