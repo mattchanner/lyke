@@ -193,7 +193,7 @@ public static class CommerceEndpoints
 
 public class ProductSearchQueryParams
 {
-    [FromQuery(Name = "q")]
+    [FromQuery(Name = "query")]
     public string? Q { get; set; }
 
     [FromQuery(Name = "retailerId")]

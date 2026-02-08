@@ -98,6 +98,12 @@
     font-size: 0.95rem;
   }
 
+  ion-card-content {
+    ion-item {
+      margin-bottom: 1rem;
+    }
+  }
+
   .product-header {
     display: flex;
     justify-content: space-between;
