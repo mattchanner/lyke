@@ -1,7 +1,141 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/admin"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
     <ion-title>Post Moderation</ion-title>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)">
+      <ion-segment-button value="all">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="PostStatus.PendingReview">
+        <ion-label>Pending</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="PostStatus.Published">
+        <ion-label>Published</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="PostStatus.Rejected">
+        <ion-label>Rejected</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Post moderation queue coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && posts().length === 0) {
+    <app-skeleton-list [count]="5" [showAvatar]="true"></app-skeleton-list>
+  } @else if (!isLoading() && posts().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="images-outline" class="empty-icon"></ion-icon>
+      <p>No posts to review</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (post of posts(); track post.id) {
+        <ion-item
+          [button]="true"
+          (click)="toggleExpand(post.id)"
+          [class.expanded]="expandedPostId() === post.id"
+        >
+          <ion-thumbnail slot="start">
+            @if (post.mediaUrls?.length) {
+              <img [src]="post.mediaUrls[0]" [alt]="post.title || 'Post'" />
+            } @else {
+              <div class="no-media">
+                <ion-icon
+                  [name]="post.mediaType === MediaType.Video ? 'videocam-outline' : 'image-outline'"
+                ></ion-icon>
+              </div>
+            }
+          </ion-thumbnail>
+          <ion-label>
+            <h2>{{ post.title || 'Untitled' }}</h2>
+            <p>By {{ post.creator.displayName }}</p>
+            <p>
+              <ion-note>{{ formatDate(post.submittedAt || post.createdAt) }}</ion-note>
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(post.status)">
+            {{ post.status }}
+          </ion-badge>
+          <ion-icon
+            slot="end"
+            [name]="expandedPostId() === post.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+          ></ion-icon>
+        </ion-item>
+
+        @if (expandedPostId() === post.id) {
+          <ion-card class="detail-card">
+            <ion-card-content>
+              @if (post.description) {
+                <div class="detail-section">
+                  <strong>Description</strong>
+                  <p>{{ post.description }}</p>
+                </div>
+              }
+
+              <div class="detail-section">
+                <strong>Creator</strong>
+                <p>
+                  {{ post.creator.displayName }}
+                  @if (post.creator.isVerified) {
+                    <ion-badge color="primary">Verified</ion-badge>
+                  }
+                </p>
+                <p class="meta">
+                  {{ post.creator.publishedPosts }} / {{ post.creator.totalPosts }} posts published
+                </p>
+              </div>
+
+              @if (post.products?.length) {
+                <div class="detail-section">
+                  <strong>Products Tagged ({{ post.products.length }})</strong>
+                  @for (product of post.products; track product.productId) {
+                    <p class="product-item">
+                      {{ product.productName }}
+                      @if (product.sizeWorn) {
+                        <span class="meta"> - Size: {{ product.sizeWorn }}</span>
+                      }
+                      @if (product.fitNotes) {
+                        <span class="meta"> - {{ product.fitNotes }}</span>
+                      }
+                    </p>
+                  }
+                </div>
+              }
+
+              @if (post.status === PostStatus.PendingReview) {
+                <div class="action-buttons">
+                  <ion-button
+                    color="success"
+                    (click)="onApprove(post); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                    Approve
+                  </ion-button>
+                  <ion-button
+                    color="danger"
+                    (click)="onReject(post); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="close-outline"></ion-icon>
+                    Reject
+                  </ion-button>
+                </div>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+    </ion-list>
+
+    <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

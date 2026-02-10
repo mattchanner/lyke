@@ -1,7 +1,73 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/admin"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
     <ion-title>User Management</ion-title>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Search by email or username..."
+      [debounce]="0"
+      (ionInput)="onSearchInput($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>User management coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="filter-chips">
+    @for (option of filterOptions; track option.value) {
+      <ion-chip
+        [color]="filterType() === option.value ? 'primary' : 'medium'"
+        [outline]="filterType() !== option.value"
+        (click)="onFilterChange(option.value)"
+      >
+        <ion-label>{{ option.label }}</ion-label>
+      </ion-chip>
+    }
+  </div>
+
+  @if (isLoading() && users().length === 0) {
+    <app-skeleton-list [count]="8" [showAvatar]="true"></app-skeleton-list>
+  } @else if (!isLoading() && users().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="person-outline" class="empty-icon"></ion-icon>
+      <p>No users found</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (user of users(); track user.id) {
+        <ion-item [button]="true" (click)="navigateToUser(user)" [detail]="true">
+          <ion-avatar slot="start">
+            <div class="avatar-placeholder">
+              <ion-icon name="person-outline"></ion-icon>
+            </div>
+          </ion-avatar>
+          <ion-label>
+            <h2>
+              {{ user.email || user.userName || 'No email' }}
+              @if (!user.isActive) {
+                <ion-icon name="alert-circle-outline" color="danger" class="suspended-icon"></ion-icon>
+              }
+            </h2>
+            <p>{{ user.userName || 'No username' }}</p>
+            <p>
+              <ion-note>Joined {{ formatDate(user.createdAt) }}</ion-note>
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getUserTypeColor(user.userType)">
+            {{ user.userType }}
+          </ion-badge>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

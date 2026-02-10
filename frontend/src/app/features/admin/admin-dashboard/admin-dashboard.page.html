@@ -1,22 +1,142 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/profile"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
     <ion-title>Admin</ion-title>
   </ion-toolbar>
 </ion-header>
+
 <ion-content>
-  <ion-list>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Stats Section -->
+  @if (isLoading() && !stats()) {
+    <div class="loading-stats">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (stats()) {
+    <div class="stats-grid">
+      <!-- Users Stats -->
+      <ion-card class="stat-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="people-outline"></ion-icon>
+            Users
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stat-value">{{ formatNumber(stats()!.users.totalUsers) }}</div>
+          <div class="stat-breakdown">
+            <span>{{ stats()!.users.activeUsers }} active</span>
+            <span class="divider">·</span>
+            <span class="highlight">+{{ stats()!.users.newUsersLast7Days }} this week</span>
+          </div>
+          <div class="stat-types">
+            <ion-badge color="medium">{{ stats()!.users.shoppers }} Shoppers</ion-badge>
+            <ion-badge color="primary">{{ stats()!.users.creators }} Creators</ion-badge>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Content Stats -->
+      <ion-card class="stat-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="images-outline"></ion-icon>
+            Content
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stat-value">{{ formatNumber(stats()!.content.totalPosts) }}</div>
+          <div class="stat-breakdown">
+            <span>{{ stats()!.content.publishedPosts }} published</span>
+            <span class="divider">·</span>
+            <span class="highlight">+{{ stats()!.content.postsLast7Days }} this week</span>
+          </div>
+          @if (stats()!.content.pendingReviewPosts > 0) {
+            <div class="alert-badge">
+              <ion-badge color="warning">{{ stats()!.content.pendingReviewPosts }} pending review</ion-badge>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Verification Stats -->
+      <ion-card class="stat-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            Verifications
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stat-value">{{ stats()!.verifications.approvedCreators }}</div>
+          <div class="stat-breakdown">
+            <span>verified creators</span>
+          </div>
+          @if (stats()!.verifications.pendingVerifications > 0) {
+            <div class="alert-badge">
+              <ion-badge color="warning">{{ stats()!.verifications.pendingVerifications }} pending</ion-badge>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+
+      <!-- Engagement Stats -->
+      <ion-card class="stat-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="trending-up-outline"></ion-icon>
+            Engagement
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="stat-value">{{ formatNumber(stats()!.engagement.totalViews) }}</div>
+          <div class="stat-breakdown">
+            <span>total views</span>
+            <span class="divider">·</span>
+            <span class="highlight">+{{ formatNumber(stats()!.engagement.viewsLast7Days) }} this week</span>
+          </div>
+          <div class="stat-types">
+            <ion-badge color="danger">{{ formatNumber(stats()!.engagement.totalLikes) }} likes</ion-badge>
+            <ion-badge color="tertiary">{{ formatNumber(stats()!.engagement.totalClicks) }} clicks</ion-badge>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  }
+
+  <!-- Navigation Links -->
+  <ion-list class="nav-list">
     <ion-item routerLink="/admin/posts" detail>
       <ion-icon name="images-outline" slot="start"></ion-icon>
-      <ion-label>Post Moderation</ion-label>
+      <ion-label>
+        <h2>Post Moderation</h2>
+        <p>Review and moderate content</p>
+      </ion-label>
+      @if (stats()?.content?.pendingReviewPosts) {
+        <ion-badge slot="end" color="warning">{{ stats()!.content.pendingReviewPosts }}</ion-badge>
+      }
     </ion-item>
     <ion-item routerLink="/admin/users" detail>
       <ion-icon name="people-outline" slot="start"></ion-icon>
-      <ion-label>User Management</ion-label>
+      <ion-label>
+        <h2>User Management</h2>
+        <p>Manage users and suspensions</p>
+      </ion-label>
     </ion-item>
     <ion-item routerLink="/admin/verifications" detail>
       <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
-      <ion-label>Verification Reviews</ion-label>
+      <ion-label>
+        <h2>Verification Reviews</h2>
+        <p>Review creator verification requests</p>
+      </ion-label>
+      @if (stats()?.verifications?.pendingVerifications) {
+        <ion-badge slot="end" color="warning">{{ stats()!.verifications.pendingVerifications }}</ion-badge>
+      }
     </ion-item>
   </ion-list>
 </ion-content>

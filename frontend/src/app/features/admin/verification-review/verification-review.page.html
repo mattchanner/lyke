@@ -1,7 +1,141 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start"><ion-back-button defaultHref="/admin"></ion-back-button></ion-buttons>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
     <ion-title>Verification Reviews</ion-title>
   </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)">
+      <ion-segment-button [value]="VerificationStatus.Pending">
+        <ion-label>Pending</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="VerificationStatus.Approved">
+        <ion-label>Approved</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="VerificationStatus.Rejected">
+        <ion-label>Rejected</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding"><p>Verification review queue coming soon...</p></ion-content>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && verifications().length === 0) {
+    <app-skeleton-list [count]="5" [showAvatar]="false"></app-skeleton-list>
+  } @else if (!isLoading() && verifications().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="person-outline" class="empty-icon"></ion-icon>
+      <p>No verification requests</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (verification of verifications(); track verification.creatorId) {
+        <ion-item
+          [button]="true"
+          (click)="toggleExpand(verification.creatorId)"
+          [class.expanded]="expandedId() === verification.creatorId"
+        >
+          <ion-label>
+            <h2>{{ verification.displayName }}</h2>
+            <p class="bio-preview">{{ verification.bio || 'No bio provided' }}</p>
+            <p>
+              <ion-note>Submitted {{ formatDate(verification.requestedAt) }}</ion-note>
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(verification.status)">
+            {{ verification.status }}
+          </ion-badge>
+          <ion-icon
+            slot="end"
+            [name]="expandedId() === verification.creatorId ? 'chevron-up-outline' : 'chevron-down-outline'"
+          ></ion-icon>
+        </ion-item>
+
+        @if (expandedId() === verification.creatorId) {
+          <ion-card class="detail-card">
+            <ion-card-content>
+              @if (verification.bio) {
+                <div class="detail-section">
+                  <strong>Bio</strong>
+                  <p>{{ verification.bio }}</p>
+                </div>
+              }
+
+              <div class="detail-section">
+                <strong>Creator Stats</strong>
+                <p>{{ verification.publishedPosts }} / {{ verification.totalPosts }} posts published</p>
+                <p class="meta">Joined {{ formatDate(verification.createdAt) }}</p>
+              </div>
+
+              @if (verification.socialLinks && getSocialLinkKeys(verification.socialLinks).length) {
+                <div class="detail-section">
+                  <strong>
+                    <ion-icon name="link-outline"></ion-icon>
+                    Social Links
+                  </strong>
+                  @for (key of getSocialLinkKeys(verification.socialLinks); track key) {
+                    <p class="link-item">
+                      <span class="link-key">{{ key }}:</span>
+                      <a [href]="verification.socialLinks![key]" target="_blank" rel="noopener">
+                        {{ verification.socialLinks![key] }}
+                      </a>
+                    </p>
+                  }
+                </div>
+              }
+
+              @if (verification.documentUrls?.length) {
+                <div class="detail-section">
+                  <strong>
+                    <ion-icon name="document-outline"></ion-icon>
+                    Documents ({{ verification.documentUrls.length }})
+                  </strong>
+                  @for (url of verification.documentUrls; track url; let i = $index) {
+                    <p>
+                      <a [href]="url" target="_blank" rel="noopener">Document {{ i + 1 }}</a>
+                    </p>
+                  }
+                </div>
+              }
+
+              @if (verification.notes) {
+                <div class="detail-section notes-section">
+                  <strong>Notes</strong>
+                  <p>{{ verification.notes }}</p>
+                </div>
+              }
+
+              @if (verification.status === VerificationStatus.Pending) {
+                <div class="action-buttons">
+                  <ion-button
+                    color="success"
+                    (click)="onApprove(verification); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                    Approve
+                  </ion-button>
+                  <ion-button
+                    color="danger"
+                    (click)="onReject(verification); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="close-outline"></ion-icon>
+                    Reject
+                  </ion-button>
+                </div>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+    </ion-list>
+
+    <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

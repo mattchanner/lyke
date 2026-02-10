@@ -1,0 +1,139 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: var(--ion-color-medium);
+
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 1.1rem;
+  }
+}
+
+ion-item {
+  --padding-start: 16px;
+  --padding-end: 12px;
+
+  &.expanded {
+    --background: var(--ion-color-light);
+  }
+
+  ion-label {
+    h2 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .bio-preview {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      color: var(--ion-color-dark);
+    }
+
+    p {
+      margin: 2px 0;
+    }
+  }
+
+  ion-badge {
+    margin-right: 8px;
+  }
+}
+
+.detail-card {
+  margin: 0 16px 16px;
+  border-radius: 8px;
+
+  ion-card-content {
+    padding: 16px;
+  }
+}
+
+.detail-section {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  strong {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ion-color-dark);
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+
+    ion-icon {
+      font-size: 1rem;
+    }
+  }
+
+  p {
+    margin: 4px 0;
+    color: var(--ion-text-color);
+  }
+
+  .meta {
+    color: var(--ion-color-medium);
+    font-size: 0.85rem;
+  }
+
+  .link-item {
+    word-break: break-all;
+
+    .link-key {
+      font-weight: 500;
+      text-transform: capitalize;
+      margin-right: 4px;
+    }
+
+    a {
+      color: var(--ion-color-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.notes-section {
+  padding: 12px;
+  background: var(--ion-color-light);
+  border-radius: 8px;
+
+  p {
+    font-style: italic;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ion-color-light);
+
+  ion-button {
+    flex: 1;
+  }
+}
