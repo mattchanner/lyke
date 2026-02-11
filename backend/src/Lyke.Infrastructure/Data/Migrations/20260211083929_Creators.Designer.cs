@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lyke.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(LykeDbContext))]
-    [Migration("20260205205618_RetailedEntities")]
-    partial class RetailedEntities
+    [Migration("20260211083929_Creators")]
+    partial class Creators
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

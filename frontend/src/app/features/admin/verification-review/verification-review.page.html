@@ -93,7 +93,7 @@
                 <div class="detail-section">
                   <strong>
                     <ion-icon name="document-outline"></ion-icon>
-                    Documents ({{ verification.documentUrls.length }})
+                    Documents ({{ verification.documentUrls!.length }})
                   </strong>
                   @for (url of verification.documentUrls; track url; let i = $index) {
                     <p>

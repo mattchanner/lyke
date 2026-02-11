@@ -21,8 +21,6 @@ import {
   IonRefresherContent,
   IonNote,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -68,8 +66,6 @@ import { SkeletonListComponent } from '../../../shared/components/skeleton-list'
     IonRefresherContent,
     IonNote,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonCardContent,
     SkeletonListComponent,
   ],

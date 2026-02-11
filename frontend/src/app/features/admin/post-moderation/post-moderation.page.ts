@@ -23,8 +23,6 @@ import {
   IonNote,
   AlertController,
   IonCard,
-  IonCardHeader,
-  IonCardTitle,
   IonCardContent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -70,8 +68,6 @@ type TabFilter = PostStatus | 'all';
     IonRefresherContent,
     IonNote,
     IonCard,
-    IonCardHeader,
-    IonCardTitle,
     IonCardContent,
     SkeletonListComponent,
   ],
@@ -115,7 +111,8 @@ export class PostModerationPage implements OnInit {
     }
     this.isLoading.set(true);
 
-    const status = this.activeTab() === 'all' ? undefined : this.activeTab();
+    const tab = this.activeTab();
+    const status = tab === 'all' ? undefined : tab as PostStatus;
     this.adminService
       .getPendingPosts({ status, page: this.currentPage(), pageSize: 20 })
       .subscribe({
@@ -149,9 +146,10 @@ export class PostModerationPage implements OnInit {
 
   loadMore(event: CustomEvent): void {
     this.currentPage.update((p) => p + 1);
+    const tab = this.activeTab();
     this.adminService
       .getPendingPosts({
-        status: this.activeTab() === 'all' ? undefined : this.activeTab(),
+        status: tab === 'all' ? undefined : tab as PostStatus,
         page: this.currentPage(),
         pageSize: 20,
       })

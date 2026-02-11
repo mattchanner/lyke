@@ -1,7 +1,9 @@
 using Lyke.Core.Entities;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Lyke.Infrastructure.Data;
 
@@ -34,6 +36,12 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         builder.ApplyConfigurationsFromAssembly(typeof(LykeDbContext).Assembly);
 
         // Note: Seed data for BodyTypes and FitTags is in InitialCreate migration
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
     }
 
     public override int SaveChanges()

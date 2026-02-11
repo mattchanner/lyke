@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Lyke.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class RetailedEntities : Migration
+    public partial class Creators : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,23 +16,20 @@ namespace Lyke.Infrastructure.Data.Migrations
                 table: "Retailers",
                 type: "character varying(200)",
                 maxLength: 200,
-                nullable: true
-            );
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
                 name: "UserId",
                 table: "Retailers",
                 type: "uuid",
                 nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000")
-            );
+                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
             migrationBuilder.CreateIndex(
                 name: "IX_Retailers_UserId",
                 table: "Retailers",
                 column: "UserId",
-                unique: true
-            );
+                unique: true);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Retailers_AspNetUsers_UserId",
@@ -40,8 +37,7 @@ namespace Lyke.Infrastructure.Data.Migrations
                 column: "UserId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade
-            );
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
@@ -49,14 +45,19 @@ namespace Lyke.Infrastructure.Data.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Retailers_AspNetUsers_UserId",
-                table: "Retailers"
-            );
+                table: "Retailers");
 
-            migrationBuilder.DropIndex(name: "IX_Retailers_UserId", table: "Retailers");
+            migrationBuilder.DropIndex(
+                name: "IX_Retailers_UserId",
+                table: "Retailers");
 
-            migrationBuilder.DropColumn(name: "ContactEmail", table: "Retailers");
+            migrationBuilder.DropColumn(
+                name: "ContactEmail",
+                table: "Retailers");
 
-            migrationBuilder.DropColumn(name: "UserId", table: "Retailers");
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "Retailers");
         }
     }
 }

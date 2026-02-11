@@ -112,6 +112,18 @@ public static class DataSeeder
         var context = services.GetRequiredService<LykeDbContext>();
         var userManager = services.GetRequiredService<UserManager<User>>();
 
+        //IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+
+        //if (pendingMigrations.Any())
+        //{
+        //    logger.LogInformation("Migrating database to the latest version");
+        //    await context.Database.MigrateAsync().ConfigureAwait(false);
+        //}
+        //else
+        //{
+        //    logger.LogInformation("Database is already at the latest version");
+        //}
+
         // Idempotent — skip if data already exists
         if (await context.Creators.AnyAsync())
         {
