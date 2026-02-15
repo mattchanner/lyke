@@ -55,7 +55,7 @@
         >
           <div class="post-row">
             @if (post.mediaUrls.length > 0) {
-              <img [src]="post.mediaUrls[0]" class="post-thumb" alt="Post thumbnail" />
+              <img [src]="post.thumbnailUrls?.[0] || post.mediaUrls[0]" class="post-thumb" alt="Post thumbnail" />
             } @else {
               <div class="post-thumb placeholder"></div>
             }

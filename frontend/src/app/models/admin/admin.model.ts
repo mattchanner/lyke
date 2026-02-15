@@ -7,6 +7,7 @@ export interface PendingPostResponse {
   description: string | null;
   mediaType: MediaType;
   mediaUrls: string[];
+  thumbnailUrls: string[];
   status: PostStatus;
   createdAt: string;
   submittedAt: string | null;

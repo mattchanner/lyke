@@ -8,6 +8,7 @@ public record PendingPostResponse(
     string? Description,
     MediaType MediaType,
     List<string> MediaUrls,
+    List<string> ThumbnailUrls,
     PostStatus Status,
     DateTime CreatedAt,
     DateTime? SubmittedAt,

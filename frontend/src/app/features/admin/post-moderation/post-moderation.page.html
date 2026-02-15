@@ -45,7 +45,7 @@
         >
           <ion-thumbnail slot="start">
             @if (post.mediaUrls?.length) {
-              <img [src]="post.mediaUrls[0]" [alt]="post.title || 'Post'" />
+              <img [src]="post.thumbnailUrls?.[0] || post.mediaUrls[0]" [alt]="post.title || 'Post'" />
             } @else {
               <div class="no-media">
                 <ion-icon
