@@ -1,0 +1,16 @@
+.body-types-section {
+  padding: 16px;
+
+  ion-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+  }
+}
+
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}

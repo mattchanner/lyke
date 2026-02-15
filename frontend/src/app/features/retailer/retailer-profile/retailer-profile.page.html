@@ -1,0 +1,98 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/retailer"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <ion-list>
+      @for (_ of [1, 2, 3, 4]; track $index) {
+        <ion-item>
+          <ion-skeleton-text [animated]="true" style="width: 100%; height: 40px"></ion-skeleton-text>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
+    <ion-text color="medium"><h3>Business Details</h3></ion-text>
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Business Name"
+          labelPlacement="stacked"
+          [value]="name()"
+          (ionInput)="name.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Logo URL"
+          labelPlacement="stacked"
+          type="url"
+          [value]="logoUrl()"
+          (ionInput)="logoUrl.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Website"
+          labelPlacement="stacked"
+          type="url"
+          [value]="websiteUrl()"
+          (ionInput)="websiteUrl.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Contact Email"
+          labelPlacement="stacked"
+          type="email"
+          [value]="contactEmail()"
+          (ionInput)="contactEmail.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-text color="medium"><h3>Affiliate Configuration</h3></ion-text>
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Affiliate Base URL"
+          labelPlacement="stacked"
+          type="url"
+          [value]="affiliateBaseUrl()"
+          (ionInput)="affiliateBaseUrl.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Affiliate ID"
+          labelPlacement="stacked"
+          [value]="affiliateId()"
+          (ionInput)="affiliateId.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          label="Commission Rate (%)"
+          labelPlacement="stacked"
+          type="number"
+          [value]="commissionRate()"
+          (ionInput)="commissionRate.set($event.detail.value ?? '')"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button expand="block" class="ion-margin-top" (click)="save()" [disabled]="isSaving()">
+      @if (isSaving()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Save Changes
+      }
+    </ion-button>
+  }
+</ion-content>

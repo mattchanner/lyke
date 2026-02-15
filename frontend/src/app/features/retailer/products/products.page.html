@@ -1,0 +1,81 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/retailer"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Products</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="importCsv()">
+        <ion-icon name="cloud-upload-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar
+      placeholder="Search products..."
+      [debounce]="400"
+      (ionInput)="onSearch($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeFilter()" (ionChange)="onFilterChange($event)">
+      <ion-segment-button value="all">All</ion-segment-button>
+      <ion-segment-button value="active">Active</ion-segment-button>
+      <ion-segment-button value="inactive">Inactive</ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && products().length === 0) {
+    <ion-list>
+      @for (_ of [1, 2, 3, 4, 5]; track $index) {
+        <ion-item>
+          <ion-thumbnail slot="start">
+            <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+          </ion-thumbnail>
+          <ion-label>
+            <ion-skeleton-text [animated]="true" style="width: 70%"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (products().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="cube-outline" class="empty-icon"></ion-icon>
+      <h3>No products yet</h3>
+      <p>Import products via CSV to get started.</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (product of products(); track product.id) {
+        <ion-item (click)="editProduct(product)" detail button>
+          <ion-thumbnail slot="start">
+            @if (product.imageUrls.length > 0) {
+              <img [src]="product.imageUrls[0]" [alt]="product.name" />
+            } @else {
+              <div class="placeholder"></div>
+            }
+          </ion-thumbnail>
+          <ion-label>
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.category }} &middot; {{ product.price | number:'1.2-2' }} {{ product.currency }}</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="product.isActive ? 'success' : 'medium'">
+            {{ product.isActive ? 'Active' : 'Inactive' }}
+          </ion-badge>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll (ionInfinite)="loadMore($event)" [disabled]="!hasMore()">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

@@ -1,0 +1,37 @@
+.date-chips {
+  display: flex;
+  gap: 4px;
+  padding: 8px 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 8px;
+
+  ion-card {
+    margin: 0;
+  }
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin-top: 4px;
+}
+
+.section-header {
+  padding: 16px 16px 4px;
+
+  h3 {
+    margin: 0;
+    font-weight: 600;
+  }
+}

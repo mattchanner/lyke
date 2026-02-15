@@ -35,6 +35,8 @@ export function roleGuard(...allowedRoles: UserType[]): CanActivateFn {
         router.navigate(['/admin']);
       } else if (userType === UserType.Creator) {
         router.navigate(['/creator']);
+      } else if (userType === UserType.Retailer) {
+        router.navigate(['/retailer']);
       } else {
         router.navigate(['/feed']);
       }
@@ -49,3 +51,4 @@ export function roleGuard(...allowedRoles: UserType[]): CanActivateFn {
 export const creatorGuard: CanActivateFn = roleGuard(UserType.Creator);
 export const adminGuard: CanActivateFn = roleGuard(UserType.Admin);
 export const creatorOrAdminGuard: CanActivateFn = roleGuard(UserType.Creator, UserType.Admin);
+export const retailerGuard: CanActivateFn = roleGuard(UserType.Retailer);

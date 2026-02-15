@@ -6,6 +6,7 @@ import {
   needsOnboardingGuard,
   creatorGuard,
   adminGuard,
+  retailerGuard,
 } from './core';
 
 export const routes: Routes = [
@@ -258,6 +259,87 @@ export const routes: Routes = [
             (m) => m.VerificationPage
           ),
       },
+    ],
+  },
+
+  // Retailer registration (accessible to any authenticated user)
+  {
+    path: 'retailer/register',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/retailer/register/register.page').then(
+        (m) => m.RetailerRegisterPage
+      ),
+  },
+
+  // Retailer routes (requires retailer role)
+  {
+    path: 'retailer',
+    canActivate: [authGuard, retailerGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import(
+            './features/retailer/retailer-dashboard/retailer-dashboard.page'
+          ).then((m) => m.RetailerDashboardPage),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import(
+            './features/retailer/retailer-profile/retailer-profile.page'
+          ).then((m) => m.RetailerProfilePage),
+      },
+      {
+        path: 'products',
+        loadComponent: () =>
+          import('./features/retailer/products/products.page').then(
+            (m) => m.ProductsPage
+          ),
+      },
+      {
+        path: 'products/:id/edit',
+        loadComponent: () =>
+          import('./features/retailer/product-edit/product-edit.page').then(
+            (m) => m.ProductEditPage
+          ),
+      },
+      {
+        path: 'campaigns',
+        loadComponent: () =>
+          import('./features/retailer/campaigns/campaigns.page').then(
+            (m) => m.CampaignsPage
+          ),
+      },
+      {
+        path: 'campaigns/create',
+        loadComponent: () =>
+          import(
+            './features/retailer/campaign-create/campaign-create.page'
+          ).then((m) => m.CampaignCreatePage),
+      },
+      {
+        path: 'campaigns/:id/edit',
+        loadComponent: () =>
+          import(
+            './features/retailer/campaign-create/campaign-create.page'
+          ).then((m) => m.CampaignCreatePage),
+      },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import(
+            './features/retailer/retailer-analytics/retailer-analytics.page'
+          ).then((m) => m.RetailerAnalyticsPage),
+      },
+      // {
+      //   path: 'insights',
+      //   loadComponent: () =>
+      //     import('./features/retailer/insights/insights.page').then(
+      //       (m) => m.InsightsPage
+      //     ),
+      // },
     ],
   },
 

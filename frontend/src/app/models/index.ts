@@ -8,3 +8,4 @@ export * from './commerce';
 export * from './creator';
 export * from './media';
 export * from './admin';
+export * from './retailer';

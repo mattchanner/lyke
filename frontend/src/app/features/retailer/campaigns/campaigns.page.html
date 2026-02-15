@@ -1,0 +1,65 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/retailer"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Campaigns</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeFilter()" (ionChange)="onFilterChange($event)">
+      <ion-segment-button value="all">All</ion-segment-button>
+      <ion-segment-button value="active">Active</ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && campaigns().length === 0) {
+    <ion-list>
+      @for (_ of [1, 2, 3]; track $index) {
+        <ion-item>
+          <ion-label>
+            <ion-skeleton-text [animated]="true" style="width: 60%"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 40%"></ion-skeleton-text>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else if (campaigns().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="megaphone-outline" class="empty-icon"></ion-icon>
+      <h3>No campaigns</h3>
+      <p>Create a sponsored placement campaign to promote your products.</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (campaign of campaigns(); track campaign.id) {
+        <ion-item [routerLink]="'/retailer/campaigns/' + campaign.id + '/edit'" detail>
+          <ion-label>
+            <h2>{{ campaign.productName ?? 'General Campaign' }}</h2>
+            <p>{{ campaign.startDate | date:'mediumDate' }} &mdash; {{ campaign.endDate | date:'mediumDate' }}</p>
+            <p>Budget: {{ campaign.budgetAmount | number:'1.2-2' }} &middot; Spent: {{ campaign.spentAmount | number:'1.2-2' }}</p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(campaign.status)">
+            {{ campaign.status }}
+          </ion-badge>
+        </ion-item>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll (ionInfinite)="loadMore($event)" [disabled]="!hasMore()">
+      <ion-infinite-scroll-content loadingSpinner="crescent" loadingText="Loading more...">
+      </ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button routerLink="/retailer/campaigns/create">
+      <ion-icon name="add-outline"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
