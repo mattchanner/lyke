@@ -131,8 +131,6 @@ var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 FileInfo entryAseemblyFile = new(Assembly.GetEntryAssembly()!.Location);
 
-//FFmpeg.SetExecutablesPath(Path.Combine(entryAseemblyFile.Directory!.FullName, "AppBin"));
-
 // Seed development data
 if (app.Environment.IsDevelopment())
 {

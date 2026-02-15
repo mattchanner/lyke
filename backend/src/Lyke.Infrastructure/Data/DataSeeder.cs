@@ -112,6 +112,9 @@ public static class DataSeeder
         var context = services.GetRequiredService<LykeDbContext>();
         var userManager = services.GetRequiredService<UserManager<User>>();
 
+        await context.Database.EnsureDeletedAsync();
+        await context.Database.EnsureCreatedAsync();        
+
         //IEnumerable<string> pendingMigrations = await context.Database.GetPendingMigrationsAsync();
 
         //if (pendingMigrations.Any())
