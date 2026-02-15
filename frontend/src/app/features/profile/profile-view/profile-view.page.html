@@ -30,15 +30,17 @@
         <ion-label>Edit Profile</ion-label>
       </ion-item>
 
-      <ion-item routerLink="/profile/body-profile" detail>
-        <ion-icon name="body-outline" slot="start"></ion-icon>
-        <ion-label>
-          Body Profile
-          @if (bodyProfile()) {
-            <p>{{ bodyProfile()!.heightDisplay }} · {{ bodyProfile()!.weightDisplay }}</p>
-          }
-        </ion-label>
-      </ion-item>
+      @if (!authService.isAdmin() && !authService.isRetailer()) {
+        <ion-item routerLink="/profile/body-profile" detail>
+          <ion-icon name="body-outline" slot="start"></ion-icon>
+          <ion-label>
+            Body Profile
+            @if (bodyProfile()) {
+              <p>{{ bodyProfile()!.heightDisplay }} · {{ bodyProfile()!.weightDisplay }}</p>
+            }
+          </ion-label>
+        </ion-item>
+      }
 
       @if (authService.isCreator()) {
         <ion-item routerLink="/creator" detail>

@@ -1,5 +1,9 @@
 cd /c/Users/mchan/source/repos/github/lyke/frontend && npx ng build && npx cap sync android 2>&1 | tail -5
 
+// reverse debug
+/c/Users/mchan/AppData/Local/Android/Sdk/platform-tools/adb.exe" reverse tcp:5104 tcp:5104
+
+
 The quickest path is to open the project in Android Studio from the frontend directory:
 
   cd frontend

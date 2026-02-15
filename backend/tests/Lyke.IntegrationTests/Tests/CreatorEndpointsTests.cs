@@ -172,6 +172,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "My favorite casual look",
             MediaType: MediaType.Image,
             MediaUrls: new List<string> { "https://example.com/image1.jpg" },
+            ThumbnailUrls: null,
             Products: new List<PostProductRequest>()
         );
 
@@ -212,6 +213,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "Formal look",
             MediaType: MediaType.Image,
             MediaUrls: new List<string> { "https://example.com/image.jpg" },
+            ThumbnailUrls: null,
             Products: new List<PostProductRequest>()
         ));
 
@@ -250,6 +252,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "Casual look",
             MediaType: MediaType.Image,
             MediaUrls: new List<string> { "https://example.com/image.jpg" },
+            ThumbnailUrls: null,
             Products: new List<PostProductRequest>()
         ));
         var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
@@ -260,6 +263,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "Formal look",
             MediaType: null,
             MediaUrls: null,
+            ThumbnailUrls: null,
             Products: null
         );
 
@@ -298,6 +302,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "Casual look",
             MediaType: MediaType.Image,
             MediaUrls: new List<string> { "https://example.com/image.jpg" },
+            ThumbnailUrls: null,
             Products: new List<PostProductRequest>()
         ));
         var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
@@ -333,6 +338,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Description: "Casual look",
             MediaType: MediaType.Image,
             MediaUrls: new List<string> { "https://example.com/image.jpg" },
+            ThumbnailUrls: null,
             Products: new List<PostProductRequest>()
         ));
         var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);

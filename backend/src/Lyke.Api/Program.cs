@@ -1,6 +1,5 @@
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
-using Lyke.Api.Workers;
 using Lyke.Application;
 using Lyke.Infrastructure;
 using Lyke.Infrastructure.Data;
@@ -12,7 +11,6 @@ using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-using Xabe.FFmpeg;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,7 +97,6 @@ builder.Services.AddAuthorization(options =>
 
 // Controllers
 builder.Services.AddControllers();
-builder.Services.AddHostedService<MigrateDatabaseBackgroundWorker>();
 
 // OpenAPI/Swagger
 builder.Services.AddOpenApi("be-lyke_api_v1");
@@ -111,7 +108,7 @@ builder.Services.AddCors(options =>
         "AllowMobileApp",
         policy =>
         {
-            if (true || builder.Environment.IsDevelopment())
+            if (builder.Environment.IsDevelopment())
             {
                 policy
                     .SetIsOriginAllowed(_ => true)

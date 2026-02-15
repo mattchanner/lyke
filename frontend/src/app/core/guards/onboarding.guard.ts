@@ -15,6 +15,11 @@ export const onboardingGuard: CanActivateFn = () => {
     return false;
   }
 
+  // Admins and retailers don't need body profile onboarding
+  if (authService.isAdmin() || authService.isRetailer()) {
+    return true;
+  }
+
   // Check if user has completed onboarding (has body profile)
   return apiService.get<UserProfileResponse>('profile', 'me').pipe(
     map((response) => {

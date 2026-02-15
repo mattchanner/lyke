@@ -164,6 +164,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
                 Description: "Casual look",
                 MediaType: MediaType.Image,
                 MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
                 Products: new List<PostProductRequest>()
             )
         );
@@ -221,6 +222,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
                 Description: "Casual look",
                 MediaType: MediaType.Image,
                 MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
                 Products: new List<PostProductRequest>()
             )
         );
@@ -269,6 +271,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
                 Description: "Casual look",
                 MediaType: MediaType.Image,
                 MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
                 Products: new List<PostProductRequest>()
             )
         );
@@ -327,6 +330,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
                 Description: "Casual look",
                 MediaType: MediaType.Image,
                 MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
                 Products: new List<PostProductRequest>()
             )
         );
@@ -385,6 +389,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
                 Description: "Casual look",
                 MediaType: MediaType.Image,
                 MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
                 Products: new List<PostProductRequest>()
             )
         );

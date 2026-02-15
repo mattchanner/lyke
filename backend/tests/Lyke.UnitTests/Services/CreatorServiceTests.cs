@@ -204,6 +204,7 @@ public class CreatorServiceTests : IDisposable
             "Test description",
             MediaType.Image,
             new List<string> { "https://example.com/image1.jpg" },
+            null,
             new List<PostProductRequest>
             {
                 new(product.Id, "M", FitRating.TrueToSize, "Fits well", null, null)
@@ -242,6 +243,7 @@ public class CreatorServiceTests : IDisposable
             "Description",
             MediaType.Image,
             new List<string> { "https://example.com/image.jpg" },
+            null,
             new List<PostProductRequest>
             {
                 new(product.Id, "M", null, null, null, null)
@@ -266,6 +268,7 @@ public class CreatorServiceTests : IDisposable
             "Description",
             MediaType.Image,
             new List<string> { "https://example.com/image.jpg" },
+            null,
             new List<PostProductRequest>
             {
                 new(Guid.NewGuid(), "M", null, null, null, null) // Invalid product ID
@@ -294,7 +297,7 @@ public class CreatorServiceTests : IDisposable
         _context.PostProducts.Add(postProduct);
         await _context.SaveChangesAsync();
 
-        var request = new UpdatePostRequest("Updated Title", "Updated description", null, null, null);
+        var request = new UpdatePostRequest("Updated Title", "Updated description", null, null, null, null);
 
         // Act
         var result = await _sut.UpdatePostAsync(user.Id, post.Id, request);
@@ -315,7 +318,7 @@ public class CreatorServiceTests : IDisposable
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
-        var request = new UpdatePostRequest("Updated Title", null, null, null, null);
+        var request = new UpdatePostRequest("Updated Title", null, null, null, null, null);
 
         // Act
         var act = () => _sut.UpdatePostAsync(user.Id, post.Id, request);
