@@ -1,0 +1,30 @@
+cd /c/Users/mchan/source/repos/github/lyke/frontend && npx ng build && npx cap sync android 2>&1 | tail -5
+
+The quickest path is to open the project in Android Studio from the frontend directory:
+
+  cd frontend
+  npx cap open android
+
+  That opens the frontend/android project in Android Studio. From there:
+
+  1. Wait for Gradle sync to finish (bottom status bar shows progress)
+  2. Set up a device — either:
+    - Emulator: Tools > Device Manager > Create Virtual Device > pick a Pixel, select API 34+ image, finish
+    - Physical device: plug in via USB, enable Developer Options + USB Debugging on the phone
+  3. Hit the green Run button (or Shift+F10) with your device selected in the toolbar dropdown
+
+  That's it. The app will build the native shell and load your web assets from www/.
+
+  For ongoing development, after you make frontend code changes:
+
+  npx ng build && npx cap sync android
+
+  Then re-run from Android Studio. Or for faster iteration, use live reload — run npx ng serve --host=0.0.0.0,
+  find your local IP, and temporarily add this to capacitor.config.ts:
+
+  server: {
+    url: 'http://YOUR_LOCAL_IP:4200',
+    cleartext: true,
+  }
+
+  Then npx cap sync android and run again. Changes will hot-reload without rebuilding.

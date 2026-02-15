@@ -6,6 +6,8 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
+  IonButton,
+  IonButtons,
   IonCard,
   IonCardHeader,
   IonCardTitle,
@@ -27,6 +29,7 @@ import {
   analyticsOutline,
   bodyOutline,
   personOutline,
+  personCircleOutline,
 } from 'ionicons/icons';
 import { RetailerService } from '../../../core';
 import { RetailerProfileResponse } from '../../../models';
@@ -41,6 +44,8 @@ import { RetailerProfileResponse } from '../../../models';
     IonHeader,
     IonTitle,
     IonToolbar,
+    IonButton,
+    IonButtons,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -70,6 +75,7 @@ export class RetailerDashboardPage implements OnInit {
       analyticsOutline,
       bodyOutline,
       personOutline,
+      personCircleOutline,
     });
   }
 

@@ -32,18 +32,28 @@
 
       <ion-item routerLink="/profile/body-profile" detail>
         <ion-icon name="body-outline" slot="start"></ion-icon>
-        <ion-label>Body Profile</ion-label>
-        @if (bodyProfile()) {
-          <ion-label slot="end" color="medium">
-            {{ bodyProfile()!.heightDisplay }} · {{ bodyProfile()!.weightDisplay }}
-          </ion-label>
-        }
+        <ion-label>
+          Body Profile
+          @if (bodyProfile()) {
+            <p>{{ bodyProfile()!.heightDisplay }} · {{ bodyProfile()!.weightDisplay }}</p>
+          }
+        </ion-label>
       </ion-item>
 
       @if (authService.isCreator()) {
         <ion-item routerLink="/creator" detail>
           <ion-icon name="ribbon-outline" slot="start"></ion-icon>
           <ion-label>Creator Dashboard</ion-label>
+        </ion-item>
+      } @else if (authService.isRetailer()) {
+        <ion-item routerLink="/retailer" detail>
+          <ion-icon name="storefront-outline" slot="start"></ion-icon>
+          <ion-label>Retailer Dashboard</ion-label>
+        </ion-item>
+      } @else if (authService.isAdmin()) {
+        <ion-item routerLink="/admin" detail>
+          <ion-icon name="shield-outline" slot="start"></ion-icon>
+          <ion-label>Admin Dashboard</ion-label>
         </ion-item>
       } @else {
         <ion-item routerLink="/creator/register" detail>

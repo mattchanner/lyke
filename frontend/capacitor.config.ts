@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'clothing.belyke.app',
   appName: 'Be-Lyke',
   webDir: 'www',
+  server: {
+    androidScheme: 'http',
+  },
   plugins: {
     SocialLogin: {
       google: {

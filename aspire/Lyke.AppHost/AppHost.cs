@@ -19,12 +19,14 @@ var blob = storage.AddBlobContainer("media");
 
 var postgresDb = postgres.AddDatabase("postgresdb");
 
-builder.AddProject<Projects.Lyke_Api>("Api").PublishAsDockerFile(config => 
+builder.AddProject<Projects.Lyke_Api>("Api").PublishAsDockerFile(config =>
 {
     config.WithDockerfile("Dockerfile");
-}).WaitFor(postgresDb)
-    .WithReference(postgresDb, connectionName: "DefaultConnection")
-    .WaitFor(blob)
-    .WithReference(blob, connectionName: "AzureStorage");
+    config.WithEndpoint(port: 5104, name: "http");
+})
+  .WaitFor(postgresDb)
+  .WithReference(postgresDb, connectionName: "DefaultConnection")
+  .WaitFor(blob)
+  .WithReference(blob, connectionName: "AzureStorage");
 
 builder.Build().Run();

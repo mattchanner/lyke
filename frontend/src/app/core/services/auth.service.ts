@@ -61,6 +61,7 @@ export class AuthService {
   readonly isLoading = computed(() => this.state().isLoading);
 
   readonly isCreator = computed(() => this.state().userType === UserType.Creator);
+  readonly isRetailer = computed(() => this.state().userType === UserType.Retailer);
   readonly isAdmin = computed(() => this.state().userType === UserType.Admin);
   readonly isShopper = computed(() => this.state().userType === UserType.Shopper);
 

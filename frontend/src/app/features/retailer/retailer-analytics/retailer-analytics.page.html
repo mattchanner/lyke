@@ -62,6 +62,38 @@
       </ion-card>
     </div>
 
+    @if (a.dailyMetrics.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="trending-up-outline"></ion-icon>
+            Daily Trend
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="metric-toggle">
+            <ion-segment [value]="chartMetric()" (ionChange)="setChartMetric($any($event.detail.value))">
+              <ion-segment-button value="views">
+                <ion-label>Views</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="clicks">
+                <ion-label>Clicks</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="conversions">
+                <ion-label>Conv.</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="revenue">
+                <ion-label>Revenue</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+          <div class="chart-wrapper">
+            <canvas #chartCanvas></canvas>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
     @if (a.topProducts.length > 0) {
       <div class="section-header">
         <h3>Top Products</h3>
@@ -72,22 +104,6 @@
             <ion-label>
               <h2>{{ product.productName }}</h2>
               <p>{{ product.category }} &middot; {{ product.clicks | number }} clicks &middot; {{ product.revenue | number:'1.2-2' }} revenue</p>
-            </ion-label>
-          </ion-item>
-        }
-      </ion-list>
-    }
-
-    @if (a.dailyMetrics.length > 0) {
-      <div class="section-header">
-        <h3>Daily Metrics</h3>
-      </div>
-      <ion-list>
-        @for (day of a.dailyMetrics; track day.date) {
-          <ion-item>
-            <ion-label>
-              <h3>{{ day.date | date:'mediumDate' }}</h3>
-              <p>Views: {{ day.views | number }} &middot; Clicks: {{ day.clicks | number }} &middot; Revenue: {{ day.revenue | number:'1.2-2' }}</p>
             </ion-label>
           </ion-item>
         }

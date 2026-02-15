@@ -25,6 +25,8 @@ import {
   logOutOutline,
   ribbonOutline,
   starOutline,
+  storefrontOutline,
+  shieldOutline,
 } from 'ionicons/icons';
 import { ApiService, AuthService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
@@ -71,6 +73,8 @@ export class ProfileViewPage implements OnInit {
       logOutOutline,
       ribbonOutline,
       starOutline,
+      storefrontOutline,
+      shieldOutline,
     });
   }
 

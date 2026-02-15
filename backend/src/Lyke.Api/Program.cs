@@ -111,14 +111,25 @@ builder.Services.AddCors(options =>
         "AllowMobileApp",
         policy =>
         {
-            policy
-                .WithOrigins(
-                    builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                        ?? Array.Empty<string>()
-                )
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+            if (true || builder.Environment.IsDevelopment())
+            {
+                policy
+                    .SetIsOriginAllowed(_ => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }
+            else
+            {
+                policy
+                    .WithOrigins(
+                        builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                            ?? Array.Empty<string>()
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            }
         }
     );
 });
@@ -157,9 +168,12 @@ app.UseExceptionHandling();
 
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
-
 app.UseCors("AllowMobileApp");
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

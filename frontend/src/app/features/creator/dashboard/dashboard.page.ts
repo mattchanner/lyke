@@ -6,7 +6,7 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
-  IonBackButton,
+  IonButton,
   IonButtons,
   IonList,
   IonItem,
@@ -34,6 +34,7 @@ import {
   handLeftOutline,
   cashOutline,
   shieldCheckmarkOutline,
+  personCircleOutline,
 } from 'ionicons/icons';
 import { CreatorService } from '../../../core';
 import {
@@ -55,7 +56,7 @@ import {
     IonHeader,
     IonTitle,
     IonToolbar,
-    IonBackButton,
+    IonButton,
     IonButtons,
     IonList,
     IonItem,
@@ -94,6 +95,7 @@ export class DashboardPage implements OnInit {
       handLeftOutline,
       cashOutline,
       shieldCheckmarkOutline,
+      personCircleOutline,
     });
   }
 

@@ -105,7 +105,7 @@
                 <div class="bar-row">
                   <span class="bar-label">{{ band.label }}</span>
                   <ion-progress-bar [value]="band.percentage / 100"></ion-progress-bar>
-                  <span class="bar-pct">{{ band.percentage | number:'1.0-0' }}%</span>
+                  <span class="bar-pct">{{ band.count | number }} ({{ band.percentage | number:'1.0-0' }}%)</span>
                 </div>
               }
             </ion-card-content>
@@ -122,7 +122,7 @@
                 <div class="bar-row">
                   <span class="bar-label">{{ band.label }}</span>
                   <ion-progress-bar [value]="band.percentage / 100"></ion-progress-bar>
-                  <span class="bar-pct">{{ band.percentage | number:'1.0-0' }}%</span>
+                  <span class="bar-pct">{{ band.count | number }} ({{ band.percentage | number:'1.0-0' }}%)</span>
                 </div>
               }
             </ion-card-content>
@@ -139,7 +139,7 @@
                 <div class="bar-row">
                   <span class="bar-label">{{ band.label }}</span>
                   <ion-progress-bar [value]="band.percentage / 100"></ion-progress-bar>
-                  <span class="bar-pct">{{ band.percentage | number:'1.0-0' }}%</span>
+                  <span class="bar-pct">{{ band.count | number }} ({{ band.percentage | number:'1.0-0' }}%)</span>
                 </div>
               }
             </ion-card-content>
@@ -156,7 +156,7 @@
                 <div class="bar-row">
                   <span class="bar-label">{{ band.label }}</span>
                   <ion-progress-bar [value]="band.percentage / 100"></ion-progress-bar>
-                  <span class="bar-pct">{{ band.percentage | number:'1.0-0' }}%</span>
+                  <span class="bar-pct">{{ band.count | number }} ({{ band.percentage | number:'1.0-0' }}%)</span>
                 </div>
               }
             </ion-card-content>
