@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Be-Lyke</string>
+    <string name="title_activity_main">Be-Lyke</string>
+    <string name="package_name">clothing.belyke.app</string>
+    <string name="custom_url_scheme">clothing.belyke.app</string>
+</resources>
