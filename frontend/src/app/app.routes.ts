@@ -333,13 +333,13 @@ export const routes: Routes = [
             './features/retailer/retailer-analytics/retailer-analytics.page'
           ).then((m) => m.RetailerAnalyticsPage),
       },
-      // {
-      //   path: 'insights',
-      //   loadComponent: () =>
-      //     import('./features/retailer/insights/insights.page').then(
-      //       (m) => m.InsightsPage
-      //     ),
-      // },
+      {
+        path: 'insights',
+        loadComponent: () =>
+          import('./features/retailer/insights/insights.page').then(
+            (m) => m.InsightsPage
+          ),
+      },
     ],
   },
 
