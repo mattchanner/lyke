@@ -86,26 +86,34 @@
       </ion-card>
     </div>
 
-    <!-- Daily Metrics -->
+    <!-- Daily Metrics Chart -->
     @if (a.dailyMetrics.length > 0) {
       <ion-card>
         <ion-card-header>
           <ion-card-title>
             <ion-icon name="trending-up-outline"></ion-icon>
-            Daily Views
+            Daily Trend
           </ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="chart-container">
-            @for (day of a.dailyMetrics; track day.date) {
-              <div class="chart-row">
-                <span class="chart-date">{{ day.date | date:'M/d' }}</span>
-                <div class="chart-bar-container">
-                  <div class="chart-bar" [style.width.%]="getBarWidth(day.views)"></div>
-                </div>
-                <span class="chart-value">{{ day.views | number }}</span>
-              </div>
-            }
+          <div class="metric-toggle">
+            <ion-segment [value]="chartMetric()" (ionChange)="setChartMetric($any($event.detail.value))">
+              <ion-segment-button value="views">
+                <ion-label>Views</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="likes">
+                <ion-label>Likes</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="clicks">
+                <ion-label>Clicks</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="earnings">
+                <ion-label>Earnings</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+          <div class="chart-wrapper">
+            <canvas #chartCanvas></canvas>
           </div>
         </ion-card-content>
       </ion-card>
