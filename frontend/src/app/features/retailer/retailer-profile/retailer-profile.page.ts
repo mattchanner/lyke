@@ -80,6 +80,11 @@ export class RetailerProfilePage implements OnInit {
         this.logoUrl.set(profile.logoUrl ?? '');
         this.websiteUrl.set(profile.websiteUrl ?? '');
         this.contactEmail.set(profile.contactEmail ?? '');
+        this.affiliateBaseUrl.set(profile.affiliateConfig?.baseUrl ?? '');
+        this.affiliateId.set(profile.affiliateConfig?.affiliateId ?? '');
+        this.commissionRate.set(
+          profile.affiliateConfig?.commissionRate?.toString() ?? ''
+        );
       }
       this.isLoading.set(false);
     });

@@ -11,4 +11,10 @@ public record RetailerProfileResponse(
     int ActiveProducts,
     int TotalCampaigns,
     int ActiveCampaigns,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    AffiliateConfigDto? AffiliateConfig);
+
+public record AffiliateConfigDto(
+    string? BaseUrl,
+    string? AffiliateId,
+    decimal? CommissionRate);

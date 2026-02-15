@@ -11,6 +11,13 @@ export interface RetailerProfileResponse {
   totalCampaigns: number;
   activeCampaigns: number;
   createdAt: string;
+  affiliateConfig: AffiliateConfigResponse | null;
+}
+
+export interface AffiliateConfigResponse {
+  baseUrl: string | null;
+  affiliateId: string | null;
+  commissionRate: number | null;
 }
 
 export interface RegisterRetailerRequest {

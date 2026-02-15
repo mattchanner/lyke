@@ -116,6 +116,13 @@ public class RetailerService : IRetailerService
                 cancellationToken
             );
 
+        AffiliateConfigDto? affiliateConfig = null;
+        if (!string.IsNullOrEmpty(retailer.AffiliateConfig))
+        {
+            affiliateConfig = JsonSerializer.Deserialize<AffiliateConfigDto>(
+                retailer.AffiliateConfig, JsonOptions);
+        }
+
         return new RetailerProfileResponse(
             Id: retailer.Id,
             Name: retailer.Name,
@@ -127,7 +134,8 @@ public class RetailerService : IRetailerService
             ActiveProducts: activeProducts,
             TotalCampaigns: totalCampaigns,
             ActiveCampaigns: activeCampaigns,
-            CreatedAt: retailer.CreatedAt
+            CreatedAt: retailer.CreatedAt,
+            AffiliateConfig: affiliateConfig
         );
     }
 
