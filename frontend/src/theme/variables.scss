@@ -4,10 +4,10 @@
 // https://ionicframework.com/docs/theming/
 
 :root {
-  // ── Segment Button — use Ionic's native indicator properties ──
+  // ── Segment Button — primary text + underline when checked ──
   ion-segment-button {
+    --color-checked: var(--ion-color-primary);
     --indicator-color: var(--ion-color-primary);
-    --color-checked: var(--ion-color-primary-contrast);
   }
 
   // ── Global Surfaces ──
