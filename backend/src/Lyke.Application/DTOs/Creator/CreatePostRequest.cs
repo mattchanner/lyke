@@ -7,5 +7,6 @@ public record CreatePostRequest(
     string? Description,
     MediaType MediaType,
     List<string> MediaUrls,
+    List<string>? ThumbnailUrls,
     List<PostProductRequest> Products
 );

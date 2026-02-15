@@ -8,6 +8,7 @@ public record CreatorPostResponse(
     string? Description,
     MediaType MediaType,
     List<string> MediaUrls,
+    List<string> ThumbnailUrls,
     PostStatus Status,
     string? ModerationNotes,
     DateTime? PublishedAt,

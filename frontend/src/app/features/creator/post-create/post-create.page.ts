@@ -326,6 +326,7 @@ export class PostCreatePage {
         description: this.description() || undefined,
         mediaType: this.mediaType(),
         mediaUrls: this.uploadedMedia().map((m) => m.originalUrl),
+        thumbnailUrls: this.uploadedMedia().map((m) => m.thumbnailUrl),
         products,
       })
       .subscribe({

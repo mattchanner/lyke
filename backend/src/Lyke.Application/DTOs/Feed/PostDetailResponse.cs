@@ -9,6 +9,7 @@ public record PostDetailResponse(
     string? Description,
     MediaType MediaType,
     List<string> MediaUrls,
+    List<string> ThumbnailUrls,
     CreatorDetailResponse Creator,
     List<PostProductDetailResponse> Products,
     EngagementCountsResponse Engagements,

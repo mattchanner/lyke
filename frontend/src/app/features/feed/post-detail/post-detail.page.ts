@@ -63,9 +63,10 @@ export class PostDetailPage implements OnInit {
   readonly mediaItems = computed<MediaItem[]>(() => {
     const p = this.post();
     if (!p) return [];
-    return p.mediaUrls.map((url) => ({
+    return p.mediaUrls.map((url, i) => ({
       url,
       type: p.mediaType ?? MediaType.Image,
+      thumbnailUrl: p.thumbnailUrls?.[i],
     }));
   });
 

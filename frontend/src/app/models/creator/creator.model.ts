@@ -40,6 +40,7 @@ export interface CreatePostRequest {
   description?: string;
   mediaType: MediaType;
   mediaUrls: string[];
+  thumbnailUrls?: string[];
   products: PostProductRequest[];
 }
 
@@ -48,6 +49,7 @@ export interface UpdatePostRequest {
   description?: string;
   mediaType?: MediaType;
   mediaUrls?: string[];
+  thumbnailUrls?: string[];
   products?: PostProductRequest[];
 }
 
@@ -66,6 +68,7 @@ export interface CreatorPostResponse {
   description: string | null;
   mediaType: MediaType;
   mediaUrls: string[];
+  thumbnailUrls: string[];
   status: PostStatus;
   moderationNotes: string | null;
   publishedAt: string | null;

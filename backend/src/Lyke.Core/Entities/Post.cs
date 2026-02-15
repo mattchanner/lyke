@@ -9,6 +9,7 @@ public class Post : BaseEntity
     public string? Description { get; set; }
     public MediaType MediaType { get; set; }
     public string? MediaUrls { get; set; } // JSON array
+    public string? ThumbnailUrls { get; set; } // JSON array
     public PostStatus Status { get; set; }
     public string? ModerationNotes { get; set; }
     public DateTime? PublishedAt { get; set; }

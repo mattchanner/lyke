@@ -9,6 +9,7 @@ public record FeedPostResponse(
     string? Description,
     MediaType MediaType,
     List<string> MediaUrls,
+    List<string> ThumbnailUrls,
     CreatorSummaryResponse Creator,
     List<PostProductSummaryResponse> Products,
     EngagementCountsResponse Engagements,

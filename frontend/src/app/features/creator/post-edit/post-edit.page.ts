@@ -115,6 +115,7 @@ export class PostEditPage implements OnInit {
   readonly description = signal('');
   readonly mediaType = signal(MediaType.Image);
   readonly mediaUrls = signal<string[]>([]);
+  readonly thumbnailUrls = signal<string[]>([]);
   readonly taggedProducts = signal<TaggedProduct[]>([]);
 
   // Product search
@@ -123,9 +124,10 @@ export class PostEditPage implements OnInit {
   readonly isSearching = signal(false);
 
   readonly mediaItems = computed<MediaItem[]>(() =>
-    this.mediaUrls().map((url) => ({
+    this.mediaUrls().map((url, i) => ({
       url,
       type: this.mediaType(),
+      thumbnailUrl: this.thumbnailUrls()?.[i],
     }))
   );
 
@@ -163,6 +165,7 @@ export class PostEditPage implements OnInit {
           this.description.set(post.description || '');
           this.mediaType.set(post.mediaType);
           this.mediaUrls.set([...post.mediaUrls]);
+          this.thumbnailUrls.set([...post.thumbnailUrls]);
           this.taggedProducts.set(
             post.products.map((pp) => ({
               product: {
@@ -313,6 +316,7 @@ export class PostEditPage implements OnInit {
         description: this.description() || undefined,
         mediaType: this.mediaType(),
         mediaUrls: this.mediaUrls(),
+        thumbnailUrls: this.thumbnailUrls(),
         products,
       })
       .subscribe({
@@ -352,6 +356,7 @@ export class PostEditPage implements OnInit {
         description: this.description() || undefined,
         mediaType: this.mediaType(),
         mediaUrls: this.mediaUrls(),
+        thumbnailUrls: this.thumbnailUrls(),
         products,
       })
       .subscribe({

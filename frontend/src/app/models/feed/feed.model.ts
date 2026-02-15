@@ -76,6 +76,7 @@ export interface FeedPostResponse {
   description: string | null;
   mediaType: MediaType;
   mediaUrls: string[];
+  thumbnailUrls: string[];
   creator: CreatorSummaryResponse;
   products: PostProductSummaryResponse[];
   engagements: EngagementCountsResponse;
@@ -91,6 +92,7 @@ export interface PostDetailResponse {
   description: string | null;
   mediaType: MediaType;
   mediaUrls: string[];
+  thumbnailUrls: string[];
   creator: CreatorDetailResponse;
   products: PostProductDetailResponse[];
   engagements: EngagementCountsResponse;

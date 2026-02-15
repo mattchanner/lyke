@@ -405,6 +405,9 @@ public class CreatorService : ICreatorService
             Description = request.Description,
             MediaType = request.MediaType,
             MediaUrls = JsonSerializer.Serialize(request.MediaUrls, JsonOptions),
+            ThumbnailUrls = request.ThumbnailUrls != null
+                ? JsonSerializer.Serialize(request.ThumbnailUrls, JsonOptions)
+                : null,
             Status = PostStatus.Draft
         };
 
@@ -463,6 +466,11 @@ public class CreatorService : ICreatorService
                 throw new ValidationException("MediaUrls", $"Maximum {_creatorSettings.MaxMediaPerPost} media items allowed");
             }
             post.MediaUrls = JsonSerializer.Serialize(request.MediaUrls, JsonOptions);
+        }
+
+        if (request.ThumbnailUrls != null)
+        {
+            post.ThumbnailUrls = JsonSerializer.Serialize(request.ThumbnailUrls, JsonOptions);
         }
 
         if (request.Products != null)
@@ -949,6 +957,7 @@ public class CreatorService : ICreatorService
             Description: post.Description,
             MediaType: post.MediaType,
             MediaUrls: ParseMediaUrls(post.MediaUrls),
+            ThumbnailUrls: ParseMediaUrls(post.ThumbnailUrls),
             Status: post.Status,
             ModerationNotes: post.ModerationNotes,
             PublishedAt: post.PublishedAt,

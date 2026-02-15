@@ -71,9 +71,10 @@ export class PostCardComponent {
   }
 
   get mediaItems(): MediaItem[] {
-    return this.post.mediaUrls.map((url) => ({
+    return this.post.mediaUrls.map((url, i) => ({
       url,
       type: this.post.mediaType ?? MediaType.Image,
+      thumbnailUrl: this.post.thumbnailUrls?.[i],
     }));
   }
 
