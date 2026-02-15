@@ -116,6 +116,7 @@ export class LoginPage {
     const userType = this.authService.userType();
     if (userType === UserType.Admin) return '/admin';
     if (userType === UserType.Creator) return '/creator';
+    if (userType === UserType.Retailer) return '/retailer';
     return '/feed';
   }
 
