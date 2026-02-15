@@ -9,9 +9,25 @@
 
 <ion-content class="ion-padding">
   @if (isLoading()) {
-    <div class="loading-state">
-      <ion-spinner name="crescent"></ion-spinner>
-    </div>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>
+          <ion-skeleton-text [animated]="true" style="width: 50%"></ion-skeleton-text>
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <ion-item>
+              <ion-label>
+                <p><ion-skeleton-text [animated]="true" style="width: 30%"></ion-skeleton-text></p>
+                <h3><ion-skeleton-text [animated]="true" style="width: 60%"></ion-skeleton-text></h3>
+              </ion-label>
+            </ion-item>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
   } @else if (!user()) {
     <div class="empty-state">
       <ion-icon name="person-outline" class="empty-icon"></ion-icon>

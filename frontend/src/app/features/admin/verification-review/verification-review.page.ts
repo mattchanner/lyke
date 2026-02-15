@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import {
   IonContent,
   IonHeader,
@@ -45,7 +44,6 @@ import { SkeletonListComponent } from '../../../shared/components/skeleton-list'
   selector: 'app-verification-review',
   standalone: true,
   imports: [
-    CommonModule,
     IonContent,
     IonHeader,
     IonTitle,
@@ -79,6 +77,7 @@ export class VerificationReviewPage implements OnInit {
 
   readonly verifications = signal<PendingVerificationResponse[]>([]);
   readonly isLoading = signal(false);
+  readonly isActioning = signal(false);
   readonly activeTab = signal<VerificationStatus>(VerificationStatus.Pending);
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
@@ -103,7 +102,7 @@ export class VerificationReviewPage implements OnInit {
     this.loadVerifications(true);
   }
 
-  loadVerifications(refresh = false): void {
+  loadVerifications(refresh = false, event?: CustomEvent): void {
     if (refresh) {
       this.currentPage.set(1);
       this.hasMore.set(true);
@@ -127,8 +126,15 @@ export class VerificationReviewPage implements OnInit {
             this.hasMore.set(r.meta?.hasNextPage ?? false);
           }
         },
-        error: () => this.toast.error('Failed to load verifications'),
-        complete: () => this.isLoading.set(false),
+        error: () => {
+          this.toast.error('Failed to load verifications');
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
+        complete: () => {
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
       });
   }
 
@@ -139,33 +145,12 @@ export class VerificationReviewPage implements OnInit {
   }
 
   onRefresh(event: CustomEvent): void {
-    this.loadVerifications(true);
-    setTimeout(() => {
-      (event.target as HTMLIonRefresherElement).complete();
-    }, 500);
+    this.loadVerifications(true, event);
   }
 
   loadMore(event: CustomEvent): void {
     this.currentPage.update((p) => p + 1);
-    this.adminService
-      .getPendingVerifications({
-        status: this.activeTab(),
-        page: this.currentPage(),
-        pageSize: 20,
-      })
-      .subscribe({
-        next: (r) => {
-          if (r.success && r.data) {
-            this.verifications.update((v) => [...v, ...r.data!]);
-            this.hasMore.set(r.meta?.hasNextPage ?? false);
-          }
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-        error: () => {
-          this.toast.error('Failed to load more verifications');
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-      });
+    this.loadVerifications(false, event);
   }
 
   toggleExpand(creatorId: string): void {
@@ -224,6 +209,7 @@ export class VerificationReviewPage implements OnInit {
     approve: boolean,
     rejectionReason?: string
   ): void {
+    this.isActioning.set(true);
     this.adminService
       .reviewVerification(creatorId, { approve, rejectionReason })
       .subscribe({
@@ -237,6 +223,7 @@ export class VerificationReviewPage implements OnInit {
           }
         },
         error: () => this.toast.error('Failed to review verification'),
+        complete: () => this.isActioning.set(false),
       });
   }
 

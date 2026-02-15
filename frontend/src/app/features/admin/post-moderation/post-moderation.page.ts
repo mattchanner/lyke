@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import {
   IonContent,
   IonHeader,
@@ -46,7 +45,6 @@ type TabFilter = PostStatus | 'all';
   selector: 'app-post-moderation',
   standalone: true,
   imports: [
-    CommonModule,
     IonContent,
     IonHeader,
     IonTitle,
@@ -81,6 +79,7 @@ export class PostModerationPage implements OnInit {
 
   readonly posts = signal<PendingPostResponse[]>([]);
   readonly isLoading = signal(false);
+  readonly isActioning = signal(false);
   readonly activeTab = signal<TabFilter>(PostStatus.PendingReview);
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
@@ -104,7 +103,7 @@ export class PostModerationPage implements OnInit {
     this.loadPosts(true);
   }
 
-  loadPosts(refresh = false): void {
+  loadPosts(refresh = false, event?: CustomEvent): void {
     if (refresh) {
       this.currentPage.set(1);
       this.hasMore.set(true);
@@ -112,7 +111,7 @@ export class PostModerationPage implements OnInit {
     this.isLoading.set(true);
 
     const tab = this.activeTab();
-    const status = tab === 'all' ? undefined : tab as PostStatus;
+    const status = tab === 'all' ? undefined : (tab as PostStatus);
     this.adminService
       .getPendingPosts({ status, page: this.currentPage(), pageSize: 20 })
       .subscribe({
@@ -126,8 +125,15 @@ export class PostModerationPage implements OnInit {
             this.hasMore.set(r.meta?.hasNextPage ?? false);
           }
         },
-        error: () => this.toast.error('Failed to load posts'),
-        complete: () => this.isLoading.set(false),
+        error: () => {
+          this.toast.error('Failed to load posts');
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
+        complete: () => {
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
       });
   }
 
@@ -138,34 +144,12 @@ export class PostModerationPage implements OnInit {
   }
 
   onRefresh(event: CustomEvent): void {
-    this.loadPosts(true);
-    setTimeout(() => {
-      (event.target as HTMLIonRefresherElement).complete();
-    }, 500);
+    this.loadPosts(true, event);
   }
 
   loadMore(event: CustomEvent): void {
     this.currentPage.update((p) => p + 1);
-    const tab = this.activeTab();
-    this.adminService
-      .getPendingPosts({
-        status: tab === 'all' ? undefined : tab as PostStatus,
-        page: this.currentPage(),
-        pageSize: 20,
-      })
-      .subscribe({
-        next: (r) => {
-          if (r.success && r.data) {
-            this.posts.update((p) => [...p, ...r.data!]);
-            this.hasMore.set(r.meta?.hasNextPage ?? false);
-          }
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-        error: () => {
-          this.toast.error('Failed to load more posts');
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-      });
+    this.loadPosts(false, event);
   }
 
   toggleExpand(postId: string): void {
@@ -220,6 +204,7 @@ export class PostModerationPage implements OnInit {
   }
 
   private moderatePost(postId: string, approve: boolean, rejectionReason?: string): void {
+    this.isActioning.set(true);
     this.adminService
       .moderatePost(postId, { approve, rejectionReason })
       .subscribe({
@@ -233,6 +218,7 @@ export class PostModerationPage implements OnInit {
           }
         },
         error: () => this.toast.error('Failed to moderate post'),
+        complete: () => this.isActioning.set(false),
       });
   }
 

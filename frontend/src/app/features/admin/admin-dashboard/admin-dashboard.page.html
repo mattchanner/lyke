@@ -14,8 +14,29 @@
 
   <!-- Stats Section -->
   @if (isLoading() && !stats()) {
-    <div class="loading-stats">
-      <ion-spinner name="crescent"></ion-spinner>
+    <div class="stats-grid">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <ion-card class="stat-card">
+          <ion-card-header>
+            <ion-card-title>
+              <ion-skeleton-text [animated]="true" style="width: 60%; height: 14px"></ion-skeleton-text>
+            </ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" style="width: 40%; height: 28px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 80%; height: 12px; margin-top: 8px"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (hasError() && !stats()) {
+    <div class="error-state">
+      <ion-icon name="refresh-outline" class="error-icon"></ion-icon>
+      <p>Failed to load dashboard stats</p>
+      <ion-button fill="outline" (click)="loadStats()">
+        <ion-icon slot="start" name="refresh-outline"></ion-icon>
+        Retry
+      </ion-button>
     </div>
   } @else if (stats()) {
     <div class="stats-grid">

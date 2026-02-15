@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   IonContent,
@@ -17,9 +16,10 @@ import {
   IonCardTitle,
   IonCardContent,
   IonBadge,
-  IonSpinner,
+  IonButton,
   IonRefresher,
   IonRefresherContent,
+  IonSkeletonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -32,6 +32,7 @@ import {
   eyeOutline,
   heartOutline,
   chevronForwardOutline,
+  refreshOutline,
 } from 'ionicons/icons';
 
 import { AdminService } from '../../../core/services';
@@ -42,7 +43,6 @@ import { PlatformStatsResponse } from '../../../models';
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [
-    CommonModule,
     RouterLink,
     IonContent,
     IonHeader,
@@ -59,9 +59,10 @@ import { PlatformStatsResponse } from '../../../models';
     IonCardTitle,
     IonCardContent,
     IonBadge,
-    IonSpinner,
+    IonButton,
     IonRefresher,
     IonRefresherContent,
+    IonSkeletonText,
   ],
   templateUrl: './admin-dashboard.page.html',
   styleUrls: ['./admin-dashboard.page.scss'],
@@ -72,6 +73,7 @@ export class AdminDashboardPage implements OnInit {
 
   readonly stats = signal<PlatformStatsResponse | null>(null);
   readonly isLoading = signal(false);
+  readonly hasError = signal(false);
 
   constructor() {
     addIcons({
@@ -84,6 +86,7 @@ export class AdminDashboardPage implements OnInit {
       eyeOutline,
       heartOutline,
       chevronForwardOutline,
+      refreshOutline,
     });
   }
 
@@ -91,20 +94,26 @@ export class AdminDashboardPage implements OnInit {
     this.loadStats();
   }
 
-  loadStats(): void {
+  loadStats(event?: CustomEvent): void {
     this.isLoading.set(true);
+    this.hasError.set(false);
     this.adminService.getPlatformStats().subscribe({
       next: (stats) => this.stats.set(stats),
-      error: () => this.toast.error('Failed to load stats'),
-      complete: () => this.isLoading.set(false),
+      error: () => {
+        this.toast.error('Failed to load stats');
+        this.hasError.set(true);
+        this.isLoading.set(false);
+        (event?.target as any)?.complete();
+      },
+      complete: () => {
+        this.isLoading.set(false);
+        (event?.target as any)?.complete();
+      },
     });
   }
 
   onRefresh(event: CustomEvent): void {
-    this.loadStats();
-    setTimeout(() => {
-      (event.target as HTMLIonRefresherElement).complete();
-    }, 500);
+    this.loadStats(event);
   }
 
   formatNumber(num: number): string {

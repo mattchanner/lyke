@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import {
@@ -41,7 +40,6 @@ type FilterType = UserType | 'all' | 'suspended';
   selector: 'app-user-management',
   standalone: true,
   imports: [
-    CommonModule,
     IonContent,
     IonHeader,
     IonTitle,
@@ -114,7 +112,7 @@ export class UserManagementPage implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadUsers(refresh = false): void {
+  loadUsers(refresh = false, event?: CustomEvent): void {
     if (refresh) {
       this.currentPage.set(1);
       this.hasMore.set(true);
@@ -144,8 +142,15 @@ export class UserManagementPage implements OnInit, OnDestroy {
             this.hasMore.set(r.meta?.hasNextPage ?? false);
           }
         },
-        error: () => this.toast.error('Failed to load users'),
-        complete: () => this.isLoading.set(false),
+        error: () => {
+          this.toast.error('Failed to load users');
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
+        complete: () => {
+          this.isLoading.set(false);
+          (event?.target as any)?.complete();
+        },
       });
   }
 
@@ -159,40 +164,12 @@ export class UserManagementPage implements OnInit, OnDestroy {
   }
 
   onRefresh(event: CustomEvent): void {
-    this.loadUsers(true);
-    setTimeout(() => {
-      (event.target as HTMLIonRefresherElement).complete();
-    }, 500);
+    this.loadUsers(true, event);
   }
 
   loadMore(event: CustomEvent): void {
     this.currentPage.update((p) => p + 1);
-
-    const filter = this.filterType();
-    const userType = filter !== 'all' && filter !== 'suspended' ? filter : undefined;
-    const isActive = filter === 'suspended' ? false : undefined;
-
-    this.adminService
-      .getUsers({
-        userType,
-        isActive,
-        search: this.searchQuery() || undefined,
-        page: this.currentPage(),
-        pageSize: 20,
-      })
-      .subscribe({
-        next: (r) => {
-          if (r.success && r.data) {
-            this.users.update((u) => [...u, ...r.data!]);
-            this.hasMore.set(r.meta?.hasNextPage ?? false);
-          }
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-        error: () => {
-          this.toast.error('Failed to load more users');
-          (event.target as HTMLIonInfiniteScrollElement).complete();
-        },
-      });
+    this.loadUsers(false, event);
   }
 
   navigateToUser(user: UserListResponse): void {

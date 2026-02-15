@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import {
   IonContent,
@@ -19,6 +18,7 @@ import {
   IonButton,
   IonIcon,
   IonSpinner,
+  IonSkeletonText,
   AlertController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -39,7 +39,6 @@ import { UserDetailResponse, UserType, VerificationStatus } from '../../../model
   selector: 'app-user-detail',
   standalone: true,
   imports: [
-    CommonModule,
     IonContent,
     IonHeader,
     IonTitle,
@@ -57,6 +56,7 @@ import { UserDetailResponse, UserType, VerificationStatus } from '../../../model
     IonButton,
     IonIcon,
     IonSpinner,
+    IonSkeletonText,
   ],
   templateUrl: './user-detail.page.html',
   styleUrls: ['./user-detail.page.scss'],
@@ -104,7 +104,10 @@ export class UserDetailPage implements OnInit {
           this.toast.error('User not found');
         }
       },
-      error: () => this.toast.error('Failed to load user'),
+      error: () => {
+        this.toast.error('Failed to load user');
+        this.isLoading.set(false);
+      },
       complete: () => this.isLoading.set(false),
     });
   }
