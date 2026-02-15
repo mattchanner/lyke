@@ -216,11 +216,12 @@
           <ion-card-title>Media</ion-card-title>
         </ion-card-header>
         <ion-card-content>
-          <div class="review-media">
-            @for (media of uploadedMedia(); track media.mediaId) {
-              <img [src]="media.thumbnailUrl" class="review-thumb" alt="Media" />
-            }
-          </div>
+          @if (reviewMediaItems().length > 0) {
+            <app-media-carousel
+              [media]="reviewMediaItems()"
+              alt="Post media"
+            ></app-media-carousel>
+          }
           <ion-note>{{ uploadedMedia().length }} {{ mediaType() === MediaType.Image ? 'image(s)' : 'video' }}</ion-note>
         </ion-card-content>
       </ion-card>

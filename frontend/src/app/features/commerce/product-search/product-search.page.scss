@@ -1,0 +1,26 @@
+.filter-row {
+  padding: 0 8px;
+}
+
+.category-chips {
+  display: flex;
+  overflow-x: auto;
+  padding: 0 8px;
+  gap: 4px;
+
+  ion-chip {
+    flex-shrink: 0;
+  }
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+}

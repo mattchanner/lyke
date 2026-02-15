@@ -6,10 +6,12 @@ import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import {
+  ApiResponse,
   TrackClickRequest,
   TrackClickResponse,
   ProductResponse,
   RetailerResponse,
+  RetailerProductsResponse,
 } from '../../models';
 
 const SESSION_ID_KEY = 'lyke_session_id';
@@ -205,13 +207,56 @@ export class CommerceService {
     pageSize = 20
   ): Observable<ProductResponse[]> {
     return this.api
-      .get<ProductResponse[]>('commerce', `retailers/${retailerId}/products`, {
+      .get<RetailerProductsResponse>('commerce', `retailers/${retailerId}/products`, {
         page,
         pageSize,
       })
       .pipe(
-        map((response) => (response.success ? response.data ?? [] : [])),
+        map((response) => (response.success ? response.data?.products ?? [] : [])),
         catchError(() => of([]))
+      );
+  }
+
+  /**
+   * Search products returning full ApiResponse (for pagination meta)
+   */
+  searchProductsRaw(
+    query: string,
+    retailerId?: string,
+    category?: string,
+    page = 1,
+    pageSize = 20
+  ): Observable<ApiResponse<ProductResponse[]>> {
+    return this.api
+      .get<ProductResponse[]>('commerce', 'products/search', {
+        query,
+        retailerId,
+        category,
+        page,
+        pageSize,
+      })
+      .pipe(catchError(() => of({ success: false, data: [] as ProductResponse[] })));
+  }
+
+  /**
+   * Get retailer products returning full ApiResponse (for pagination meta)
+   */
+  getRetailerProductsRaw(
+    retailerId: string,
+    page = 1,
+    pageSize = 20
+  ): Observable<ApiResponse<ProductResponse[]>> {
+    return this.api
+      .get<RetailerProductsResponse>('commerce', `retailers/${retailerId}/products`, {
+        page,
+        pageSize,
+      })
+      .pipe(
+        map((response) => ({
+          ...response,
+          data: response.data?.products ?? [],
+        })),
+        catchError(() => of({ success: false, data: [] as ProductResponse[] }))
       );
   }
 

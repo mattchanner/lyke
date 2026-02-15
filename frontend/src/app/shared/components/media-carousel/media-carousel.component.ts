@@ -68,7 +68,7 @@ export class MediaCarouselComponent {
     this.mediaLoaded.set(new Array(this.media.length).fill(false));
   }
 
-  onSlideChange(event: CustomEvent): void {
+  onSlideChange(event: Event): void {
     const swiper = event.target as any;
     this.currentIndex.set(swiper.swiper?.activeIndex ?? 0);
     this.isPlaying.set(false);

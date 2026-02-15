@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -52,6 +52,10 @@ import {
   MediaUploadResponse,
   ProductResponse,
 } from '../../../models';
+import {
+  MediaCarouselComponent,
+  MediaItem,
+} from '../../../shared/components/media-carousel';
 
 interface TaggedProduct {
   product: ProductResponse;
@@ -91,7 +95,9 @@ interface TaggedProduct {
     IonNote,
     IonProgressBar,
     IonSpinner,
+    MediaCarouselComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './post-create.page.html',
   styleUrls: ['./post-create.page.scss'],
 })
@@ -127,6 +133,14 @@ export class PostCreatePage {
 
   // Step 4: Submit
   readonly isSubmitting = signal(false);
+
+  readonly reviewMediaItems = computed<MediaItem[]>(() =>
+    this.uploadedMedia().map((m) => ({
+      url: m.originalUrl,
+      type: this.mediaType(),
+      thumbnailUrl: m.thumbnailUrl,
+    }))
+  );
 
   readonly canProceed = computed(() => {
     switch (this.currentStep()) {

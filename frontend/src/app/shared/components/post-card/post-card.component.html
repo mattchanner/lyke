@@ -1,14 +1,10 @@
 <ion-card [routerLink]="['/feed/post', post.id]">
   <div class="media-container">
-    @if (post.mediaUrls.length > 0) {
-      <img
-        [src]="post.mediaUrls[0]"
+    @if (mediaItems.length > 0) {
+      <app-media-carousel
+        [media]="mediaItems"
         [alt]="post.title || 'Post image'"
-        loading="lazy"
-      />
-    }
-    @if (post.mediaUrls.length > 1) {
-      <ion-badge class="media-count">+{{ post.mediaUrls.length - 1 }}</ion-badge>
+      ></app-media-carousel>
     }
     @if (post.similarityScore >= 0.8) {
       <ion-chip class="similarity-badge" color="success">

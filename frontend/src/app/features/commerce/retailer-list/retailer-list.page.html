@@ -1,0 +1,44 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/shop"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Retailers</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="loading-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (retailers().length === 0) {
+    <div class="empty-state">
+      <h3>No retailers yet</h3>
+    </div>
+  } @else {
+    <ion-grid>
+      <ion-row>
+        @for (retailer of retailers(); track retailer.id) {
+          <ion-col size="6">
+            <ion-card [routerLink]="['/shop/retailers', retailer.id]" button>
+              <div class="retailer-logo-wrapper">
+                @if (retailer.logoUrl) {
+                  <img [src]="retailer.logoUrl" [alt]="retailer.name" class="retailer-logo" />
+                } @else {
+                  <div class="retailer-initial">{{ getInitial(retailer.name) }}</div>
+                }
+              </div>
+              <ion-card-content>
+                <span class="retailer-name">{{ retailer.name }}</span>
+                <span class="retailer-stats">
+                  {{ retailer.productCount }} products &middot; {{ retailer.postCount }} posts
+                </span>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+  }
+</ion-content>

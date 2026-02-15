@@ -18,7 +18,7 @@ import {
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline, logoGoogle, logoApple } from 'ionicons/icons';
 import { AuthService, ToastService, SocialAuthService } from '../../../core';
-import { LoginRequest } from '../../../models';
+import { LoginRequest, UserType } from '../../../models';
 
 @Component({
   selector: 'app-login',
@@ -82,7 +82,7 @@ export class LoginPage {
     this.authService.login(request).subscribe({
       next: () => {
         this.toast.success('Welcome back!');
-        this.router.navigate(['/feed']);
+        this.router.navigate([this.getPostLoginRoute()]);
       },
       error: (error) => {
         this.isLoading.set(false);
@@ -101,7 +101,7 @@ export class LoginPage {
       this.authService.socialLogin({ provider: 'Google', idToken }).subscribe({
         next: () => {
           this.toast.success('Welcome back!');
-          this.router.navigate(['/feed']);
+          this.router.navigate([this.getPostLoginRoute()]);
         },
         error: () => this.socialLoading.set(false),
         complete: () => this.socialLoading.set(false),
@@ -112,6 +112,13 @@ export class LoginPage {
     }
   }
 
+  private getPostLoginRoute(): string {
+    const userType = this.authService.userType();
+    if (userType === UserType.Admin) return '/admin';
+    if (userType === UserType.Creator) return '/creator';
+    return '/feed';
+  }
+
   async onAppleSignIn(): Promise<void> {
     this.socialLoading.set(true);
     try {
@@ -119,7 +126,7 @@ export class LoginPage {
       this.authService.socialLogin({ provider: 'Apple', idToken }).subscribe({
         next: () => {
           this.toast.success('Welcome back!');
-          this.router.navigate(['/feed']);
+          this.router.navigate([this.getPostLoginRoute()]);
         },
         error: () => this.socialLoading.set(false),
         complete: () => this.socialLoading.set(false),

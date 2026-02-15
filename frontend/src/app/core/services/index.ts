@@ -5,3 +5,4 @@ export { ToastService, type ToastOptions, type ToastPosition, type ToastColor } 
 export { CreatorService } from './creator.service';
 export { SocialAuthService } from './social-auth.service';
 export { AdminService, type PendingPostsRequest, type PendingVerificationsRequest } from './admin.service';
+export { DeepLinkService } from './deep-link.service';

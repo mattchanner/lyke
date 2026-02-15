@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -47,6 +47,10 @@ import {
   PostProductRequest,
   ProductResponse,
 } from '../../../models';
+import {
+  MediaCarouselComponent,
+  MediaItem,
+} from '../../../shared/components/media-carousel';
 
 interface TaggedProduct {
   product: { id: string; name: string; retailerName: string; price: number; currency: string; imageUrls: string[] };
@@ -85,7 +89,9 @@ interface TaggedProduct {
     IonNote,
     IonSpinner,
     IonSkeletonText,
+    MediaCarouselComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './post-edit.page.html',
   styleUrls: ['./post-edit.page.scss'],
 })
@@ -115,6 +121,13 @@ export class PostEditPage implements OnInit {
   readonly productSearchQuery = signal('');
   readonly searchResults = signal<ProductResponse[]>([]);
   readonly isSearching = signal(false);
+
+  readonly mediaItems = computed<MediaItem[]>(() =>
+    this.mediaUrls().map((url) => ({
+      url,
+      type: this.mediaType(),
+    }))
+  );
 
   readonly isEditable = computed(() => {
     const p = this.post();

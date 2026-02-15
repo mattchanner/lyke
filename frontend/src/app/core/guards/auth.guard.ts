@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { UserType } from '../../models';
 
 export const authGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -31,6 +32,13 @@ export const authGuard: CanActivateFn = () => {
   return false;
 };
 
+function getDefaultRoute(authService: AuthService): string {
+  const userType = authService.userType();
+  if (userType === UserType.Admin) return '/admin';
+  if (userType === UserType.Creator) return '/creator';
+  return '/feed';
+}
+
 // Guard for routes that should only be accessible when NOT authenticated
 export const noAuthGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
@@ -44,7 +52,7 @@ export const noAuthGuard: CanActivateFn = () => {
           if (!authService.isAuthenticated()) {
             resolve(true);
           } else {
-            router.navigate(['/feed']);
+            router.navigate([getDefaultRoute(authService)]);
             resolve(false);
           }
         }
@@ -56,6 +64,6 @@ export const noAuthGuard: CanActivateFn = () => {
     return true;
   }
 
-  router.navigate(['/feed']);
+  router.navigate([getDefaultRoute(authService)]);
   return false;
 };

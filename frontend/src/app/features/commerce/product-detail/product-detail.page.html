@@ -1,0 +1,84 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/feed"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Product</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="share()">
+        <ion-icon name="share-social-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (product(); as p) {
+    <div class="product-detail">
+      @if (mediaItems().length > 0) {
+        <app-media-carousel
+          [media]="mediaItems()"
+          [alt]="p.name"
+        ></app-media-carousel>
+      }
+
+      <div class="content-section">
+        <div class="retailer-row">
+          @if (p.retailerLogoUrl) {
+            <img
+              [src]="p.retailerLogoUrl"
+              [alt]="p.retailerName"
+              class="retailer-logo"
+            />
+          }
+          <span class="retailer-name">{{ p.retailerName }}</span>
+        </div>
+
+        <h1 class="product-name">{{ p.name }}</h1>
+        <span class="product-price">
+          {{ p.currency }} {{ p.price | number : '1.2-2' }}
+        </span>
+
+        <div class="category-chips">
+          <ion-chip>
+            <ion-label>{{ p.category }}</ion-label>
+          </ion-chip>
+          @if (p.subCategory) {
+            <ion-chip>
+              <ion-label>{{ p.subCategory }}</ion-label>
+            </ion-chip>
+          }
+        </div>
+
+        @if (p.description) {
+          <div class="description-section">
+            <h3>Description</h3>
+            <p>{{ p.description }}</p>
+          </div>
+        }
+
+        @if (p.postCount > 0) {
+          <p class="post-count">Worn in {{ p.postCount }} {{ p.postCount === 1 ? 'post' : 'posts' }}</p>
+        }
+
+        <ion-button expand="block" (click)="shopProduct()">
+          <ion-icon name="cart-outline" slot="start"></ion-icon>
+          Shop Now
+        </ion-button>
+
+        @if (relatedPosts().length > 0) {
+          <div class="related-posts">
+            <h3>How others styled it</h3>
+            @for (post of relatedPosts(); track post.id) {
+              <app-post-card [post]="post"></app-post-card>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</ion-content>

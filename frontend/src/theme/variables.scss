@@ -13,7 +13,15 @@
     }
   }
 
-    // ── Global Surfaces ──
+  .in-toolbar:not(.in-segment-color) {
+    --background-checked: var(--ion-color-medium-shade);   
+  }
+
+  .in-toolbar:not(.in-segment-color) {
+    --ion-toolbar-segment-color: var(--ion-toolbar-color);
+  }  
+
+  // ── Global Surfaces ──
   --ion-background-color: #faf5fa;
   --ion-background-color-rgb: 250, 248, 245;
   --ion-text-color: #84119b;

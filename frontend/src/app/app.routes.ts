@@ -157,6 +157,43 @@ export const routes: Routes = [
     ],
   },
 
+  // Commerce
+  {
+    path: 'product/:id',
+    canActivate: [authGuard, onboardingGuard],
+    loadComponent: () =>
+      import('./features/commerce/product-detail/product-detail.page').then(
+        (m) => m.ProductDetailPage
+      ),
+  },
+  {
+    path: 'shop',
+    canActivate: [authGuard, onboardingGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import(
+            './features/commerce/product-search/product-search.page'
+          ).then((m) => m.ProductSearchPage),
+      },
+      {
+        path: 'retailers',
+        loadComponent: () =>
+          import(
+            './features/commerce/retailer-list/retailer-list.page'
+          ).then((m) => m.RetailerListPage),
+      },
+      {
+        path: 'retailers/:id',
+        loadComponent: () =>
+          import(
+            './features/commerce/retailer-storefront/retailer-storefront.page'
+          ).then((m) => m.RetailerStorefrontPage),
+      },
+    ],
+  },
+
   // Creator registration (accessible to any authenticated user)
   {
     path: 'creator/register',

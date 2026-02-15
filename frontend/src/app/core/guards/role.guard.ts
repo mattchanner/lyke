@@ -31,7 +31,13 @@ export function roleGuard(...allowedRoles: UserType[]): CanActivateFn {
       }
 
       // Redirect to appropriate page based on user type
-      router.navigate(['/feed']);
+      if (userType === UserType.Admin) {
+        router.navigate(['/admin']);
+      } else if (userType === UserType.Creator) {
+        router.navigate(['/creator']);
+      } else {
+        router.navigate(['/feed']);
+      }
       return false;
     }
 

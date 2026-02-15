@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -24,7 +24,8 @@ import {
   eyeOutline,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { FeedPostResponse, PostProductSummaryResponse, EngagementType } from '../../../models';
+import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType } from '../../../models';
+import { MediaCarouselComponent, MediaItem } from '../media-carousel';
 
 @Component({
   selector: 'app-post-card',
@@ -42,7 +43,9 @@ import { FeedPostResponse, PostProductSummaryResponse, EngagementType } from '..
     IonLabel,
     IonAvatar,
     IonBadge,
+    MediaCarouselComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './post-card.component.html',
   styleUrls: ['./post-card.component.scss'],
 })
@@ -65,6 +68,13 @@ export class PostCardComponent {
       checkmarkCircle,
       eyeOutline,
     });
+  }
+
+  get mediaItems(): MediaItem[] {
+    return this.post.mediaUrls.map((url) => ({
+      url,
+      type: this.post.mediaType ?? MediaType.Image,
+    }));
   }
 
   formatCount(count: number): string {

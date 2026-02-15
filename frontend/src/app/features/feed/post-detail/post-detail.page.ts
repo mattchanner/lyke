@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
@@ -23,9 +23,10 @@ import {
   checkmarkCircle,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { PostDetailResponse, EngagementType } from '../../../models';
+import { PostDetailResponse, EngagementType, MediaType } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
 import { ShopTheLookComponent } from '../../../shared/components/shop-the-look';
+import { MediaCarouselComponent, MediaItem } from '../../../shared/components/media-carousel';
 
 @Component({
   selector: 'app-post-detail',
@@ -45,7 +46,9 @@ import { ShopTheLookComponent } from '../../../shared/components/shop-the-look';
     IonAvatar,
     SkeletonPostDetailComponent,
     ShopTheLookComponent,
+    MediaCarouselComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './post-detail.page.html',
   styleUrls: ['./post-detail.page.scss'],
 })
@@ -56,6 +59,15 @@ export class PostDetailPage implements OnInit {
 
   readonly post = signal<PostDetailResponse | null>(null);
   readonly isLoading = signal(false);
+
+  readonly mediaItems = computed<MediaItem[]>(() => {
+    const p = this.post();
+    if (!p) return [];
+    return p.mediaUrls.map((url) => ({
+      url,
+      type: p.mediaType ?? MediaType.Image,
+    }));
+  });
 
   constructor() {
     addIcons({

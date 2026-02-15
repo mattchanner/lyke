@@ -1,0 +1,19 @@
+<ion-card [routerLink]="['/product', product.id]" button>
+  <div class="card-image-wrapper">
+    @if (product.imageUrls.length > 0) {
+      <img [src]="product.imageUrls[0]" [alt]="product.name" class="card-image" />
+    } @else {
+      <div class="card-image placeholder"></div>
+    }
+    @if (product.postCount > 0) {
+      <ion-badge color="primary" class="post-badge">
+        {{ product.postCount }} {{ product.postCount === 1 ? 'post' : 'posts' }}
+      </ion-badge>
+    }
+  </div>
+  <ion-card-content>
+    <span class="product-name">{{ product.name }}</span>
+    <span class="product-retailer">{{ product.retailerName }}</span>
+    <span class="product-price">{{ product.currency }} {{ product.price | number:'1.2-2' }}</span>
+  </ion-card-content>
+</ion-card>

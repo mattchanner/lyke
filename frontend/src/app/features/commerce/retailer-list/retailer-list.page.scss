@@ -1,0 +1,54 @@
+ion-card {
+  margin: 0;
+}
+
+.retailer-logo-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  background: var(--ion-color-light);
+
+  .retailer-logo {
+    max-width: 80%;
+    max-height: 80%;
+    object-fit: contain;
+  }
+
+  .retailer-initial {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+  }
+}
+
+ion-card-content {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+
+  .retailer-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .retailer-stats {
+    font-size: 0.75rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  padding: 3rem 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--ion-color-medium);
+}

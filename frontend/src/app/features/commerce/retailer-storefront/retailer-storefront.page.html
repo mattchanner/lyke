@@ -1,0 +1,55 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/shop/retailers"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ retailer()?.name ?? 'Retailer' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (retailer(); as r) {
+    <div class="retailer-header">
+      @if (r.logoUrl) {
+        <img [src]="r.logoUrl" [alt]="r.name" class="header-logo" />
+      }
+      <h2>{{ r.name }}</h2>
+      <span class="header-stats">
+        {{ r.productCount }} products &middot; {{ r.postCount }} posts
+      </span>
+      @if (r.websiteUrl) {
+        <ion-button fill="outline" size="small" (click)="openWebsite()">
+          <ion-icon name="globe-outline" slot="start"></ion-icon>
+          Visit Website
+        </ion-button>
+      }
+    </div>
+  }
+
+  @if (isLoading() && products().length === 0) {
+    <div class="loading-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (!isLoading() && products().length === 0) {
+    <div class="empty-state">
+      <h3>No products yet</h3>
+    </div>
+  } @else {
+    <ion-grid>
+      <ion-row>
+        @for (product of products(); track product.id) {
+          <ion-col size="6">
+            <app-product-grid-card [product]="product"></app-product-grid-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+
+    <ion-infinite-scroll (ionInfinite)="loadMore($event)" [disabled]="!hasMore()">
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

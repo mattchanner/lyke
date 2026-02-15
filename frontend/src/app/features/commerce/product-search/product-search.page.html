@@ -1,0 +1,78 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Shop</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/shop/retailers">
+        <ion-icon name="storefront-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar
+      debounce="400"
+      placeholder="Search products..."
+      (ionInput)="onSearchChange($event)"
+    ></ion-searchbar>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <div class="filter-row">
+      <ion-select
+        placeholder="All Retailers"
+        interface="popover"
+        (ionChange)="onRetailerChange($event)"
+      >
+        <ion-select-option [value]="''">All Retailers</ion-select-option>
+        @for (r of retailers(); track r.id) {
+          <ion-select-option [value]="r.id">{{ r.name }}</ion-select-option>
+        }
+      </ion-select>
+    </div>
+  </ion-toolbar>
+
+  @if (categories().length > 1) {
+    <ion-toolbar>
+      <div class="category-chips">
+        @for (cat of categories(); track cat) {
+          <ion-chip
+            [color]="categoryFilter() === cat ? 'primary' : 'medium'"
+            (click)="selectCategory(cat)"
+          >
+            <ion-label>{{ cat }}</ion-label>
+          </ion-chip>
+        }
+      </div>
+    </ion-toolbar>
+  }
+</ion-header>
+
+<ion-content>
+  @if (isLoading() && products().length === 0) {
+    <div class="loading-center">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (!isLoading() && products().length === 0) {
+    <div class="empty-state">
+      <h3>No products found</h3>
+      <p>Try a different search or filter</p>
+    </div>
+  } @else {
+    <ion-grid>
+      <ion-row>
+        @for (product of products(); track product.id) {
+          <ion-col size="6">
+            <app-product-grid-card [product]="product"></app-product-grid-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+
+    <ion-infinite-scroll (ionInfinite)="loadMore($event)" [disabled]="!hasMore()">
+      <ion-infinite-scroll-content
+        loadingSpinner="crescent"
+        loadingText="Loading more..."
+      ></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>
