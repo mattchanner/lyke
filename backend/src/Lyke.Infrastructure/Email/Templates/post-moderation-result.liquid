@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+  <h2 style="color: #000;">Post Review Update</h2>
+  <p>Hi,</p>
+  <p>Your post "<strong>{{ post_title }}</strong>" has been reviewed.</p>
+  {% if approved %}
+  <p>It has been <strong>approved</strong> and is now live on LYKE.</p>
+  {% else %}
+  <p>It was <strong>not approved</strong>.</p>
+  {% if rejection_reason != "" %}
+  <p><strong>Reason:</strong> {{ rejection_reason }}</p>
+  {% endif %}
+  <p>You can edit and resubmit the post.</p>
+  {% endif %}
+  <p>&mdash; The LYKE Team</p>
+</body>
+</html>

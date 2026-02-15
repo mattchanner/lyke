@@ -22,6 +22,7 @@ public class AuthService : IAuthService
     private readonly DbContext _dbContext;
     private readonly JwtSettings _jwtSettings;
     private readonly ISocialTokenValidator _socialTokenValidator;
+    private readonly IEmailService _emailService;
     private readonly ILogger<AuthService> _logger;
 
     public AuthService(
@@ -29,12 +30,14 @@ public class AuthService : IAuthService
         DbContext dbContext,
         IOptions<JwtSettings> jwtSettings,
         ISocialTokenValidator socialTokenValidator,
+        IEmailService emailService,
         ILogger<AuthService> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _jwtSettings = jwtSettings.Value;
         _socialTokenValidator = socialTokenValidator;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -64,6 +67,11 @@ public class AuthService : IAuthService
         }
 
         _logger.LogInformation("User {Email} registered successfully", request.Email);
+
+        _ = _emailService.SendWelcomeEmailAsync(user.Email!, user.UserType.ToString(), cancellationToken);
+
+        var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        _ = _emailService.SendEmailVerificationAsync(user.Email!, emailToken, cancellationToken);
 
         return await GenerateAuthResponseAsync(user, cancellationToken);
     }
@@ -166,12 +174,9 @@ public class AuthService : IAuthService
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        // TODO: Send email with reset token
-        // For now, log the token (remove in production!)
-        _logger.LogInformation("Password reset token generated for {Email}: {Token}", request.Email, token);
+        _ = _emailService.SendPasswordResetEmailAsync(user.Email!, token, cancellationToken);
 
-        // In production, this would send an email:
-        // await _emailService.SendPasswordResetEmailAsync(user.Email, token);
+        _logger.LogInformation("Password reset email sent to {Email}", request.Email);
     }
 
     public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default)

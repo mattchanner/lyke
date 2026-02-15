@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs.Creator;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -19,6 +20,7 @@ public class CreatorServiceTests : IDisposable
     private readonly LykeDbContext _context;
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IOptions<CreatorSettings> _creatorSettings;
+    private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<ILogger<CreatorService>> _loggerMock;
     private readonly CreatorService _sut;
 
@@ -34,12 +36,14 @@ public class CreatorServiceTests : IDisposable
             MinPayoutThreshold = 50.00m,
             DefaultCurrency = "GBP"
         });
+        _emailServiceMock = new Mock<IEmailService>();
         _loggerMock = new Mock<ILogger<CreatorService>>();
 
         _sut = new CreatorService(
             _context,
             _userManagerMock.Object,
             _creatorSettings,
+            _emailServiceMock.Object,
             _loggerMock.Object);
     }
 

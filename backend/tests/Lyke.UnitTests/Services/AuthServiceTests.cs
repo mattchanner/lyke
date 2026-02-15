@@ -21,6 +21,7 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IOptions<JwtSettings> _jwtSettings;
     private readonly Mock<ISocialTokenValidator> _socialTokenValidatorMock;
+    private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
     private readonly AuthService _sut;
 
@@ -37,6 +38,7 @@ public class AuthServiceTests : IDisposable
             RefreshTokenExpiryDays = 30
         });
         _socialTokenValidatorMock = new Mock<ISocialTokenValidator>();
+        _emailServiceMock = new Mock<IEmailService>();
         _loggerMock = new Mock<ILogger<AuthService>>();
 
         _sut = new AuthService(
@@ -44,6 +46,7 @@ public class AuthServiceTests : IDisposable
             _context,
             _jwtSettings,
             _socialTokenValidatorMock.Object,
+            _emailServiceMock.Object,
             _loggerMock.Object);
     }
 
@@ -63,6 +66,9 @@ public class AuthServiceTests : IDisposable
 
         _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<User>(), request.Password))
             .ReturnsAsync(IdentityResult.Success);
+
+        _userManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<User>()))
+            .ReturnsAsync("test-email-token");
 
         // Act
         var result = await _sut.RegisterAsync(request);

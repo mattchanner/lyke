@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.Configure<MediaUploadSettings>(configuration.GetSection(MediaUploadSettings.SectionName));
         services.Configure<RetailerSettings>(configuration.GetSection(RetailerSettings.SectionName));
         services.Configure<SocialAuthSettings>(configuration.GetSection(SocialAuthSettings.SectionName));
+        services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();

@@ -46,6 +46,9 @@ public static class DependencyInjection
             .AddDefaultTokenProviders();       
         
 
+        // Email
+        services.AddSingleton<IEmailService, Lyke.Infrastructure.Email.EmailService>();
+
         // Storage
         services.AddStorage(configuration);
 

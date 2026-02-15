@@ -5,6 +5,7 @@ using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -13,6 +14,8 @@ namespace Lyke.Application.Services;
 public class AdminService : IAdminService
 {
     private readonly DbContext _dbContext;
+    private readonly IEmailService _emailService;
+    private readonly UserManager<User> _userManager;
     private readonly ILogger<AdminService> _logger;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -20,9 +23,15 @@ public class AdminService : IAdminService
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
-    public AdminService(DbContext dbContext, ILogger<AdminService> logger)
+    public AdminService(
+        DbContext dbContext,
+        IEmailService emailService,
+        UserManager<User> userManager,
+        ILogger<AdminService> logger)
     {
         _dbContext = dbContext;
+        _emailService = emailService;
+        _userManager = userManager;
         _logger = logger;
     }
 
@@ -227,6 +236,22 @@ public class AdminService : IAdminService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        var creator = await _dbContext.Set<Creator>()
+            .FirstOrDefaultAsync(c => c.Id == post.CreatorId, cancellationToken);
+        if (creator != null)
+        {
+            var creatorUser = await _userManager.FindByIdAsync(creator.UserId.ToString());
+            if (creatorUser?.Email != null)
+            {
+                _ = _emailService.SendPostModerationResultAsync(
+                    creatorUser.Email,
+                    post.Title ?? "Untitled",
+                    request.Approve,
+                    request.RejectionReason,
+                    cancellationToken);
+            }
+        }
+
         return new PostModerationResponse(
             Id: post.Id,
             Status: post.Status,
@@ -388,6 +413,12 @@ public class AdminService : IAdminService
         user.SuspensionReason = request.Reason;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        if (user.Email != null)
+        {
+            _ = _emailService.SendAccountSuspensionNotificationAsync(
+                user.Email, request.Reason, cancellationToken);
+        }
 
         _logger.LogInformation(
             "Admin {AdminUserId} suspended user {UserId}: {Reason}",

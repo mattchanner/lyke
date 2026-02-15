@@ -21,6 +21,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
+builder.Configuration.AddUserSecrets<Program>();
+
 builder.Host.UseSerilog();
 
 // Aspire defaults

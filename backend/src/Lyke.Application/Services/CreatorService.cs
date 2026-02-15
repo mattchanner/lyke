@@ -18,6 +18,7 @@ public class CreatorService : ICreatorService
     private readonly DbContext _dbContext;
     private readonly UserManager<User> _userManager;
     private readonly CreatorSettings _creatorSettings;
+    private readonly IEmailService _emailService;
     private readonly ILogger<CreatorService> _logger;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -29,11 +30,13 @@ public class CreatorService : ICreatorService
         DbContext dbContext,
         UserManager<User> userManager,
         IOptions<CreatorSettings> creatorSettings,
+        IEmailService emailService,
         ILogger<CreatorService> logger)
     {
         _dbContext = dbContext;
         _userManager = userManager;
         _creatorSettings = creatorSettings.Value;
+        _emailService = emailService;
         _logger = logger;
     }
 
@@ -343,6 +346,17 @@ public class CreatorService : ICreatorService
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var creatorUser = await _userManager.FindByIdAsync(creator.UserId.ToString());
+        if (creatorUser?.Email != null)
+        {
+            _ = _emailService.SendCreatorVerificationResultAsync(
+                creatorUser.Email,
+                creator.DisplayName,
+                request.Approve,
+                request.RejectionReason,
+                cancellationToken);
+        }
 
         return new VerificationStatusResponse(
             Status: creator.VerificationStatus,

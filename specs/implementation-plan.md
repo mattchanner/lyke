@@ -44,7 +44,7 @@
 | Integration Tests | ✅ Complete (7 endpoint test suites) |
 | Frontend Foundation | ✅ Complete (Ionic 8 + Angular 20) |
 | Frontend Models & Enums | ✅ Complete (11 enums, all DTOs) |
-| Frontend Core Services | ✅ Complete (Auth, API, Storage, Toast, Creator, Commerce, Admin, SocialAuth, DeepLink) |
+| Frontend Core Services | ✅ Complete (Auth, API, Storage, Toast, Creator, Commerce, Admin, Retailer, SocialAuth, DeepLink) |
 | Frontend Auth Pages | ✅ Complete (Login, Register, Password Reset) |
 | Frontend Onboarding | ✅ Complete (Body Profile Wizard) |
 | Frontend Feed | ✅ Complete (FeedHome, Explore, PostDetail, Saved, FilterModal) |
@@ -52,13 +52,15 @@
 | Frontend Profile Module | ✅ Complete (ProfileView, ProfileEdit, BodyProfileEdit) |
 | Frontend Creator Module | ✅ Complete (8 pages: Dashboard, Posts, PostCreate, PostEdit, Analytics, Earnings, Verification, Register) |
 | Frontend Settings | ✅ Complete (Settings hub, Privacy, DeleteAccount) |
-| Frontend Admin Module | 🔄 In Progress (5 pages implemented: Dashboard, PostModeration, UserManagement, UserDetail, VerificationReview — needs testing/polish) |
+| Frontend Admin Module | ✅ Complete (5 pages: Dashboard, PostModeration, UserManagement, UserDetail, VerificationReview) |
 | Frontend Commerce Pages | ✅ Complete (ProductDetail, ProductSearch, RetailerList, RetailerStorefront, ProductGridCard) |
 | Frontend Social Login | 🔄 In Progress (SocialAuthService created, backend endpoint exists, UI wired in login page) |
 | Frontend Deep Linking | ✅ Complete (DeepLinkService with universal link handling) |
-| Frontend Retailer Module | 🔄 Not Started |
+| Frontend Retailer Module | ✅ Complete (9 pages: Dashboard, Profile, Products, ProductEdit, Campaigns, CampaignCreate, Analytics, Insights, Register) |
+| Email / Transactional Messaging | 🔴 Not Started (password reset, email verification, notifications all require email service) |
+| Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
 
-**Overall Backend Progress: ~100%** | **Overall Frontend Progress: ~85%** | **Overall Project: ~88%**
+**Overall Backend Progress: ~95%** (email service missing) | **Overall Frontend Progress: ~95%** | **Overall Project: ~90%**
 
 ---
 
@@ -275,7 +277,7 @@ CreatorEarnings
 - [x] POST /api/auth/login - Login with email/password
 - [x] POST /api/auth/refresh - Refresh access token
 - [x] POST /api/auth/logout - Invalidate refresh token
-- [x] POST /api/auth/forgot-password - Request password reset
+- [x] POST /api/auth/forgot-password - Request password reset ⚠️ (token generated but no email sent — requires Phase 3B)
 - [x] POST /api/auth/reset-password - Reset password with token
 - [x] DELETE /api/auth/account - Delete account (GDPR)
 - [x] POST /api/auth/social/google - Google OAuth login (backend + SocialTokenValidator)
@@ -290,6 +292,34 @@ CreatorEarnings
 - [x] Implement social login buttons (Google, Apple) — SocialAuthService created, wired into login page
 - [x] Create forgot/reset password flow
 - [x] Implement secure token storage (Capacitor Preferences)
+
+---
+
+## Phase 3B: Email & Transactional Messaging
+
+### 3B.1 Backend - Email Service
+- [ ] Set up email infrastructure (SendGrid / SMTP / Azure Communication Services)
+- [ ] Create IEmailService interface and implementation
+- [ ] Configure email settings (sender address, templates, API keys)
+- [ ] Wire up DI registration and configuration
+
+### 3B.2 Transactional Email Templates
+- [ ] Password reset email (link with reset token)
+- [ ] Email verification / confirmation email
+- [ ] Welcome email after registration
+- [ ] Creator verification approved/rejected notification
+- [ ] Post moderation approved/rejected notification
+- [ ] Account suspension notification
+
+### 3B.3 Integration
+- [ ] Wire password reset endpoint to send email (currently generates token but no email sent)
+- [ ] Wire email verification into registration flow
+- [ ] Wire creator verification status change to email notification
+- [ ] Wire post moderation result to email notification
+- [ ] Add rate limiting for email sends (prevent abuse)
+- [ ] Add email delivery logging and retry logic
+
+**Note:** Password reset and email verification flows currently have backend endpoints that generate tokens, but no emails are actually sent. This phase is required before those features are functional.
 
 ---
 
@@ -529,16 +559,22 @@ Uses `/portal` sub-path to avoid collision with existing public `/api/retailers/
 - [x] Wire up DI registration and endpoint mapping
 - [x] RetailerSettings configuration (MaxImportRows, MinAnonymityGroupSize, DefaultCurrency, MaxCampaignBudget)
 
-### 8.3 Frontend - Retailer Module (Separate Web App or Mobile)
-- [ ] Create retailer dashboard
-- [ ] Build product management interface
-- [ ] Create campaign builder
-- [ ] Build analytics dashboard with charts
-  - Engagement metrics
-  - Body profile distribution
-  - Fit feedback analysis
-- [ ] Create export functionality
-- [ ] Build product feed upload interface
+### 8.3 Frontend - Retailer Module
+- [x] Create retailer registration page
+- [x] Create retailer dashboard (stats cards, quick-link navigation)
+- [x] Build retailer profile page (edit company info, affiliate config)
+- [x] Build product management interface (product list with search/filter)
+- [x] Create product edit page (update product details)
+- [x] Create campaign builder (campaign list + create campaign wizard with targeting)
+- [x] Build analytics dashboard with Chart.js area chart
+  - Segment toggle for views/clicks/conversions/revenue
+  - Summary cards with key metrics
+- [x] Build fit & body insights page
+  - Fit feedback distribution bars
+  - Body profile band distribution (with k-anonymity counts)
+  - Dark mode compatible styling
+- [ ] Create CSV export functionality (frontend trigger for backend export endpoint)
+- [ ] Build product feed CSV upload interface (frontend for backend import endpoint)
 
 ---
 
@@ -576,11 +612,11 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [ ] Create admin audit logging
 - [ ] Implement bulk actions
 
-### 9.3 Frontend - Admin Module (Web App)
+### 9.3 Frontend - Admin Module
 - [x] Create AdminService (7 methods: pending posts, moderate post, users, user detail, suspend/unsuspend, verifications, stats)
-- [x] Create admin dashboard (platform stats cards, quick-link navigation)
+- [x] Create admin dashboard (platform stats cards, quick-link navigation, profile nav)
 - [x] Build moderation queue interface
-  - Post list with status indicators
+  - Post list with status indicators and segment tabs
   - Approve/reject with feedback input
   - Post detail preview
 - [x] Create user management interface (user list, search, status filtering)
@@ -815,7 +851,7 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
   /app
     /core
       /services        - StorageService, ApiService, AuthService, ToastService, CreatorService,
-                         CommerceService, AdminService, SocialAuthService, DeepLinkService
+                         CommerceService, AdminService, RetailerService, SocialAuthService, DeepLinkService
       /guards          - authGuard, noAuthGuard, roleGuard (creatorGuard, adminGuard), onboardingGuard
       /interceptors    - authInterceptor, errorInterceptor
     /shared
@@ -835,6 +871,7 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
       /creator         - Dashboard, Posts, PostCreate, PostEdit, Analytics, Earnings, Verification, Register
       /commerce        - ProductDetail, ProductSearch, RetailerList, RetailerStorefront, ProductGridCard
       /admin           - AdminDashboard, PostModeration, UserManagement, UserDetail, VerificationReview
+      /retailer        - RetailerDashboard, RetailerProfile, Products, ProductEdit, Campaigns, CampaignCreate, RetailerAnalytics, Insights, Register
     /models
       /enums           - All 11 enums
       /api             - ApiResponse, PaginationMeta
@@ -884,12 +921,13 @@ ANALYTICS_KEY=<key>
 | Phase 1: Foundation | 16 | 16 | Critical | 100% |
 | Phase 2: Database | 8 | 7 | Critical | 88% |
 | Phase 3: Authentication | 17 | 17 | Critical | 100% (social login backend + frontend done) |
+| Phase 3B: Email Service | 16 | 0 | Critical | 0% (required for password reset, email verification, notifications) |
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
 | Phase 6: Commerce | 18 | 17 | Critical | 94% (backend + frontend complete, in-app browser optional) |
 | Phase 7: Creator | 22 | 22 | High | 100% |
-| Phase 8: Retailer Portal | 18 | 10 | High | 56% (backend complete, frontend not started) |
-| Phase 9: Admin | 16 | 14 | High | 88% (backend complete, frontend 5 pages implemented, analytics/flagging remaining) |
+| Phase 8: Retailer Portal | 22 | 18 | High | 82% (backend complete, frontend 9 pages, CSV export/import UI remaining) |
+| Phase 9: Admin | 16 | 14 | High | 88% (backend complete, frontend 5 pages, analytics/flagging remaining) |
 | Phase 10: Analytics | 10 | 0 | Medium | 0% |
 | Phase 11: Privacy | 12 | 2 | Critical | 17% |
 | Phase 12: Testing | 10 | 7 | High | 70% |
@@ -897,7 +935,7 @@ ANALYTICS_KEY=<key>
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~202 actionable tasks (~155 completed, ~77% overall)**
+**Total: ~218 actionable tasks (~163 completed, ~75% overall)**
 
 ---
 

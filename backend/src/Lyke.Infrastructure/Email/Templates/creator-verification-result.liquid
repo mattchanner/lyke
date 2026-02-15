@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
+  <h2 style="color: #000;">Creator Verification Update</h2>
+  <p>Hi {{ creator_display_name }},</p>
+  {% if approved %}
+  <p>Congratulations! Your creator verification has been <strong>approved</strong>. You can now publish content on LYKE.</p>
+  {% else %}
+  <p>Unfortunately, your creator verification was <strong>not approved</strong>.</p>
+  {% if rejection_reason != "" %}
+  <p><strong>Reason:</strong> {{ rejection_reason }}</p>
+  {% endif %}
+  <p>You may resubmit your verification after addressing the feedback.</p>
+  {% endif %}
+  <p>&mdash; The LYKE Team</p>
+</body>
+</html>
