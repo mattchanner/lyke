@@ -4,26 +4,15 @@
 // https://ionicframework.com/docs/theming/
 
 :root {
-  // ── Segment Button Overrides ──
-  .segment-button-checked {
-    --ion-background-color: var(--ion-color-primary);
-    color: var(--ion-color-primary-contrast);
-    ion-label {
-      background: var(--ion-color-primary);
-    }
-  }
-
-  .in-toolbar:not(.in-segment-color) {
-    --background-checked: var(--ion-color-primary);
-  }
-
-  .in-toolbar:not(.in-segment-color) {
-    --ion-toolbar-segment-color: var(--ion-toolbar-color);
+  // ── Segment Button — use Ionic's native indicator properties ──
+  ion-segment-button {
+    --indicator-color: var(--ion-color-primary);
+    --color-checked: var(--ion-color-primary-contrast);
   }
 
   // ── Global Surfaces ──
-  --ion-background-color: #faf8f5;
-  --ion-background-color-rgb: 250, 248, 245;
+  --ion-background-color: #f5f0ea;
+  --ion-background-color-rgb: 245, 240, 234;
   --ion-text-color: #1d1d1f;
   --ion-text-color-rgb: 29, 29, 31;
 
@@ -101,13 +90,13 @@
   --ion-color-medium-shade: #7d7d82;
   --ion-color-medium-tint: #99999e;
 
-  // ── Light ──
-  --ion-color-light: #f0ece6;
-  --ion-color-light-rgb: 240, 236, 230;
+  // ── Light: Warm Linen ──
+  --ion-color-light: #ebe5dc;
+  --ion-color-light-rgb: 235, 229, 220;
   --ion-color-light-contrast: #1d1d1f;
   --ion-color-light-contrast-rgb: 29, 29, 31;
-  --ion-color-light-shade: #d3d0cb;
-  --ion-color-light-tint: #f2eee9;
+  --ion-color-light-shade: #cfc9c1;
+  --ion-color-light-tint: #eee8e0;
 
   // ── Typography ──
   --ion-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont,

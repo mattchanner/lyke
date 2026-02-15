@@ -58,7 +58,11 @@ ion-item {
 
   &.selected {
     border-color: var(--ion-color-primary);
-    background: var(--ion-color-primary-tint);
+    background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+    .body-type-desc {
+      color: var(--ion-text-color);
+    }
   }
 
   .body-type-name {
@@ -89,7 +93,11 @@ ion-item {
 
   &.selected {
     border-color: var(--ion-color-primary);
-    background: var(--ion-color-primary-tint);
+    background: rgba(var(--ion-color-primary-rgb), 0.08);
+
+    .fit-desc {
+      color: var(--ion-text-color);
+    }
   }
 
   .fit-name {

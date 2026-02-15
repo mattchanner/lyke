@@ -46,10 +46,11 @@ ion-button {
   text-transform: none;
 }
 
-// Cards: clean shadow, modern radius
+// Cards: flat with subtle border, no shadow
 ion-card {
   --border-radius: 16px;
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
+  border: 1px solid var(--ion-color-light);
 }
 
 // Chips: pill-shaped
@@ -76,7 +77,7 @@ h1, h2, h3 {
   font-weight: 700;
 }
 
-// Segment buttons: rounded
+// Segment buttons: rounded, full-fill active state
 ion-segment-button {
   --border-radius: 10px;
   font-weight: 500;
