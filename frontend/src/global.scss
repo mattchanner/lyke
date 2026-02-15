@@ -77,9 +77,11 @@ h1, h2, h3 {
   font-weight: 700;
 }
 
-// Segment buttons: rounded, full-fill active state
+// Segment buttons: rounded, primary text when checked
 ion-segment-button {
   --border-radius: 10px;
+  --color-checked: var(--ion-color-primary);
+  --indicator-color: var(--ion-color-primary);
   font-weight: 500;
 }
 

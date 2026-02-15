@@ -4,12 +4,6 @@
 // https://ionicframework.com/docs/theming/
 
 :root {
-  // ── Segment Button — primary text + underline when checked ──
-  ion-segment-button {
-    --color-checked: var(--ion-color-primary);
-    --indicator-color: var(--ion-color-primary);
-  }
-
   // ── Global Surfaces ──
   --ion-background-color: #f5f0ea;
   --ion-background-color-rgb: 245, 240, 234;
