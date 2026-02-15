@@ -85,6 +85,15 @@ ion-segment-button {
   font-weight: 500;
 }
 
+// Badges: comfortable padding and rounded
+ion-badge {
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
 // Input items: softer radius
 ion-item {
   --border-radius: 12px;

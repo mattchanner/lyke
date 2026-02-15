@@ -52,13 +52,13 @@
   --ion-color-success-shade: #507b4f;
   --ion-color-success-tint: #6b986b;
 
-  // ── Warning ──
-  --ion-color-warning: #d4a843;
-  --ion-color-warning-rgb: 212, 168, 67;
-  --ion-color-warning-contrast: #1d1d1f;
-  --ion-color-warning-contrast-rgb: 29, 29, 31;
-  --ion-color-warning-shade: #bb943b;
-  --ion-color-warning-tint: #d8b156;
+  // ── Warning: Vivid Amber ──
+  --ion-color-warning: #e8930c;
+  --ion-color-warning-rgb: 232, 147, 12;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #cc810b;
+  --ion-color-warning-tint: #ea9e24;
 
   // ── Danger ──
   --ion-color-danger: #c94c4c;
@@ -98,7 +98,27 @@
 
   --media-border-radius: 1rem;
   --media-border-padding: 1rem;
+
+  .segment-button-checked {
+    ion-label {
+      color: white;
+    }
+  }
+
+  ion-item {
+      border-radius: 0 !important;
+      --border-radius: 0;
+    }
+
+  ion-list {
+    padding-bottom: 0;
+    ion-item {
+      border-radius: 0 !important;
+    }
+  }
+  
 }
+
 
 // ── Dark Mode ──
 @media (prefers-color-scheme: dark) {
