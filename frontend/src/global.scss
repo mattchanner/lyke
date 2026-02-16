@@ -98,3 +98,20 @@ ion-badge {
 ion-item {
   --border-radius: 12px;
 }
+
+// Bottom safe area for Android gesture navigation.
+// Android WebView doesn't report env(safe-area-inset-bottom),
+// so add explicit padding when running inside Capacitor on Android.
+.plt-capacitor.plt-android {
+  ion-content {
+    --padding-bottom: 24px;
+  }
+
+  ion-fab[vertical="bottom"] {
+    bottom: 24px;
+  }
+
+  ion-footer {
+    padding-bottom: 24px;
+  }
+}

@@ -93,19 +93,27 @@ export class PostCardComponent {
     event.preventDefault();
 
     const newLikedState = !this.post.isLiked;
+    const body = { type: EngagementType.Like };
 
-    this.api
-      .post(`posts`, `${this.post.id}/engage`, {
-        type: EngagementType.Like,
-      })
-      .subscribe({
-        next: () => {
-          this.liked.emit({ postId: this.post.id, liked: newLikedState });
-        },
-        error: () => {
-          this.toast.error('Failed to update like');
-        },
-      });
+    const request$ = newLikedState
+      ? this.api.post(`posts`, `${this.post.id}/engage`, body)
+      : this.api.delete(`posts`, `${this.post.id}/engage`, body);
+
+    // Optimistic update
+    this.post.isLiked = newLikedState;
+    this.post.engagements.likes += newLikedState ? 1 : -1;
+
+    request$.subscribe({
+      next: () => {
+        this.liked.emit({ postId: this.post.id, liked: newLikedState });
+      },
+      error: () => {
+        // Revert on failure
+        this.post.isLiked = !newLikedState;
+        this.post.engagements.likes += newLikedState ? -1 : 1;
+        this.toast.error('Failed to update like');
+      },
+    });
   }
 
   toggleSave(event: Event): void {
@@ -113,20 +121,28 @@ export class PostCardComponent {
     event.preventDefault();
 
     const newSavedState = !this.post.isSaved;
+    const body = { type: EngagementType.Save };
 
-    this.api
-      .post(`posts`, `${this.post.id}/engage`, {
-        type: EngagementType.Save,
-      })
-      .subscribe({
-        next: () => {
-          this.saved.emit({ postId: this.post.id, saved: newSavedState });
-          this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
-        },
-        error: () => {
-          this.toast.error('Failed to save post');
-        },
-      });
+    const request$ = newSavedState
+      ? this.api.post(`posts`, `${this.post.id}/engage`, body)
+      : this.api.delete(`posts`, `${this.post.id}/engage`, body);
+
+    // Optimistic update
+    this.post.isSaved = newSavedState;
+    this.post.engagements.saves += newSavedState ? 1 : -1;
+
+    request$.subscribe({
+      next: () => {
+        this.saved.emit({ postId: this.post.id, saved: newSavedState });
+        this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
+      },
+      error: () => {
+        // Revert on failure
+        this.post.isSaved = !newSavedState;
+        this.post.engagements.saves += newSavedState ? -1 : 1;
+        this.toast.error('Failed to save post');
+      },
+    });
   }
 
   onProductTap(event: Event, product: PostProductSummaryResponse): void {

@@ -79,8 +79,8 @@ export class ApiService {
     );
   }
 
-  delete<T>(resource: string, endpoint: string): Observable<ApiResponse<T>> {
-    return this.http.delete<ApiResponse<T>>(this.buildUrl(resource, endpoint));
+  delete<T>(resource: string, endpoint: string, body?: unknown): Observable<ApiResponse<T>> {
+    return this.http.delete<ApiResponse<T>>(this.buildUrl(resource, endpoint), { body });
   }
 
   // Convenience method to extract data from successful responses

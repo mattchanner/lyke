@@ -192,17 +192,18 @@ export class PostCreatePage {
   }
 
   // Step 1: Media upload
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
-    const formData = new FormData();
-    for (let i = 0; i < input.files.length; i++) {
-      formData.append('files', input.files[i]);
-    }
-
     this.isUploading.set(true);
     this.uploadProgress.set(0);
+
+    const formData = new FormData();
+    for (let i = 0; i < input.files.length; i++) {
+      const file = await this.normalizeImageFile(input.files[i]);
+      formData.append('files', file);
+    }
 
     this.apiService
       .uploadFile<MediaUploadResponse>('media', 'upload', formData)
@@ -222,6 +223,32 @@ export class PostCreatePage {
           input.value = '';
         },
       });
+  }
+
+  /** Convert HEIF/HEIC images to JPEG; pass other files through unchanged. */
+  private async normalizeImageFile(file: File): Promise<File> {
+    const heifTypes = ['image/heif', 'image/heic', 'image/heif-sequence', 'image/heic-sequence'];
+    const heifExtensions = ['.heif', '.heic'];
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
+    const isHeif = heifTypes.includes(file.type.toLowerCase()) || heifExtensions.includes(ext);
+    if (!isHeif) {
+      return file;
+    }
+
+    const bitmap = await createImageBitmap(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close();
+
+    const blob = await new Promise<Blob>((resolve) =>
+      canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.92)
+    );
+
+    const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
+    return new File([blob], name, { type: 'image/jpeg' });
   }
 
   removeMedia(index: number): void {
