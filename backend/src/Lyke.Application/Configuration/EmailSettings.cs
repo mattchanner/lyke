@@ -12,6 +12,8 @@ public class EmailSettings
 
     public required string AppBaseUrl { get; set; }
 
+    public string ApiBaseUrl { get; set; } = string.Empty;
+
     public bool DryRun { get; set; } = false;
 
     public int RateLimitMaxPerWindow { get; set; } = 5;

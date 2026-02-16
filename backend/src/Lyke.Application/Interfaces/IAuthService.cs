@@ -12,4 +12,5 @@ public interface IAuthService
     Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default);
     Task DeleteAccountAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<AuthResponse> SocialLoginAsync(SocialLoginRequest request, CancellationToken cancellationToken = default);
+    Task VerifyEmailAsync(string email, string token, CancellationToken cancellationToken = default);
 }

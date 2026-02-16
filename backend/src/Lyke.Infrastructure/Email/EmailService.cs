@@ -98,9 +98,13 @@ public class EmailService : IEmailService
     public Task SendEmailVerificationAsync(
         string toAddress, string verificationToken, CancellationToken cancellationToken = default)
     {
+        var baseUrl = string.IsNullOrEmpty(_settings.ApiBaseUrl)
+            ? _settings.AppBaseUrl
+            : _settings.ApiBaseUrl;
+
         return SendEmailAsync(toAddress, "Verify Your Email", "email-verification", new
         {
-            app_base_url = _settings.AppBaseUrl,
+            api_base_url = baseUrl,
             verification_token = Uri.EscapeDataString(verificationToken),
             email = Uri.EscapeDataString(toAddress)
         }, cancellationToken);

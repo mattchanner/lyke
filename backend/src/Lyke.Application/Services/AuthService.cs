@@ -289,6 +289,24 @@ public class AuthService : IAuthService
         return await GenerateAuthResponseAsync(newUser, cancellationToken);
     }
 
+    public async Task VerifyEmailAsync(string email, string token, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null || !user.IsActive)
+        {
+            throw new ValidationException("Token", "Invalid or expired verification token");
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+        if (!result.Succeeded)
+        {
+            var errors = result.Errors.Select(e => e.Description).ToArray();
+            throw new ValidationException("Token", string.Join(", ", errors));
+        }
+
+        _logger.LogInformation("Email verified for {Email}", email);
+    }
+
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
         var accessToken = GenerateAccessToken(user);
