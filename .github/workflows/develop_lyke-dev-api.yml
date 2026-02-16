@@ -24,16 +24,16 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build 'backend/src/Lyke.Api/Lyke.Api.csproj' --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish 'backend/src/Lyke.Api/Lyke.Api.csproj' -c Release -o ${{env.DOTNET_ROOT}}/lyke-api
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{env.DOTNET_ROOT}}/lyke-api
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,4 +52,5 @@ jobs:
           app-name: 'lyke-dev-api'
           slot-name: 'Production'
           package: .
+
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_E1F99904D78847D9AF5F9CFD01E0C7BF }}
