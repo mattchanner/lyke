@@ -1,6 +1,7 @@
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
 using Lyke.Application;
+using Lyke.Application.DTOs;
 using Lyke.Infrastructure;
 using Lyke.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,6 +11,8 @@ using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 using System.Reflection;
 using System.Text;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -140,6 +143,39 @@ builder.Services.AddCors(options =>
 // Health checks
 builder.Services.AddHealthChecks();
 
+// Rate limiting
+builder.Services.AddRateLimiter(options =>
+{
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.ContentType = "application/json";
+        var response = ApiResponse.Fail("RATE_LIMITED", "Too many requests. Please try again later.");
+        await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
+    };
+
+    options.AddFixedWindowLimiter("auth", limiter =>
+    {
+        limiter.PermitLimit = 10;
+        limiter.Window = TimeSpan.FromSeconds(60);
+    });
+
+    options.AddFixedWindowLimiter("api", limiter =>
+    {
+        limiter.PermitLimit = 100;
+        limiter.Window = TimeSpan.FromSeconds(60);
+    });
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromSeconds(60),
+            }));
+});
+
 var app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -179,6 +215,8 @@ app.UseExceptionHandling();
 app.UseSerilogRequestLogging();
 
 app.UseCors("AllowMobileApp");
+
+app.UseRateLimiter();
 
 if (!app.Environment.IsDevelopment())
 {
