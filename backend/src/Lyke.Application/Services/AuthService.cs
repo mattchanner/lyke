@@ -94,12 +94,32 @@ public class AuthService : IAuthService
             throw new UnauthorizedException("Account is deactivated");
         }
 
+        // Check if account is currently locked out
+        if (await _userManager.IsLockedOutAsync(user))
+        {
+            var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+            _logger.LogWarning("Locked-out login attempt for {Email}", request.Email);
+            throw new AccountLockedException(lockoutEnd);
+        }
+
         var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
         if (!isPasswordValid)
         {
+            await _userManager.AccessFailedAsync(user);
+
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                var lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+                _logger.LogWarning("Account locked after failed login for {Email}", request.Email);
+                throw new AccountLockedException(lockoutEnd);
+            }
+
             _logger.LogWarning("Failed login attempt for {Email}", request.Email);
             throw new UnauthorizedException("Invalid email or password");
         }
+
+        // Successful login — reset failed access count
+        await _userManager.ResetAccessFailedCountAsync(user);
 
         _logger.LogInformation("User {Email} logged in successfully", request.Email);
 

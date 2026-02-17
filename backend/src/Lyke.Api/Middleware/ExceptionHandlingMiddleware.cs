@@ -47,6 +47,23 @@ public class ExceptionHandlingMiddleware
                     }
                 }),
 
+            AccountLockedException ex => (HttpStatusCode.Unauthorized,
+                new ApiResponse
+                {
+                    Success = false,
+                    Error = new ApiError
+                    {
+                        Code = "ACCOUNT_LOCKED",
+                        Message = ex.Message,
+                        Details = ex.LockoutEnd.HasValue
+                            ? new Dictionary<string, string[]>
+                            {
+                                ["lockoutEnd"] = [ex.LockoutEnd.Value.UtcDateTime.ToString("o")]
+                            }
+                            : null
+                    }
+                }),
+
             UnauthorizedException ex => (HttpStatusCode.Unauthorized,
                 ApiResponse.Fail("UNAUTHORIZED", ex.Message)),
 

@@ -274,7 +274,7 @@ CreatorEarnings
 - [x] Create FluentValidation validators for all auth requests
 - [x] Implement role-based authorization (Shopper, Creator, Retailer, Admin)
 - [x] Add policy-based authorization for granular permissions (CreatorOnly, AdminOnly, RetailerOnly, CreatorOrAdmin, RetailerOrAdmin)
-- [ ] Implement account lockout (Identity columns exist but CheckPasswordAsync bypasses lockout counter; needs SignInManager or manual increment)
+- [x] Implement account lockout (manual increment via AccessFailedAsync/ResetAccessFailedCountAsync in AuthService.LoginAsync; 5 attempts, 15 min lockout)
 
 ### 3.2 API Endpoints - Authentication (Minimal APIs)
 - [x] POST /api/auth/register - Register new user
