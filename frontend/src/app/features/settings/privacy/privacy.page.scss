@@ -16,6 +16,29 @@
   }
 }
 
+.reconsent-banner {
+  margin: 0.75rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-warning);
+  background: var(--ion-color-warning-tint, #fff3cd);
+  color: var(--ion-text-color);
+
+  h3 {
+    margin: 0 0 0.25rem;
+    padding-left: 0;
+    text-transform: none;
+    font-size: 1rem;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+    font-size: 0.875rem;
+    color: var(--ion-color-medium-shade);
+  }
+}
+
 h3 {
   margin: 1.5rem 0 0.5rem;
   font-size: 0.875rem;

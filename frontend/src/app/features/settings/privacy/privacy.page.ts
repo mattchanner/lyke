@@ -12,6 +12,7 @@ import {
   IonIcon,
   IonLabel,
   IonToggle,
+  IonButton,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -35,6 +36,7 @@ import { ConsentStatusResponse, DataExportResponse } from '../../../models';
     IonIcon,
     IonLabel,
     IonToggle,
+    IonButton,
     IonSpinner,
   ],
   templateUrl: './privacy.page.html',
@@ -80,6 +82,21 @@ export class PrivacyPage implements OnInit {
       error: () => {
         this.isExporting.set(false);
         this.toast.error('Failed to export data');
+      },
+    });
+  }
+
+  acceptPrivacyPolicy(): void {
+    this.api.put('privacy', 'consent', { acceptPrivacyPolicy: true }).subscribe({
+      next: () => {
+        const current = this.consentStatus();
+        if (current) {
+          this.consentStatus.set({ ...current, needsReconsent: false });
+        }
+        this.toast.success('Privacy policy accepted');
+      },
+      error: () => {
+        this.toast.error('Failed to accept privacy policy');
       },
     });
   }

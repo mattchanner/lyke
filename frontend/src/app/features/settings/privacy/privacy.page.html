@@ -54,12 +54,13 @@
         ></ion-toggle>
       </ion-item>
       @if (consentStatus()!.needsReconsent) {
-        <ion-item color="warning">
-          <ion-label>
-            <h3>Privacy Policy Updated</h3>
-            <p>Please review and accept the latest privacy policy</p>
-          </ion-label>
-        </ion-item>
+        <div class="reconsent-banner">
+          <h3>Privacy Policy Updated</h3>
+          <p>We've updated our privacy policy. Please review and accept to continue.</p>
+          <ion-button size="small" (click)="acceptPrivacyPolicy()">
+            Accept Updated Policy
+          </ion-button>
+        </div>
       }
     </ion-list>
   }
