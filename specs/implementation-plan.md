@@ -946,11 +946,11 @@ ANALYTICS_KEY=<key>
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
 | Phase 11: Privacy | 12 | 9 | Critical | 75% (data retention policies, audit trail, cookie consent remaining) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
-| Phase 13: Performance | 12 | 0 | Medium | 0% |
+| Phase 13: Performance | 12 | 1 | Medium | 8% (request rate limiting done) |
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~230 actionable tasks (~194 completed, ~84% overall)**
+**Total: ~230 actionable tasks (~195 completed, ~85% overall)**
 
 ---
 
