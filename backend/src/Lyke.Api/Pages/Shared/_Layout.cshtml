@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - LYKE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #FFF8F6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            color: #1A1A1A;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 48px 32px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+        .icon svg { width: 32px; height: 32px; }
+        .icon-success { background: #E8F5E9; color: #2E7D32; }
+        .icon-error { background: #FBE9E7; color: #C45D3E; }
+        .icon-lock { background: #F3E8FF; color: #7C3AED; }
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+        p { font-size: 16px; color: #666; line-height: 1.5; }
+        .brand { font-size: 14px; font-weight: 600; color: #C45D3E; }
+
+        /* Form styles */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #E0E0E0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 15px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus { border-color: #C45D3E; }
+        .form-group input.input-error { border-color: #D32F2F; }
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px 24px;
+            background: #1A1A1A;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        .btn:hover { background: #333; }
+        .btn:disabled { background: #999; cursor: not-allowed; }
+        .validation-summary {
+            background: #FBE9E7;
+            color: #C45D3E;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .validation-summary ul { margin: 0; padding-left: 18px; }
+        .field-validation-error { color: #D32F2F; font-size: 13px; margin-top: 4px; display: block; }
+        .password-requirements {
+            font-size: 13px;
+            color: #999;
+            margin-top: 6px;
+        }
+    </style>
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div class="card">
+        @RenderBody()
+        <div style="margin-top: 32px;">
+            <span class="brand">LYKE</span>
+        </div>
+    </div>
+</body>
+</html>

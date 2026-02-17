@@ -100,6 +100,9 @@ builder.Services.AddAuthorization(options =>
 // Controllers
 builder.Services.AddControllers();
 
+// Razor Pages for account management (password reset, email verification)
+builder.Services.AddRazorPages();
+
 // OpenAPI/Swagger
 builder.Services.AddOpenApi("be-lyke_api_v1");
 
@@ -178,6 +181,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 app.MapHealthChecks("/health");
 
 // Minimal API endpoints

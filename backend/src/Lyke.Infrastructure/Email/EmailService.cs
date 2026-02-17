@@ -87,9 +87,13 @@ public class EmailService : IEmailService
     public Task SendPasswordResetEmailAsync(
         string toAddress, string resetToken, CancellationToken cancellationToken = default)
     {
+        var baseUrl = string.IsNullOrEmpty(_settings.ApiBaseUrl)
+            ? _settings.AppBaseUrl
+            : _settings.ApiBaseUrl;
+
         return SendEmailAsync(toAddress, "Reset Your Password", "password-reset", new
         {
-            app_base_url = _settings.AppBaseUrl,
+            api_base_url = baseUrl,
             reset_token = Uri.EscapeDataString(resetToken),
             email = Uri.EscapeDataString(toAddress)
         }, cancellationToken);
