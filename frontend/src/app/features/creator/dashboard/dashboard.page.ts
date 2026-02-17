@@ -35,6 +35,7 @@ import {
   cashOutline,
   shieldCheckmarkOutline,
   personCircleOutline,
+  newspaperOutline,
 } from 'ionicons/icons';
 import { CreatorService } from '../../../core';
 import {
@@ -96,6 +97,7 @@ export class DashboardPage implements OnInit {
       cashOutline,
       shieldCheckmarkOutline,
       personCircleOutline,
+      newspaperOutline,
     });
   }
 
