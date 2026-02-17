@@ -7,3 +7,4 @@ export { SocialAuthService } from './social-auth.service';
 export { AdminService, type PendingPostsRequest, type PendingVerificationsRequest } from './admin.service';
 export { DeepLinkService } from './deep-link.service';
 export { RetailerService } from './retailer.service';
+export { AppInsightsService, AppInsightsErrorHandler } from './app-insights.service';

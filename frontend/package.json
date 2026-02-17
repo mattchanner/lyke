@@ -34,6 +34,7 @@
     "@capacitor/status-bar": "8.0.0",
     "@capgo/capacitor-social-login": "^8.2.23",
     "@ionic/angular": "^8.0.0",
+    "@microsoft/applicationinsights-web": "^3.3.11",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "ionicons": "^7.0.0",

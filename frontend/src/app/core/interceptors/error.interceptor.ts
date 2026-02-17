@@ -4,11 +4,13 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { ToastService } from '../services/toast.service';
 import { StorageService } from '../services/storage.service';
+import { AppInsightsService } from '../services/app-insights.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const toast = inject(ToastService);
   const router = inject(Router);
   const storage = inject(StorageService);
+  const appInsights = inject(AppInsightsService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -62,6 +64,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status !== 401) {
         toast.error(errorMessage);
       }
+
+      appInsights.trackException(
+        new Error(`HTTP ${error.status}: ${errorMessage}`),
+        { url: req.url, method: req.method, status: String(error.status) },
+      );
 
       return throwError(() => ({
         status: error.status,

@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
-import { DeepLinkService } from './core';
+import { AppInsightsService, DeepLinkService } from './core';
 
 @Component({
   selector: 'app-root',
@@ -9,6 +9,7 @@ import { DeepLinkService } from './core';
 })
 export class AppComponent {
   constructor() {
+    inject(AppInsightsService).initialize();
     inject(DeepLinkService).initialize();
   }
 }
