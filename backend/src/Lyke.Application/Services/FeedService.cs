@@ -18,6 +18,7 @@ public class FeedService : IFeedService
     private readonly DbContext _dbContext;
     private readonly MatchingSettings _matchingSettings;
     private readonly ILogger<FeedService> _logger;
+    private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     public FeedService(
         DbContext dbContext,
@@ -437,7 +438,7 @@ public class FeedService : IFeedService
         CancellationToken cancellationToken = default
     )
     {
-        var searchTerm = request.Query.ToLower();
+        var searchTerm = request.Query;
         var posts = new List<FeedPostResponse>();
         var products = new List<ProductSearchResult>();
         var creators = new List<CreatorSearchResult>();
@@ -449,15 +450,19 @@ public class FeedService : IFeedService
             || request.Type == SearchType.Posts
         )
         {
-            var postQuery = _dbContext
+            var postBaseQuery = _dbContext
                 .Set<Post>()
-                .Where(p =>
-                    p.Status == PostStatus.Published
-                    && (
-                        p.Title != null && p.Title.ToLower().Contains(searchTerm)
-                        || p.Description != null && p.Description.ToLower().Contains(searchTerm)
-                    )
-                )
+                .Where(p => p.Status == PostStatus.Published);
+
+            postBaseQuery = UseFullTextSearch
+                ? postBaseQuery.Where(p =>
+                    EF.Functions.ToTsVector("english", (p.Title ?? "") + " " + (p.Description ?? ""))
+                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                : postBaseQuery.Where(p =>
+                    (p.Title != null && p.Title.ToLower().Contains(searchTerm.ToLower()))
+                    || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower())));
+
+            var postQuery = postBaseQuery
                 .Include(p => p.Creator)
                 .ThenInclude(c => c.User)
                 .ThenInclude(u => u.BodyProfile)
@@ -468,11 +473,19 @@ public class FeedService : IFeedService
                 .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.FitTags)
                 .ThenInclude(pft => pft.FitTag)
-                .Include(p => p.Engagements)
-                .OrderByDescending(p => p.PublishedAt)
-                .Take(request.PageSize);
+                .Include(p => p.Engagements);
 
-            var foundPosts = await postQuery.ToListAsync(cancellationToken);
+            var postOrdered = UseFullTextSearch
+                ? postQuery
+                    .OrderByDescending(p =>
+                        EF.Functions.ToTsVector("english", (p.Title ?? "") + " " + (p.Description ?? ""))
+                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                    .ThenByDescending(p => p.PublishedAt)
+                : postQuery.OrderByDescending(p => p.PublishedAt);
+
+            var finalPostQuery = postOrdered.Take(request.PageSize);
+
+            var foundPosts = await finalPostQuery.ToListAsync(cancellationToken);
             var postIds = foundPosts.Select(p => p.Id).ToList();
             var userEngagements = userId.HasValue
                 ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
@@ -488,19 +501,31 @@ public class FeedService : IFeedService
             || request.Type == SearchType.Products
         )
         {
-            var productQuery = _dbContext
+            var productBaseQuery = _dbContext
                 .Set<Product>()
-                .Where(p =>
-                    p.IsActive
-                    && (
-                        p.Name.ToLower().Contains(searchTerm)
-                        || p.Description != null && p.Description.ToLower().Contains(searchTerm)
-                    )
-                )
+                .Where(p => p.IsActive);
+
+            productBaseQuery = UseFullTextSearch
+                ? productBaseQuery.Where(p =>
+                    EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? ""))
+                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                : productBaseQuery.Where(p =>
+                    p.Name.ToLower().Contains(searchTerm.ToLower())
+                    || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower())));
+
+            var productIncluded = productBaseQuery
                 .Include(p => p.Retailer)
-                .Include(p => p.PostProducts)
-                .OrderBy(p => p.Name)
-                .Take(request.PageSize);
+                .Include(p => p.PostProducts);
+
+            var productOrdered = UseFullTextSearch
+                ? productIncluded
+                    .OrderByDescending(p =>
+                        EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? ""))
+                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                    .ThenBy(p => p.Name)
+                : productIncluded.OrderBy(p => p.Name);
+
+            var productQuery = productOrdered.Take(request.PageSize);
 
             var foundProducts = await productQuery.ToListAsync(cancellationToken);
             products = foundProducts
@@ -523,15 +548,27 @@ public class FeedService : IFeedService
             || request.Type == SearchType.Creators
         )
         {
-            var creatorQuery = _dbContext
-                .Set<Creator>()
-                .Where(c =>
-                    c.DisplayName.ToLower().Contains(searchTerm)
-                    || c.Bio != null && c.Bio.ToLower().Contains(searchTerm)
-                )
-                .Include(c => c.Posts)
-                .OrderBy(c => c.DisplayName)
-                .Take(request.PageSize);
+            var creatorBaseQuery = _dbContext.Set<Creator>().AsQueryable();
+
+            creatorBaseQuery = UseFullTextSearch
+                ? creatorBaseQuery.Where(c =>
+                    EF.Functions.ToTsVector("english", c.DisplayName + " " + (c.Bio ?? ""))
+                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                : creatorBaseQuery.Where(c =>
+                    c.DisplayName.ToLower().Contains(searchTerm.ToLower())
+                    || (c.Bio != null && c.Bio.ToLower().Contains(searchTerm.ToLower())));
+
+            var creatorIncluded = creatorBaseQuery.Include(c => c.Posts);
+
+            var creatorOrdered = UseFullTextSearch
+                ? creatorIncluded
+                    .OrderByDescending(c =>
+                        EF.Functions.ToTsVector("english", c.DisplayName + " " + (c.Bio ?? ""))
+                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                    .ThenBy(c => c.DisplayName)
+                : creatorIncluded.OrderBy(c => c.DisplayName);
+
+            var creatorQuery = creatorOrdered.Take(request.PageSize);
 
             var foundCreators = await creatorQuery.ToListAsync(cancellationToken);
             creators = foundCreators

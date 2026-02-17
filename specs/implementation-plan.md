@@ -259,7 +259,7 @@ CreatorEarnings
   - `IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg`
   - `IX_Products_RetailerId_Category_IsActive`
   - `IX_ClickEvents_PostId_CreatedAt`
-- [ ] Set up PostgreSQL full-text search indexes
+- [x] Set up PostgreSQL full-text search indexes
 - [x] Create seed data for lookup tables (BodyTypes, FitTags)
 
 ---
@@ -934,7 +934,7 @@ ANALYTICS_KEY=<key>
 | Phase | Tasks | Completed | Priority | Status |
 |-------|-------|-----------|----------|--------|
 | Phase 1: Foundation | 18 | 16 | Critical | 89% (CI test step + env deployments remaining) |
-| Phase 2: Database | 8 | 7 | Critical | 88% (full-text search indexes remaining) |
+| Phase 2: Database | 8 | 8 | Critical | 100% |
 | Phase 3: Authentication | 17 | 17 | Critical | 100% (social login on hold pending OAuth creds) |
 | Phase 3B: Email & Account Mgmt | 20 | 19 | Critical | 95% (email retry logic remaining) |
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |

@@ -20,6 +20,7 @@ public class CommerceService : ICommerceService
     private readonly DbContext _dbContext;
     private readonly CommerceSettings _settings;
     private readonly ILogger<CommerceService> _logger;
+    private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     public CommerceService(
         DbContext dbContext,
@@ -169,7 +170,7 @@ public class CommerceService : ICommerceService
         CancellationToken cancellationToken = default
     )
     {
-        var searchTerm = request.Query.ToLower();
+        var searchTerm = request.Query;
 
         var query = _dbContext
             .Set<Product>()
@@ -177,12 +178,15 @@ public class CommerceService : ICommerceService
             .Include(p => p.PostProducts)
             .Where(p => p.IsActive);
 
-        // Apply search filter
-        query = query.Where(p =>
-            p.Name.ToLower().Contains(searchTerm)
-            || (p.Description != null && p.Description.ToLower().Contains(searchTerm))
-            || p.ExternalSku.ToLower().Contains(searchTerm)
-        );
+        // Apply search filter using full-text search (PostgreSQL) or LIKE fallback
+        query = UseFullTextSearch
+            ? query.Where(p =>
+                EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
+                    .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+            : query.Where(p =>
+                p.Name.ToLower().Contains(searchTerm.ToLower())
+                || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower()))
+                || p.ExternalSku.ToLower().Contains(searchTerm.ToLower()));
 
         // Apply retailer filter
         if (request.RetailerId.HasValue)
@@ -198,11 +202,20 @@ public class CommerceService : ICommerceService
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var products = await query
-            .OrderBy(p => p.Name)
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync(cancellationToken);
+        var products = UseFullTextSearch
+            ? await query
+                .OrderByDescending(p =>
+                    EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
+                        .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                .ThenBy(p => p.Name)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken)
+            : await query
+                .OrderBy(p => p.Name)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync(cancellationToken);
 
         var productResponses = products.Select(MapToProductResponse).ToList();
 
