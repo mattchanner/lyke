@@ -179,14 +179,18 @@ public class CommerceService : ICommerceService
             .Where(p => p.IsActive);
 
         // Apply search filter using full-text search (PostgreSQL) or LIKE fallback
-        query = UseFullTextSearch
-            ? query.Where(p =>
-                EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
-                    .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
-            : query.Where(p =>
-                p.Name.ToLower().Contains(searchTerm.ToLower())
-                || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower()))
-                || p.ExternalSku.ToLower().Contains(searchTerm.ToLower()));
+        // Skip filter when query is empty to return all products (browse mode)
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = UseFullTextSearch
+                ? query.Where(p =>
+                    EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
+                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                : query.Where(p =>
+                    p.Name.ToLower().Contains(searchTerm.ToLower())
+                    || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower()))
+                    || p.ExternalSku.ToLower().Contains(searchTerm.ToLower()));
+        }
 
         // Apply retailer filter
         if (request.RetailerId.HasValue)
@@ -202,20 +206,18 @@ public class CommerceService : ICommerceService
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var products = UseFullTextSearch
-            ? await query
+        var orderedQuery = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
+            ? query
                 .OrderByDescending(p =>
                     EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
                         .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
                 .ThenBy(p => p.Name)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync(cancellationToken)
-            : await query
-                .OrderBy(p => p.Name)
-                .Skip((request.Page - 1) * request.PageSize)
-                .Take(request.PageSize)
-                .ToListAsync(cancellationToken);
+            : query.OrderBy(p => p.Name);
+
+        var products = await orderedQuery
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
 
         var productResponses = products.Select(MapToProductResponse).ToList();
 

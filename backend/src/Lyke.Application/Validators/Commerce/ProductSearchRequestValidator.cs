@@ -8,9 +8,8 @@ public class ProductSearchRequestValidator : AbstractValidator<ProductSearchRequ
     public ProductSearchRequestValidator()
     {
         RuleFor(x => x.Query)
-            .NotEmpty()
-            .WithMessage("Query is required")
             .MinimumLength(2)
+            .When(x => !string.IsNullOrEmpty(x.Query))
             .WithMessage("Query must be at least 2 characters")
             .MaximumLength(200)
             .WithMessage("Query must not exceed 200 characters");
