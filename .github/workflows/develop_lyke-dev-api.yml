@@ -26,6 +26,9 @@ jobs:
       - name: Build with dotnet
         run: dotnet build 'backend/src/Lyke.Api/Lyke.Api.csproj' --configuration Release
 
+      - name: Run unit tests
+        run: dotnet test 'backend/tests/Lyke.UnitTests/Lyke.UnitTests.csproj' --configuration Release --no-restore --logger "trx;LogFileName=test-results.trx"
+
       - name: dotnet publish
         run: dotnet publish 'backend/src/Lyke.Api/Lyke.Api.csproj' -c Release -o ${{env.DOTNET_ROOT}}/lyke-api
 
