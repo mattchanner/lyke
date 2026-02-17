@@ -66,32 +66,34 @@
       </ion-button>
     </form>
 
-    <div class="social-divider">
-      <span>or</span>
-    </div>
+    @if (socialLoginsEnabled) {
+      <div class="social-divider">
+        <span>or</span>
+      </div>
 
-    <div class="social-buttons">
-      <ion-button
-        expand="block"
-        fill="outline"
-        (click)="onGoogleSignIn()"
-        [disabled]="socialLoading()"
-      >
-        <ion-icon name="logo-google" slot="start"></ion-icon>
-        Continue with Google
-      </ion-button>
+      <div class="social-buttons">
+        <ion-button
+          expand="block"
+          fill="outline"
+          (click)="onGoogleSignIn()"
+          [disabled]="socialLoading()"
+        >
+          <ion-icon name="logo-google" slot="start"></ion-icon>
+          Continue with Google
+        </ion-button>
 
-      <ion-button
-        expand="block"
-        fill="outline"
-        color="dark"
-        (click)="onAppleSignIn()"
-        [disabled]="socialLoading()"
-      >
-        <ion-icon name="logo-apple" slot="start"></ion-icon>
-        Continue with Apple
-      </ion-button>
-    </div>
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="dark"
+          (click)="onAppleSignIn()"
+          [disabled]="socialLoading()"
+        >
+          <ion-icon name="logo-apple" slot="start"></ion-icon>
+          Continue with Apple
+        </ion-button>
+      </div>
+    }
 
     <div class="register-link">
       <p>Don't have an account? <a routerLink="/auth/register">Sign up</a></p>

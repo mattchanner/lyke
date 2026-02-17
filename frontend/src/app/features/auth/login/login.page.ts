@@ -19,6 +19,7 @@ import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline, logoGoogle, logoApple } from 'ionicons/icons';
 import { AuthService, ToastService, SocialAuthService } from '../../../core';
 import { LoginRequest, UserType } from '../../../models';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -52,6 +53,7 @@ export class LoginPage {
   readonly isLoading = signal(false);
   readonly socialLoading = signal(false);
   readonly showPassword = signal(false);
+  readonly socialLoginsEnabled = environment.socialLoginsEnabled;
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],

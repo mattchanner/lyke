@@ -34,6 +34,7 @@ import {
 } from 'ionicons/icons';
 import { AuthService, ToastService, SocialAuthService } from '../../../core';
 import { RegisterRequest, UserType } from '../../../models';
+import { environment } from '../../../../environments/environment';
 
 function passwordMatchValidator(
   control: AbstractControl
@@ -84,6 +85,7 @@ export class RegisterPage {
   readonly socialLoading = signal(false);
   readonly showPassword = signal(false);
   readonly showConfirmPassword = signal(false);
+  readonly socialLoginsEnabled = environment.socialLoginsEnabled;
 
   readonly form = this.fb.nonNullable.group(
     {
