@@ -10,6 +10,7 @@ using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
 using System.Reflection;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -143,6 +144,13 @@ var app = builder.Build();
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 FileInfo entryAseemblyFile = new(Assembly.GetEntryAssembly()!.Location);
+
+// Apply pending migrations
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<LykeDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 // Seed development data
 if (app.Environment.IsDevelopment())

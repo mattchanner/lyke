@@ -61,7 +61,7 @@
 | Account Management Web Pages | ✅ Complete (Razor Pages: password reset form, email verification, result pages) |
 | Frontend App Insights | ✅ Complete (exception tracking, page views, HTTP error telemetry, custom ErrorHandler) |
 | Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
-| CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop, Android APK build; no test step in pipeline) |
+| CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop, Android APK build; unit tests in both pipelines) |
 
 **Overall Backend Progress: ~98%** | **Overall Frontend Progress: ~97%** | **Overall Project: ~92%**
 
@@ -103,7 +103,7 @@
 ### 1.3 CI/CD Pipeline
 - [x] Set up GitHub Actions for backend deployment (Azure Web App, triggers on push to develop)
 - [x] Set up GitHub Actions for Android APK build (triggers on frontend changes)
-- [ ] Add `dotnet test` step to backend CI pipeline
+- [x] Add `dotnet test` step to backend CI pipeline
 - [ ] Set up database migrations automation
 - [ ] Configure environment deployments (staging/production)
 
