@@ -18,7 +18,7 @@
 
 ## Current Progress Summary
 
-**Last Updated:** 2026-02-15
+**Last Updated:** 2026-02-17
 
 | Component | Status |
 |-----------|--------|
@@ -41,10 +41,10 @@
 | Seed Data (Lookups) | ✅ Complete (8 body types, 12 fit tags) |
 | Role-Based Authorization | ✅ Complete (5 policies) |
 | Unit Tests | ✅ Complete (5 service test suites) |
-| Integration Tests | ✅ Complete (7 endpoint test suites) |
+| Integration Tests | ✅ Complete (7 endpoint test suites, no RetailerEndpoints tests) |
 | Frontend Foundation | ✅ Complete (Ionic 8 + Angular 20) |
 | Frontend Models & Enums | ✅ Complete (11 enums, all DTOs) |
-| Frontend Core Services | ✅ Complete (Auth, API, Storage, Toast, Creator, Commerce, Admin, Retailer, SocialAuth, DeepLink) |
+| Frontend Core Services | ✅ Complete (Auth, API, Storage, Toast, Creator, Commerce, Admin, Retailer, SocialAuth, DeepLink, AppInsights) |
 | Frontend Auth Pages | ✅ Complete (Login, Register, Password Reset) |
 | Frontend Onboarding | ✅ Complete (Body Profile Wizard) |
 | Frontend Feed | ✅ Complete (FeedHome, Explore, PostDetail, Saved, FilterModal) |
@@ -54,13 +54,16 @@
 | Frontend Settings | ✅ Complete (Settings hub, Privacy, DeleteAccount) |
 | Frontend Admin Module | ✅ Complete (5 pages: Dashboard, PostModeration, UserManagement, UserDetail, VerificationReview) |
 | Frontend Commerce Pages | ✅ Complete (ProductDetail, ProductSearch, RetailerList, RetailerStorefront, ProductGridCard) |
-| Frontend Social Login | 🔄 In Progress (SocialAuthService created, backend endpoint exists, UI wired in login page) |
+| Frontend Social Login | ⏸️ On Hold (backend + frontend implemented, Google GIS web flow ready, disabled pending OAuth credential setup) |
 | Frontend Deep Linking | ✅ Complete (DeepLinkService with universal link handling) |
 | Frontend Retailer Module | ✅ Complete (9 pages: Dashboard, Profile, Products, ProductEdit, Campaigns, CampaignCreate, Analytics, Insights, Register) |
-| Email / Transactional Messaging | 🔴 Not Started (password reset, email verification, notifications all require email service) |
+| Email / Transactional Messaging | ✅ Complete (Azure ACS, 6 Liquid templates, rate limiting, all 5 flows wired) |
+| Account Management Web Pages | ✅ Complete (Razor Pages: password reset form, email verification, result pages) |
+| Frontend App Insights | ✅ Complete (exception tracking, page views, HTTP error telemetry, custom ErrorHandler) |
 | Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
+| CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop, Android APK build; no test step in pipeline) |
 
-**Overall Backend Progress: ~95%** (email service missing) | **Overall Frontend Progress: ~95%** | **Overall Project: ~90%**
+**Overall Backend Progress: ~98%** | **Overall Frontend Progress: ~97%** | **Overall Project: ~92%**
 
 ---
 
@@ -98,10 +101,11 @@
 - [x] Install dependencies (jwt-decode, date-fns, Swiper, @capgo/capacitor-social-login, Capacitor plugins)
 
 ### 1.3 CI/CD Pipeline
-- [ ] Set up GitHub Actions / Azure DevOps pipeline
-- [ ] Configure build stages (build, test, deploy)
+- [x] Set up GitHub Actions for backend deployment (Azure Web App, triggers on push to develop)
+- [x] Set up GitHub Actions for Android APK build (triggers on frontend changes)
+- [ ] Add `dotnet test` step to backend CI pipeline
 - [ ] Set up database migrations automation
-- [ ] Configure environment deployments
+- [ ] Configure environment deployments (staging/production)
 
 ---
 
@@ -270,7 +274,7 @@ CreatorEarnings
 - [x] Create FluentValidation validators for all auth requests
 - [x] Implement role-based authorization (Shopper, Creator, Retailer, Admin)
 - [x] Add policy-based authorization for granular permissions (CreatorOnly, AdminOnly, RetailerOnly, CreatorOrAdmin, RetailerOrAdmin)
-- [ ] Implement account lockout and security features
+- [ ] Implement account lockout (Identity columns exist but CheckPasswordAsync bypasses lockout counter; needs SignInManager or manual increment)
 
 ### 3.2 API Endpoints - Authentication (Minimal APIs)
 - [x] POST /api/auth/register - Register new user
@@ -289,7 +293,7 @@ CreatorEarnings
 - [x] Create auth guard for protected routes (authGuard, noAuthGuard, roleGuard)
 - [x] Build login page component
 - [x] Build registration page component
-- [x] Implement social login buttons (Google, Apple) — SocialAuthService created, wired into login page
+- [x] Implement social login buttons (Google, Apple) — SocialAuthService with native (Capacitor plugin) + web (Google GIS) flows; temporarily disabled pending OAuth credential configuration
 - [x] Create forgot/reset password flow
 - [x] Implement secure token storage (Capacitor Preferences)
 
@@ -298,28 +302,34 @@ CreatorEarnings
 ## Phase 3B: Email & Transactional Messaging
 
 ### 3B.1 Backend - Email Service
-- [ ] Set up email infrastructure (SendGrid / SMTP / Azure Communication Services)
-- [ ] Create IEmailService interface and implementation
-- [ ] Configure email settings (sender address, templates, API keys)
-- [ ] Wire up DI registration and configuration
+- [x] Set up email infrastructure (Azure Communication Services)
+- [x] Create IEmailService interface and implementation (7 methods)
+- [x] Configure email settings (EmailSettings: sender address, connection string, rate limiting, DryRun mode)
+- [x] Wire up DI registration (Singleton) and configuration
 
-### 3B.2 Transactional Email Templates
-- [ ] Password reset email (link with reset token)
-- [ ] Email verification / confirmation email
-- [ ] Welcome email after registration
-- [ ] Creator verification approved/rejected notification
-- [ ] Post moderation approved/rejected notification
-- [ ] Account suspension notification
+### 3B.2 Transactional Email Templates (Fluid/Liquid)
+- [x] Password reset email (`password-reset.liquid`)
+- [x] Email verification / confirmation email (`email-verification.liquid`)
+- [x] Welcome email after registration (`welcome.liquid`)
+- [x] Creator verification approved/rejected notification (`creator-verification-result.liquid`)
+- [x] Post moderation approved/rejected notification (`post-moderation-result.liquid`)
+- [x] Account suspension notification (`account-suspension.liquid`)
 
 ### 3B.3 Integration
-- [ ] Wire password reset endpoint to send email (currently generates token but no email sent)
-- [ ] Wire email verification into registration flow
-- [ ] Wire creator verification status change to email notification
-- [ ] Wire post moderation result to email notification
-- [ ] Add rate limiting for email sends (prevent abuse)
+- [x] Wire password reset endpoint to send email (fire-and-forget in ForgotPasswordAsync)
+- [x] Wire email verification into registration flow (fire-and-forget in RegisterAsync)
+- [x] Wire welcome email into registration flow (fire-and-forget in RegisterAsync)
+- [x] Wire creator verification status change to email notification (in ReviewVerificationAsync)
+- [x] Wire post moderation result to email notification (in ModeratePostAsync)
+- [x] Wire account suspension to email notification (in SuspendUserAsync)
+- [x] Add rate limiting for email sends (in-memory sliding window, configurable per-window max)
 - [ ] Add email delivery logging and retry logic
 
-**Note:** Password reset and email verification flows currently have backend endpoints that generate tokens, but no emails are actually sent. This phase is required before those features are functional.
+### 3B.4 Account Management Web Pages (Razor Pages)
+- [x] Password reset form page (`/account/reset-password`) with validation
+- [x] Password reset result page (`/account/reset-password-result`)
+- [x] Email verification page (`/account/verify-email`) — replaces inline HTML endpoint
+- [x] Shared LYKE-branded layout (`_Layout.cshtml`)
 
 ---
 
@@ -649,10 +659,12 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [ ] Set up Application Insights / custom analytics
 
 ### 10.2 Frontend Tasks
-- [ ] Create AnalyticsService wrapper
-- [ ] Implement automatic page view tracking
-- [ ] Add engagement event triggers
-- [ ] Implement session tracking
+- [x] Create AppInsightsService (Application Insights SDK integration)
+- [x] Implement automatic page view tracking (Router NavigationEnd events)
+- [x] Add AppInsightsErrorHandler for unhandled exception tracking
+- [x] Add HTTP error telemetry in error interceptor
+- [x] Implement authenticated user context (setAuthenticatedUser/clearAuthenticatedUser)
+- [ ] Add engagement event triggers (custom trackEvent calls for likes, saves, shares)
 - [ ] Add performance monitoring (Core Web Vitals)
 
 ---
@@ -918,24 +930,24 @@ ANALYTICS_KEY=<key>
 
 | Phase | Tasks | Completed | Priority | Status |
 |-------|-------|-----------|----------|--------|
-| Phase 1: Foundation | 16 | 16 | Critical | 100% |
-| Phase 2: Database | 8 | 7 | Critical | 88% |
-| Phase 3: Authentication | 17 | 17 | Critical | 100% (social login backend + frontend done) |
-| Phase 3B: Email Service | 16 | 0 | Critical | 0% (required for password reset, email verification, notifications) |
+| Phase 1: Foundation | 18 | 16 | Critical | 89% (CI test step + env deployments remaining) |
+| Phase 2: Database | 8 | 7 | Critical | 88% (full-text search indexes remaining) |
+| Phase 3: Authentication | 17 | 17 | Critical | 100% (social login on hold pending OAuth creds) |
+| Phase 3B: Email & Account Mgmt | 20 | 19 | Critical | 95% (email retry logic remaining) |
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
-| Phase 6: Commerce | 18 | 17 | Critical | 94% (backend + frontend complete, in-app browser optional) |
+| Phase 6: Commerce | 18 | 17 | Critical | 94% (in-app browser optional) |
 | Phase 7: Creator | 22 | 22 | High | 100% |
-| Phase 8: Retailer Portal | 22 | 18 | High | 82% (backend complete, frontend 9 pages, CSV export/import UI remaining) |
-| Phase 9: Admin | 16 | 14 | High | 88% (backend complete, frontend 5 pages, analytics/flagging remaining) |
-| Phase 10: Analytics | 10 | 0 | Medium | 0% |
+| Phase 8: Retailer Portal | 22 | 18 | High | 82% (CSV export/import UI remaining) |
+| Phase 9: Admin | 16 | 14 | High | 88% (analytics dashboard, content flagging remaining) |
+| Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
 | Phase 11: Privacy | 12 | 2 | Critical | 17% |
-| Phase 12: Testing | 10 | 7 | High | 70% |
+| Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
 | Phase 13: Performance | 12 | 0 | Medium | 0% |
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~218 actionable tasks (~163 completed, ~75% overall)**
+**Total: ~230 actionable tasks (~187 completed, ~81% overall)**
 
 ---
 
