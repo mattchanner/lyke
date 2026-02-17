@@ -15,6 +15,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.SuspensionReason)
             .HasMaxLength(500);
 
+        builder.Property(u => u.PrivacyPolicyVersion)
+            .HasMaxLength(20);
+
         builder.HasOne(u => u.BodyProfile)
             .WithOne(bp => bp.User)
             .HasForeignKey<BodyProfile>(bp => bp.UserId)

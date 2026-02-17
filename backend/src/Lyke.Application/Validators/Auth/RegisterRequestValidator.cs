@@ -28,5 +28,8 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.UserType)
             .IsInEnum().WithMessage("Invalid user type")
             .Must(t => t != UserType.Admin).WithMessage("Cannot register as admin");
+
+        RuleFor(x => x.AcceptPrivacyPolicy)
+            .Equal(true).WithMessage("You must accept the privacy policy");
     }
 }

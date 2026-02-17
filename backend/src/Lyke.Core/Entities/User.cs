@@ -15,6 +15,11 @@ public class User : IdentityUser<Guid>
     public Guid? SuspendedByUserId { get; set; }
     public string? SuspensionReason { get; set; }
 
+    // GDPR consent tracking
+    public DateTime? PrivacyPolicyAcceptedAt { get; set; }
+    public string? PrivacyPolicyVersion { get; set; }
+    public bool MarketingOptIn { get; set; } = false;
+
     // Navigation properties
     public BodyProfile? BodyProfile { get; set; }
     public Creator? Creator { get; set; }

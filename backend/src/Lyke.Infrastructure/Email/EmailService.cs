@@ -159,6 +159,15 @@ public class EmailService : IEmailService
         }, cancellationToken);
     }
 
+    public Task SendDataExportNotificationAsync(
+        string toAddress, bool hasCreatorData, CancellationToken cancellationToken = default)
+    {
+        return SendEmailAsync(toAddress, "Your Data Export", "data-export", new
+        {
+            has_creator_data = hasCreatorData
+        }, cancellationToken);
+    }
+
     private IFluidTemplate GetOrLoadTemplate(string templateName)
     {
         return _templateCache.GetOrAdd(templateName, name =>

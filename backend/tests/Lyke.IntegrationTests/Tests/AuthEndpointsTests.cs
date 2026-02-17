@@ -29,7 +29,8 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Email: $"test-{Guid.NewGuid()}@example.com",
             Password: "Test123!",
             ConfirmPassword: "Test123!",
-            UserType: UserType.Shopper
+            UserType: UserType.Shopper,
+            AcceptPrivacyPolicy: true
         );
 
         // Act
@@ -57,7 +58,8 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Email: $"test-{Guid.NewGuid()}@example.com",
             Password: "Test123!",
             ConfirmPassword: "DifferentPassword123!",
-            UserType: UserType.Shopper
+            UserType: UserType.Shopper,
+            AcceptPrivacyPolicy: true
         );
 
         // Act
@@ -86,7 +88,8 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Email: "not-an-email",
             Password: "Test123!",
             ConfirmPassword: "Test123!",
-            UserType: UserType.Shopper
+            UserType: UserType.Shopper,
+            AcceptPrivacyPolicy: true
         );
 
         // Act
@@ -104,7 +107,8 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Email: $"test-{Guid.NewGuid()}@example.com",
             Password: "weak",
             ConfirmPassword: "weak",
-            UserType: UserType.Shopper
+            UserType: UserType.Shopper,
+            AcceptPrivacyPolicy: true
         );
 
         // Act
@@ -123,7 +127,8 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             Email: email,
             Password: "Test123!",
             ConfirmPassword: "Test123!",
-            UserType: UserType.Shopper
+            UserType: UserType.Shopper,
+            AcceptPrivacyPolicy: true
         );
 
         // First registration

@@ -22,6 +22,8 @@ import {
   IonIcon,
   IonBackButton,
   IonButtons,
+  IonCheckbox,
+  IonLabel,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -70,6 +72,8 @@ function passwordMatchValidator(
     IonIcon,
     IonBackButton,
     IonButtons,
+    IonCheckbox,
+    IonLabel,
   ],
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],
@@ -92,6 +96,7 @@ export class RegisterPage {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', [Validators.required]],
+      acceptPrivacyPolicy: [false, [Validators.requiredTrue]],
     },
     { validators: passwordMatchValidator }
   );
@@ -121,6 +126,7 @@ export class RegisterPage {
       password: this.form.value.password!,
       confirmPassword: this.form.value.confirmPassword!,
       userType: UserType.Shopper,
+      acceptPrivacyPolicy: true,
     };
 
     this.authService.register(request).subscribe({

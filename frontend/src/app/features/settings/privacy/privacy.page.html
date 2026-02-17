@@ -39,12 +39,41 @@
     </ion-item>
   </ion-list>
 
+  @if (consentStatus()) {
+    <h3>Consent Preferences</h3>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label>
+          <h3>Marketing Communications</h3>
+          <p>Receive emails about new features and recommendations</p>
+        </ion-label>
+        <ion-toggle
+          slot="end"
+          [checked]="consentStatus()!.marketingOptIn"
+          (ionChange)="onMarketingToggle($event)"
+        ></ion-toggle>
+      </ion-item>
+      @if (consentStatus()!.needsReconsent) {
+        <ion-item color="warning">
+          <ion-label>
+            <h3>Privacy Policy Updated</h3>
+            <p>Please review and accept the latest privacy policy</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
   <h3>Your Rights</h3>
   <ion-list lines="full">
-    <ion-item button (click)="requestDataExport()">
+    <ion-item button (click)="requestDataExport()" [disabled]="isExporting()">
       <ion-icon name="download-outline" slot="start"></ion-icon>
-      <ion-label>Request Data Export</ion-label>
-      <ion-note slot="end">Coming soon</ion-note>
+      @if (isExporting()) {
+        <ion-label>Exporting...</ion-label>
+        <ion-spinner slot="end" name="crescent"></ion-spinner>
+      } @else {
+        <ion-label>Request Data Export</ion-label>
+      }
     </ion-item>
     <ion-item routerLink="/settings/delete-account" detail>
       <ion-icon name="trash-outline" slot="start" color="danger"></ion-icon>

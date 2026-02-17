@@ -6,5 +6,6 @@ public record RegisterRequest(
     string Email,
     string Password,
     string ConfirmPassword,
-    UserType UserType = UserType.Shopper
+    UserType UserType = UserType.Shopper,
+    bool AcceptPrivacyPolicy = false
 );

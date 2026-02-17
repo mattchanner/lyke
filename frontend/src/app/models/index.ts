@@ -9,3 +9,4 @@ export * from './creator';
 export * from './media';
 export * from './admin';
 export * from './retailer';
+export * from './privacy';

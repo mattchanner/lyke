@@ -89,6 +89,26 @@
         }
       </ion-list>
 
+      <div class="terms-text">
+        <ion-item lines="none">
+          <ion-checkbox
+            slot="start"
+            formControlName="acceptPrivacyPolicy"
+          ></ion-checkbox>
+          <ion-label class="ion-text-wrap">
+            <small>
+              I agree to the <a href="#">Terms of Service</a> and
+              <a href="#">Privacy Policy</a>
+            </small>
+          </ion-label>
+        </ion-item>
+        @if (form.get('acceptPrivacyPolicy')?.touched && form.get('acceptPrivacyPolicy')?.errors?.['required']) {
+          <ion-text color="danger" class="error-text">
+            <small>You must accept the privacy policy to create an account</small>
+          </ion-text>
+        }
+      </div>
+
       <ion-button
         expand="block"
         type="submit"
@@ -130,14 +150,6 @@
         </ion-button>
       </div>
     }
-
-    <div class="terms-text">
-      <small>
-        By signing up, you agree to our
-        <a href="#">Terms of Service</a> and
-        <a href="#">Privacy Policy</a>
-      </small>
-    </div>
 
     <div class="login-link">
       <p>Already have an account? <a routerLink="/auth/login">Sign in</a></p>

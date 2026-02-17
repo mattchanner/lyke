@@ -6,6 +6,7 @@ export interface RegisterRequest {
   password: string;
   confirmPassword: string;
   userType?: UserType;
+  acceptPrivacyPolicy?: boolean;
 }
 
 export interface LoginRequest {

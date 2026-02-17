@@ -21,6 +21,7 @@ public class AuthService : IAuthService
     private readonly UserManager<User> _userManager;
     private readonly DbContext _dbContext;
     private readonly JwtSettings _jwtSettings;
+    private readonly PrivacySettings _privacySettings;
     private readonly ISocialTokenValidator _socialTokenValidator;
     private readonly IEmailService _emailService;
     private readonly ILogger<AuthService> _logger;
@@ -29,6 +30,7 @@ public class AuthService : IAuthService
         UserManager<User> userManager,
         DbContext dbContext,
         IOptions<JwtSettings> jwtSettings,
+        IOptions<PrivacySettings> privacySettings,
         ISocialTokenValidator socialTokenValidator,
         IEmailService emailService,
         ILogger<AuthService> logger)
@@ -36,6 +38,7 @@ public class AuthService : IAuthService
         _userManager = userManager;
         _dbContext = dbContext;
         _jwtSettings = jwtSettings.Value;
+        _privacySettings = privacySettings.Value;
         _socialTokenValidator = socialTokenValidator;
         _emailService = emailService;
         _logger = logger;
@@ -54,7 +57,9 @@ public class AuthService : IAuthService
             Email = request.Email,
             UserName = request.Email,
             UserType = request.UserType,
-            IsActive = true
+            IsActive = true,
+            PrivacyPolicyAcceptedAt = DateTime.UtcNow,
+            PrivacyPolicyVersion = _privacySettings.CurrentPolicyVersion
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -208,19 +213,116 @@ public class AuthService : IAuthService
             throw new NotFoundException(nameof(User), userId);
         }
 
-        // Revoke all refresh tokens
-        await RevokeAllUserTokensAsync(userId, cancellationToken);
+        // 1. Hard-delete refresh tokens
+        var refreshTokens = await _dbContext.Set<RefreshToken>()
+            .Where(rt => rt.UserId == userId)
+            .ToListAsync(cancellationToken);
+        _dbContext.Set<RefreshToken>().RemoveRange(refreshTokens);
 
-        // Soft delete - mark as inactive
+        // 2. Hard-delete body profile
+        var bodyProfile = await _dbContext.Set<BodyProfile>()
+            .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
+        if (bodyProfile != null)
+        {
+            _dbContext.Set<BodyProfile>().Remove(bodyProfile);
+        }
+
+        // 3. Hard-delete engagements (likes/saves)
+        var engagements = await _dbContext.Set<Engagement>()
+            .Where(e => e.UserId == userId)
+            .ToListAsync(cancellationToken);
+        _dbContext.Set<Engagement>().RemoveRange(engagements);
+
+        // 4. Anonymize click events (keep for aggregate analytics)
+        var clickEvents = await _dbContext.Set<ClickEvent>()
+            .Where(ce => ce.UserId == userId)
+            .ToListAsync(cancellationToken);
+        foreach (var ce in clickEvents)
+        {
+            ce.UserId = null;
+            ce.SessionId = null;
+        }
+
+        // 5. If creator: cascade delete all creator data
+        var creator = await _dbContext.Set<Creator>()
+            .Include(c => c.Posts)
+                .ThenInclude(p => p.PostProducts)
+                    .ThenInclude(pp => pp.FitTags)
+            .Include(c => c.Posts)
+                .ThenInclude(p => p.PostProducts)
+                    .ThenInclude(pp => pp.ClickEvents)
+            .Include(c => c.Posts)
+                .ThenInclude(p => p.Engagements)
+            .Include(c => c.Posts)
+                .ThenInclude(p => p.ClickEvents)
+            .Include(c => c.Earnings)
+            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+
+        if (creator != null)
+        {
+            foreach (var post in creator.Posts)
+            {
+                // Anonymize click events on creator's posts (keep for analytics)
+                foreach (var postClick in post.ClickEvents)
+                {
+                    postClick.UserId = null;
+                    postClick.SessionId = null;
+                }
+
+                // Hard-delete engagements on creator's posts
+                _dbContext.Set<Engagement>().RemoveRange(post.Engagements);
+
+                foreach (var pp in post.PostProducts)
+                {
+                    // Anonymize click events on post products
+                    foreach (var ppClick in pp.ClickEvents)
+                    {
+                        ppClick.UserId = null;
+                        ppClick.SessionId = null;
+                    }
+
+                    // Hard-delete fit tags
+                    _dbContext.Set<PostFitTag>().RemoveRange(pp.FitTags);
+                }
+
+                // Hard-delete post products
+                _dbContext.Set<PostProduct>().RemoveRange(post.PostProducts);
+            }
+
+            // Hard-delete earnings
+            _dbContext.Set<CreatorEarning>().RemoveRange(creator.Earnings);
+
+            // Hard-delete posts
+            _dbContext.Set<Post>().RemoveRange(creator.Posts);
+
+            // Hard-delete creator
+            _dbContext.Set<Creator>().Remove(creator);
+        }
+
+        // 6. If retailer: deactivate and clear personal fields
+        var retailer = await _dbContext.Set<Retailer>()
+            .FirstOrDefaultAsync(r => r.UserId == userId, cancellationToken);
+        if (retailer != null)
+        {
+            retailer.IsActive = false;
+            retailer.ContactEmail = null;
+        }
+
+        // 7. Anonymize user record
         user.IsActive = false;
         user.Email = $"deleted_{userId}@deleted.local";
         user.NormalizedEmail = user.Email.ToUpperInvariant();
         user.UserName = user.Email;
         user.NormalizedUserName = user.Email.ToUpperInvariant();
+        user.PhoneNumber = null;
+        user.PrivacyPolicyAcceptedAt = null;
+        user.PrivacyPolicyVersion = null;
+        user.MarketingOptIn = false;
 
         await _userManager.UpdateAsync(user);
+        await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Account {UserId} deleted (soft delete)", userId);
+        _logger.LogInformation("Account {UserId} deleted with GDPR cascade", userId);
     }
 
     public async Task<AuthResponse> SocialLoginAsync(SocialLoginRequest request, CancellationToken cancellationToken = default)

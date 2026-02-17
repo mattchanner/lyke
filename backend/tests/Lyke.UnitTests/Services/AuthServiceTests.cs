@@ -20,6 +20,7 @@ public class AuthServiceTests : IDisposable
     private readonly LykeDbContext _context;
     private readonly Mock<UserManager<User>> _userManagerMock;
     private readonly IOptions<JwtSettings> _jwtSettings;
+    private readonly IOptions<PrivacySettings> _privacySettings;
     private readonly Mock<ISocialTokenValidator> _socialTokenValidatorMock;
     private readonly Mock<IEmailService> _emailServiceMock;
     private readonly Mock<ILogger<AuthService>> _loggerMock;
@@ -37,6 +38,10 @@ public class AuthServiceTests : IDisposable
             ExpiryMinutes = 60,
             RefreshTokenExpiryDays = 30
         });
+        _privacySettings = Options.Create(new PrivacySettings
+        {
+            CurrentPolicyVersion = "1.0"
+        });
         _socialTokenValidatorMock = new Mock<ISocialTokenValidator>();
         _emailServiceMock = new Mock<IEmailService>();
         _loggerMock = new Mock<ILogger<AuthService>>();
@@ -45,6 +50,7 @@ public class AuthServiceTests : IDisposable
             _userManagerMock.Object,
             _context,
             _jwtSettings,
+            _privacySettings,
             _socialTokenValidatorMock.Object,
             _emailServiceMock.Object,
             _loggerMock.Object);

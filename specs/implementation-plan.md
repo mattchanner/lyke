@@ -283,7 +283,7 @@ CreatorEarnings
 - [x] POST /api/auth/logout - Invalidate refresh token
 - [x] POST /api/auth/forgot-password - Request password reset ⚠️ (token generated but no email sent — requires Phase 3B)
 - [x] POST /api/auth/reset-password - Reset password with token
-- [x] DELETE /api/auth/account - Delete account (GDPR)
+- [x] DELETE /api/auth/account - Delete account (GDPR full cascade: body profile, engagements, creator data deleted; click events anonymized)
 - [x] POST /api/auth/social/google - Google OAuth login (backend + SocialTokenValidator)
 - [x] POST /api/auth/social/apple - Apple Sign-In (backend + SocialTokenValidator)
 
@@ -672,20 +672,23 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 ## Phase 11: Privacy & GDPR Compliance
 
 ### 11.1 Backend Tasks
-- [ ] Implement data export endpoint (GDPR Article 15)
-- [ ] Create account deletion with full data purge
-- [ ] Build consent management system
-- [ ] Implement data retention policies
-- [ ] Create anonymization utilities
+- [x] Implement data export endpoint (GDPR Article 15/20) - `GET /api/privacy/v1/export`
+- [x] Create account deletion with full data purge (GDPR Article 17) - cascade delete/anonymize all related data
+- [x] Build consent management system - `GET/PUT /api/privacy/v1/consent`
+- [x] Create anonymization utilities - click events anonymized on deletion, user record anonymized
+- [x] Add consent fields to User entity (PrivacyPolicyAcceptedAt, PrivacyPolicyVersion, MarketingOptIn)
+- [x] Record privacy policy acceptance during registration (validator + auto-set on register)
+- [x] Data export email notification
+- [ ] Implement data retention policies (scheduled cleanup of expired data)
 - [ ] Add audit trail for data access
-- [ ] Implement cookie consent tracking
+- [ ] Implement cookie consent tracking (deferred - mobile app, not web)
 
 ### 11.2 Frontend Tasks
 - [x] Create privacy settings page
-- [ ] Build consent collection UI
-- [ ] Implement data export request flow
+- [x] Build consent collection UI (marketing toggle, reconsent banner)
+- [x] Implement data export request flow (downloads JSON blob)
 - [x] Create account deletion confirmation flow
-- [ ] Add privacy policy acceptance tracking
+- [x] Add privacy policy acceptance tracking (checkbox on registration form)
 
 ---
 
@@ -769,7 +772,7 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 ### Pre-Launch
 - [ ] Security audit completed
 - [ ] Performance benchmarks met
-- [ ] GDPR compliance verified
+- [ ] GDPR compliance verified (core data export, consent management, cascade deletion implemented)
 - [ ] App store compliance checked
 - [ ] Legal review of terms/privacy policy
 - [ ] Single retailer integration tested
@@ -941,13 +944,13 @@ ANALYTICS_KEY=<key>
 | Phase 8: Retailer Portal | 22 | 18 | High | 82% (CSV export/import UI remaining) |
 | Phase 9: Admin | 16 | 14 | High | 88% (analytics dashboard, content flagging remaining) |
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
-| Phase 11: Privacy | 12 | 2 | Critical | 17% |
+| Phase 11: Privacy | 12 | 9 | Critical | 75% (data retention policies, audit trail, cookie consent remaining) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
 | Phase 13: Performance | 12 | 0 | Medium | 0% |
 | Phase 14: Deployment | 10 | 0 | High | 0% |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~230 actionable tasks (~187 completed, ~81% overall)**
+**Total: ~230 actionable tasks (~194 completed, ~84% overall)**
 
 ---
 

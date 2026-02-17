@@ -42,4 +42,9 @@ public interface IEmailService
         string toAddress,
         string reason,
         CancellationToken cancellationToken = default);
+
+    Task SendDataExportNotificationAsync(
+        string toAddress,
+        bool hasCreatorData,
+        CancellationToken cancellationToken = default);
 }
