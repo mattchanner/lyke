@@ -61,7 +61,7 @@
     <ion-grid>
       <ion-row>
         @for (product of products(); track product.id) {
-          <ion-col size="6">
+          <ion-col size="6" size-md="4" size-lg="3">
             <app-product-grid-card [product]="product"></app-product-grid-card>
           </ion-col>
         }

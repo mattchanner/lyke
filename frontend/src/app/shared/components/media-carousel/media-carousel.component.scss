@@ -4,6 +4,11 @@
   aspect-ratio: 1;
   background: var(--ion-color-light);
   overflow: hidden;
+
+  @media (min-width: 768px) {
+    max-width: 600px;
+    margin: 0 auto;
+  }
 }
 
 .carousel-container.single .media-item {

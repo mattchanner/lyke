@@ -1,3 +1,183 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-split-pane contentId="main-content" when="lg" [disabled]="!auth.isAuthenticated()">
+    <ion-menu contentId="main-content" [disabled]="!auth.isAuthenticated()">
+      <ion-content>
+        <div class="sidebar-nav">
+          <!-- Common nav -->
+          <ion-list lines="none">
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/feed" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }" button>
+                <ion-icon name="newspaper-outline" slot="start"></ion-icon>
+                <ion-label>Feed</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/feed/explore" routerLinkActive="selected" button>
+                <ion-icon name="compass-outline" slot="start"></ion-icon>
+                <ion-label>Explore</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/feed/saved" routerLinkActive="selected" button>
+                <ion-icon name="bookmark-outline" slot="start"></ion-icon>
+                <ion-label>Saved</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/shop" routerLinkActive="selected" button>
+                <ion-icon name="bag-outline" slot="start"></ion-icon>
+                <ion-label>Shop</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </ion-list>
+
+          <!-- Creator nav -->
+          @if (auth.isCreator()) {
+            <div class="nav-divider"></div>
+            <ion-list lines="none">
+              <ion-list-header>
+                <ion-label>Creator</ion-label>
+              </ion-list-header>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }" button>
+                  <ion-icon name="grid-outline" slot="start"></ion-icon>
+                  <ion-label>Dashboard</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator/posts" routerLinkActive="selected" button>
+                  <ion-icon name="images-outline" slot="start"></ion-icon>
+                  <ion-label>My Posts</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator/posts/create" routerLinkActive="selected" button>
+                  <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+                  <ion-label>Create Post</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator/analytics" routerLinkActive="selected" button>
+                  <ion-icon name="analytics-outline" slot="start"></ion-icon>
+                  <ion-label>Analytics</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator/earnings" routerLinkActive="selected" button>
+                  <ion-icon name="wallet-outline" slot="start"></ion-icon>
+                  <ion-label>Earnings</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/creator/verification" routerLinkActive="selected" button>
+                  <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+                  <ion-label>Verification</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            </ion-list>
+          }
+
+          <!-- Retailer nav -->
+          @if (auth.isRetailer()) {
+            <div class="nav-divider"></div>
+            <ion-list lines="none">
+              <ion-list-header>
+                <ion-label>Retailer</ion-label>
+              </ion-list-header>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }" button>
+                  <ion-icon name="grid-outline" slot="start"></ion-icon>
+                  <ion-label>Dashboard</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer/profile" routerLinkActive="selected" button>
+                  <ion-icon name="person-outline" slot="start"></ion-icon>
+                  <ion-label>Profile</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer/products" routerLinkActive="selected" button>
+                  <ion-icon name="cube-outline" slot="start"></ion-icon>
+                  <ion-label>Products</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer/campaigns" routerLinkActive="selected" button>
+                  <ion-icon name="megaphone-outline" slot="start"></ion-icon>
+                  <ion-label>Campaigns</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer/analytics" routerLinkActive="selected" button>
+                  <ion-icon name="analytics-outline" slot="start"></ion-icon>
+                  <ion-label>Analytics</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/retailer/insights" routerLinkActive="selected" button>
+                  <ion-icon name="body-outline" slot="start"></ion-icon>
+                  <ion-label>Fit Insights</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            </ion-list>
+          }
+
+          <!-- Admin nav -->
+          @if (auth.isAdmin()) {
+            <div class="nav-divider"></div>
+            <ion-list lines="none">
+              <ion-list-header>
+                <ion-label>Admin</ion-label>
+              </ion-list-header>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }" button>
+                  <ion-icon name="grid-outline" slot="start"></ion-icon>
+                  <ion-label>Dashboard</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin/posts" routerLinkActive="selected" button>
+                  <ion-icon name="images-outline" slot="start"></ion-icon>
+                  <ion-label>Post Moderation</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin/users" routerLinkActive="selected" button>
+                  <ion-icon name="people-outline" slot="start"></ion-icon>
+                  <ion-label>Users</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin/verifications" routerLinkActive="selected" button>
+                  <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+                  <ion-label>Verifications</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+            </ion-list>
+          }
+
+          <!-- Bottom nav -->
+          <div class="nav-spacer"></div>
+          <div class="nav-divider"></div>
+          <ion-list lines="none">
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/profile" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }" button>
+                <ion-icon name="person-circle-outline" slot="start"></ion-icon>
+                <ion-label>Profile</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+            <ion-menu-toggle auto-hide="false">
+              <ion-item routerLink="/settings" routerLinkActive="selected" button>
+                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                <ion-label>Settings</ion-label>
+              </ion-item>
+            </ion-menu-toggle>
+          </ion-list>
+        </div>
+      </ion-content>
+    </ion-menu>
+
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+  </ion-split-pane>
 </ion-app>

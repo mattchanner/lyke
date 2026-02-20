@@ -5,6 +5,16 @@
   min-height: 100%;
   max-width: 400px;
   margin: 0 auto;
+
+  @media (min-width: 768px) {
+    background: var(--ion-card-background);
+    border-radius: 16px;
+    border: 1px solid var(--ion-color-light);
+    padding: 2.5rem;
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+    min-height: auto;
+  }
 }
 
 .logo-section {

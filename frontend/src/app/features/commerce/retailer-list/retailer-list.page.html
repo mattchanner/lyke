@@ -20,7 +20,7 @@
     <ion-grid>
       <ion-row>
         @for (retailer of retailers(); track retailer.id) {
-          <ion-col size="6">
+          <ion-col size="6" size-md="4" size-lg="3">
             <ion-card [routerLink]="['/shop/retailers', retailer.id]" button>
               <div class="retailer-logo-wrapper">
                 @if (retailer.logoUrl) {
