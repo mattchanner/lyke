@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, PaginatedRequest } from '../../models';
@@ -39,10 +39,12 @@ export class ApiService {
   get<T>(
     resource: string,
     endpoint: string,
-    params?: Record<string, unknown>
+    params?: Record<string, unknown>,
+    options?: { context?: HttpContext }
   ): Observable<ApiResponse<T>> {
     return this.http.get<ApiResponse<T>>(this.buildUrl(resource, endpoint), {
       params: this.buildParams(params),
+      context: options?.context,
     });
   }
 

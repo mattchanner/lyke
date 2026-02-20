@@ -1,8 +1,10 @@
 import { inject } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
 import { Router, CanActivateFn } from '@angular/router';
 import { map, catchError, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
+import { SUPPRESS_ERROR_TOAST } from '../interceptors/error.interceptor';
 import { UserProfileResponse } from '../../models';
 
 export const onboardingGuard: CanActivateFn = () => {
@@ -21,7 +23,9 @@ export const onboardingGuard: CanActivateFn = () => {
   }
 
   // Check if user has completed onboarding (has body profile)
-  return apiService.get<UserProfileResponse>('profile', 'me').pipe(
+  const suppressToast = { context: new HttpContext().set(SUPPRESS_ERROR_TOAST, true) };
+
+  return apiService.get<UserProfileResponse>('profile', 'me', undefined, suppressToast).pipe(
     map((response) => {
       if (response.success && response.data) {
         if (response.data.hasBodyProfile) {
@@ -51,7 +55,9 @@ export const needsOnboardingGuard: CanActivateFn = () => {
     return false;
   }
 
-  return apiService.get<UserProfileResponse>('profile', 'me').pipe(
+  const suppressToast = { context: new HttpContext().set(SUPPRESS_ERROR_TOAST, true) };
+
+  return apiService.get<UserProfileResponse>('profile', 'me', undefined, suppressToast).pipe(
     map((response) => {
       if (response.success && response.data) {
         if (!response.data.hasBodyProfile) {

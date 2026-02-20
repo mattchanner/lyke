@@ -1,4 +1,6 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpContextToken } from '@angular/common/http';
+
+export const SUPPRESS_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
@@ -60,8 +62,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      // Don't show toast for 401 (handled with redirect) or suppressed errors
-      if (error.status !== 401) {
+      // Don't show toast for 401 (handled with redirect) or explicitly suppressed errors
+      if (error.status !== 401 && !req.context.get(SUPPRESS_ERROR_TOAST)) {
         toast.error(errorMessage);
       }
 
