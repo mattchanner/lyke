@@ -45,6 +45,9 @@ lyke/
 ├── aspire/
 │   ├── Lyke.AppHost/              # Aspire orchestration (Postgres, Azurite, API)
 │   └── Lyke.ServiceDefaults/      # Shared service configuration
+├── infra/                         # Terraform infrastructure-as-code
+│   ├── environments/              # Per-environment tfvars (dev, prod)
+│   └── *.tf                       # Azure resource definitions
 ├── specs/                         # Requirements & implementation plan
 └── .github/workflows/             # CI/CD pipelines
 ```
@@ -209,6 +212,62 @@ Key configuration sections in `appsettings.json`:
 | `AzureBlob` | Blob storage connection and container config |
 | `Email` | Azure Communication Services sender and rate limits |
 | `Cors` | Allowed origins |
+
+## Infrastructure
+
+Cloud infrastructure is defined as Terraform in the [`infra/`](infra/) directory, targeting Azure with per-environment configuration.
+
+### Azure Resources
+
+| Resource | Naming Pattern | Purpose |
+|---|---|---|
+| Resource Group | `rg-lyke-{env}` | Container for all resources |
+| Log Analytics | `law-lyke-{env}` | Container Apps logging |
+| Container Registry | `lyke{env}acr` | Docker image storage |
+| PostgreSQL Flexible Server | `psql-lyke-{env}` | Database (v16) |
+| Storage Account | `lyke{env}stor` | Blob storage for media uploads |
+| Communication Services | `acs-lyke-{env}` | Transactional email |
+| Key Vault | `kv-lyke-{env}` | Secret management |
+| Container Apps Environment | `cae-lyke-{env}` | Serverless container hosting |
+| Container App | `ca-lyke-{env}-api` | The API |
+
+### Environment Sizing
+
+| Setting | Dev | Prod |
+|---|---|---|
+| Container CPU / Memory | 0.5 / 1Gi | 1.0 / 2Gi |
+| Min / Max replicas | 0–2 (scale to zero) | 1–5 (always on) |
+| PostgreSQL SKU | B_Standard_B1ms | GP_Standard_D2s_v3 |
+| PostgreSQL storage | 32 GB | 64 GB |
+| Storage replication | LRS | GRS |
+| Log retention | 30 days | 90 days |
+
+### Deploying
+
+Terraform state is stored remotely in Azure Storage. One-time bootstrap creates the `lyke-tfstate-rg` resource group, `lyketfstate` storage account, and `tfstate` container.
+
+```bash
+cd infra
+
+# Initialize (specify environment state key)
+terraform init -backend-config="key=lyke-dev.tfstate"
+
+# Plan
+terraform plan -var-file="environments/dev.tfvars" \
+  -var="postgresql_admin_password=..." \
+  -var="jwt_secret=..." \
+  -var="google_client_id=..." \
+  -var="apple_app_id=..."
+
+# Apply
+terraform apply -var-file="environments/dev.tfvars" \
+  -var="postgresql_admin_password=..." \
+  -var="jwt_secret=..." \
+  -var="google_client_id=..." \
+  -var="apple_app_id=..."
+```
+
+For production, use `key=lyke-prod.tfstate` and `-var-file="environments/prod.tfvars"`.
 
 ## CI/CD
 

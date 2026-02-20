@@ -18,7 +18,7 @@
 
 ## Current Progress Summary
 
-**Last Updated:** 2026-02-17
+**Last Updated:** 2026-02-20
 
 | Component | Status |
 |-----------|--------|
@@ -62,6 +62,7 @@
 | Frontend App Insights | ✅ Complete (exception tracking, page views, HTTP error telemetry, custom ErrorHandler) |
 | Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
 | CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop, Android APK build; unit tests in both pipelines; auto-migrations on startup) |
+| Infrastructure as Code | ✅ Complete (Terraform: 9 Azure resources, dev/prod tfvars, validated) |
 
 **Overall Backend Progress: ~98%** | **Overall Frontend Progress: ~97%** | **Overall Project: ~92%**
 
@@ -746,16 +747,27 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 
 ## Phase 14: Deployment & DevOps
 
-### 14.1 Infrastructure Setup
-- [ ] Set up Azure/AWS infrastructure
-  - App Service / ECS for API
-  - Azure SQL / RDS for PostgreSQL
-  - Blob Storage / S3 for media
-  - Redis Cache
-  - CDN for static assets
-- [ ] Configure auto-scaling rules
+### 14.1 Infrastructure Setup (Terraform)
+- [x] Create Terraform infrastructure-as-code (`infra/` directory)
+  - Resource Group (`rg-lyke-{env}`)
+  - Log Analytics Workspace (`law-lyke-{env}`)
+  - Container Registry (`lyke{env}acr`, Basic SKU, admin enabled)
+  - PostgreSQL Flexible Server v16 (`psql-lyke-{env}`) + database + firewall
+  - Storage Account (`lyke{env}stor`) + "media" blob container
+  - Azure Communication Services (`acs-lyke-{env}`, Europe data location)
+  - Key Vault (`kv-lyke-{env}`) + secrets for all sensitive values
+  - Container Apps Environment (`cae-lyke-{env}`) + Container App (`ca-lyke-{env}-api`)
+- [x] Configure per-environment tfvars (dev: scale-to-zero B1ms, prod: always-on D2s_v3)
+- [x] Map all appsettings.json keys to Container App env vars via `__` convention
+- [x] Configure health probes (startup, liveness, readiness on `/health:8080`)
+- [x] Validate with `terraform fmt` and `terraform validate`
+- [ ] Bootstrap remote state storage (manual one-time setup)
+- [ ] Deploy dev environment
+- [ ] Deploy prod environment
+- [ ] Configure auto-scaling rules (Container Apps HTTP scaling rule)
 - [ ] Set up monitoring and alerting
-- [ ] Configure backup strategies
+- [ ] Add Redis Cache resource
+- [ ] Add CDN for static assets
 
 ### 14.2 Mobile App Deployment
 - [ ] Configure iOS build (Xcode, certificates)
@@ -947,10 +959,10 @@ ANALYTICS_KEY=<key>
 | Phase 11: Privacy | 12 | 9 | Critical | 75% (data retention policies, audit trail, cookie consent remaining) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
 | Phase 13: Performance | 12 | 1 | Medium | 8% (request rate limiting done) |
-| Phase 14: Deployment | 10 | 0 | High | 0% |
+| Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~230 actionable tasks (~195 completed, ~85% overall)**
+**Total: ~237 actionable tasks (~200 completed, ~84% overall)**
 
 ---
 
