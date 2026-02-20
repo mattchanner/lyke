@@ -15,12 +15,14 @@ import {
   IonItem,
   IonSpinner,
   IonText,
+  ModalController,
 } from '@ionic/angular/standalone';
-import { ApiService, ToastService } from '../../../core';
+import { ApiService, AuthService, ToastService } from '../../../core';
 import {
   UserProfileResponse,
   UpdateProfileRequest,
 } from '../../../models';
+import { ImageCropModalComponent } from './image-crop-modal.component';
 
 @Component({
   selector: 'app-profile-edit',
@@ -47,8 +49,10 @@ import {
 export class ProfileEditPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly modalCtrl = inject(ModalController);
 
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
@@ -108,24 +112,37 @@ export class ProfileEditPage implements OnInit {
     });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
       this.toast.error('Image must be 5MB or smaller');
+      input.value = '';
       return;
     }
 
+    const modal = await this.modalCtrl.create({
+      component: ImageCropModalComponent,
+      componentProps: { imageFile: file },
+    });
+    await modal.present();
+
+    const { data: croppedBlob } = await modal.onDidDismiss<Blob>();
+    input.value = '';
+
+    if (!croppedBlob) return;
+
     this.isUploading.set(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', croppedBlob, file.name);
 
     this.api.uploadFile<UserProfileResponse>('profile', 'me/image', formData).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.imagePreview.set(response.data.profileImageUrl);
+          this.auth.setProfileImageUrl(response.data.profileImageUrl);
           this.toast.success('Profile image updated');
         } else {
           this.toast.error(response.error?.message || 'Failed to upload image');
@@ -135,10 +152,7 @@ export class ProfileEditPage implements OnInit {
         this.toast.error('Failed to upload image');
         this.isUploading.set(false);
       },
-      complete: () => {
-        this.isUploading.set(false);
-        input.value = '';
-      },
+      complete: () => this.isUploading.set(false),
     });
   }
 }

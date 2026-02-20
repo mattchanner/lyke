@@ -15,6 +15,7 @@ import {
   ResetPasswordRequest,
   SocialLoginRequest,
   UserType,
+  UserProfileResponse,
 } from '../../models';
 
 interface JwtPayload {
@@ -29,6 +30,7 @@ interface AuthState {
   userId: string | null;
   email: string | null;
   userType: UserType | null;
+  profileImageUrl: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -37,6 +39,7 @@ const INITIAL_STATE: AuthState = {
   userId: null,
   email: null,
   userType: null,
+  profileImageUrl: null,
   isAuthenticated: false,
   isLoading: true,
 };
@@ -60,6 +63,7 @@ export class AuthService {
   readonly isAuthenticated = computed(() => this.state().isAuthenticated);
   readonly isLoading = computed(() => this.state().isLoading);
 
+  readonly profileImageUrl = computed(() => this.state().profileImageUrl);
   readonly isCreator = computed(() => this.state().userType === UserType.Creator);
   readonly isRetailer = computed(() => this.state().userType === UserType.Retailer);
   readonly isAdmin = computed(() => this.state().userType === UserType.Admin);
@@ -83,9 +87,11 @@ export class AuthService {
               userId: decoded.sub,
               email: decoded.email,
               userType: decoded.user_type as UserType,
+              profileImageUrl: null,
               isAuthenticated: true,
               isLoading: false,
             });
+            this.loadProfileImage();
             return;
           }
         } else {
@@ -99,6 +105,23 @@ export class AuthService {
     }
 
     this.state.set({ ...INITIAL_STATE, isLoading: false });
+  }
+
+  private loadProfileImage(): void {
+    this.api.get<UserProfileResponse>('profile', 'me').subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.state.update((s) => ({
+            ...s,
+            profileImageUrl: response.data!.profileImageUrl,
+          }));
+        }
+      },
+    });
+  }
+
+  setProfileImageUrl(url: string | null): void {
+    this.state.update((s) => ({ ...s, profileImageUrl: url }));
   }
 
   private decodeToken(token: string): JwtPayload | null {
@@ -229,9 +252,12 @@ export class AuthService {
       userId: auth.userId,
       email: auth.email,
       userType: auth.userType,
+      profileImageUrl: null,
       isAuthenticated: true,
       isLoading: false,
     });
+
+    this.loadProfileImage();
   }
 
   refreshSession(): Observable<AuthResponse> {

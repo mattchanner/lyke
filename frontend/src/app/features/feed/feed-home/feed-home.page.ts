@@ -6,6 +6,7 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
+  IonAvatar,
   IonButton,
   IonIcon,
   IonButtons,
@@ -41,6 +42,7 @@ import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter
   imports: [
     CommonModule,
     RouterLink,
+    IonAvatar,
     IonContent,
     IonHeader,
     IonTitle,
@@ -66,7 +68,7 @@ import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter
 })
 export class FeedHomePage implements OnInit {
   private readonly api = inject(ApiService);
-  private readonly auth = inject(AuthService);
+  readonly auth = inject(AuthService);
 
   readonly FeedSortBy = FeedSortBy;
 
