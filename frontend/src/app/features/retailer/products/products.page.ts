@@ -23,13 +23,15 @@ import {
   IonInfiniteScrollContent,
   IonSegment,
   IonSegmentButton,
+  IonSpinner,
   RefresherCustomEvent,
   InfiniteScrollCustomEvent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { cloudUploadOutline, cubeOutline } from 'ionicons/icons';
 import { RetailerService, ToastService } from '../../../core';
-import { RetailerProductResponse } from '../../../models';
+import { ImportProductsResponse, RetailerProductResponse } from '../../../models';
+import { ImportResultsModalComponent } from '../import-results-modal/import-results-modal.component';
 
 type FilterTab = 'all' | 'active' | 'inactive';
 
@@ -59,6 +61,8 @@ type FilterTab = 'all' | 'active' | 'inactive';
     IonInfiniteScrollContent,
     IonSegment,
     IonSegmentButton,
+    IonSpinner,
+    ImportResultsModalComponent,
   ],
   templateUrl: './products.page.html',
   styleUrls: ['./products.page.scss'],
@@ -74,6 +78,9 @@ export class ProductsPage implements OnInit {
   readonly currentPage = signal(1);
   readonly search = signal('');
   readonly activeFilter = signal<FilterTab>('all');
+  readonly isImporting = signal(false);
+  readonly isImportResultsOpen = signal(false);
+  readonly importResult = signal<ImportProductsResponse | null>(null);
 
   constructor() {
     addIcons({ cloudUploadOutline, cubeOutline });
@@ -153,21 +160,25 @@ export class ProductsPage implements OnInit {
     input.onchange = () => {
       const file = input.files?.[0];
       if (!file) return;
+      this.isImporting.set(true);
       this.retailerService.importProducts(file).subscribe({
         next: (r) => {
           if (r.success && r.data) {
-            const d = r.data;
-            this.toast.success(
-              `Imported: ${d.imported}, Updated: ${d.updated}, Skipped: ${d.skipped}, Failed: ${d.failed}`
-            );
+            this.importResult.set(r.data);
+            this.isImportResultsOpen.set(true);
             this.loadProducts();
           } else {
             this.toast.error(r.error?.message ?? 'Import failed');
           }
         },
         error: () => this.toast.error('Import failed'),
+        complete: () => this.isImporting.set(false),
       });
     };
     input.click();
+  }
+
+  closeImportResults(): void {
+    this.isImportResultsOpen.set(false);
   }
 }

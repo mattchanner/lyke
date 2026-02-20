@@ -5,7 +5,10 @@
     </ion-buttons>
     <ion-title>Products</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="importCsv()">
+      @if (isImporting()) {
+        <ion-spinner name="crescent"></ion-spinner>
+      }
+      <ion-button (click)="importCsv()" [disabled]="isImporting()">
         <ion-icon name="cloud-upload-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -79,3 +82,9 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+<app-import-results-modal
+  [isOpen]="isImportResultsOpen()"
+  [result]="importResult()"
+  (dismissed)="closeImportResults()"
+></app-import-results-modal>

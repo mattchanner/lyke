@@ -584,8 +584,8 @@ Uses `/portal` sub-path to avoid collision with existing public `/api/retailers/
   - Fit feedback distribution bars
   - Body profile band distribution (with k-anonymity counts)
   - Dark mode compatible styling
-- [ ] Create CSV export functionality (frontend trigger for backend export endpoint)
-- [ ] Build product feed CSV upload interface (frontend for backend import endpoint)
+- [x] Create CSV export functionality (frontend trigger for backend export endpoint)
+- [x] Build product feed CSV upload interface (frontend for backend import endpoint)
 
 ---
 
@@ -953,7 +953,7 @@ ANALYTICS_KEY=<key>
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
 | Phase 6: Commerce | 18 | 17 | Critical | 94% (in-app browser optional) |
 | Phase 7: Creator | 22 | 22 | High | 100% |
-| Phase 8: Retailer Portal | 22 | 18 | High | 82% (CSV export/import UI remaining) |
+| Phase 8: Retailer Portal | 22 | 22 | High | 100% |
 | Phase 9: Admin | 16 | 14 | High | 88% (analytics dashboard, content flagging remaining) |
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
 | Phase 11: Privacy | 12 | 9 | Critical | 75% (data retention policies, audit trail, cookie consent remaining) |
