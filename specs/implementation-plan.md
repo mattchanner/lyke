@@ -452,7 +452,7 @@ POST   /api/retailers/{id}/conversions - Conversion webhook ✅
 ### 6.3 Frontend Tasks
 - [x] Create product card component (shared, barrel exported)
 - [x] Implement click tracking before redirect
-- [ ] Build in-app browser for product views (optional)
+- [x] Build in-app browser for product views (optional)
 - [x] Create "Shop the Look" component (shared, barrel exported)
 - [x] Add deep linking support (DeepLinkService with universal link handling)
 - [x] Create product detail page
@@ -951,7 +951,7 @@ ANALYTICS_KEY=<key>
 | Phase 3B: Email & Account Mgmt | 20 | 19 | Critical | 95% (email retry logic remaining) |
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
-| Phase 6: Commerce | 18 | 17 | Critical | 94% (in-app browser optional) |
+| Phase 6: Commerce | 18 | 18 | Critical | 100% |
 | Phase 7: Creator | 22 | 22 | High | 100% |
 | Phase 8: Retailer Portal | 22 | 22 | High | 100% |
 | Phase 9: Admin | 16 | 14 | High | 88% (analytics dashboard, content flagging remaining) |

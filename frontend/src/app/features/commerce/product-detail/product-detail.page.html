@@ -65,9 +65,14 @@
           <p class="post-count">Worn in {{ p.postCount }} {{ p.postCount === 1 ? 'post' : 'posts' }}</p>
         }
 
-        <ion-button expand="block" (click)="shopProduct()">
-          <ion-icon name="cart-outline" slot="start"></ion-icon>
-          Shop Now
+        <ion-button expand="block" (click)="shopProduct()" [disabled]="isBrowsing()">
+          @if (isBrowsing()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+            Opening…
+          } @else {
+            <ion-icon name="cart-outline" slot="start"></ion-icon>
+            Shop Now
+          }
         </ion-button>
 
         @if (relatedPosts().length > 0) {

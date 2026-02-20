@@ -58,6 +58,7 @@ export class ProductDetailPage implements OnInit {
   readonly product = signal<ProductResponse | null>(null);
   readonly relatedPosts = signal<FeedPostResponse[]>([]);
   readonly isLoading = signal(false);
+  readonly isBrowsing = this.commerce.isBrowsing;
 
   readonly mediaItems = computed<MediaItem[]>(() => {
     const p = this.product();

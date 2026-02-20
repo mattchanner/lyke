@@ -1,6 +1,6 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, OnDestroy } from '@angular/core';
 import { Observable, tap, map, catchError, of } from 'rxjs';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
@@ -25,16 +25,32 @@ export interface ClickContext {
 @Injectable({
   providedIn: 'root',
 })
-export class CommerceService {
+export class CommerceService implements OnDestroy {
   private readonly api = inject(ApiService);
   private readonly storage = inject(StorageService);
   private readonly toast = inject(ToastService);
 
   private sessionId: string | null = null;
+  private browserListeners: PluginListenerHandle[] = [];
+
   readonly isTracking = signal(false);
+  readonly isBrowsing = signal(false);
 
   constructor() {
     this.initSession();
+    this.setupBrowserListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.browserListeners.forEach((l) => l.remove());
+  }
+
+  private async setupBrowserListeners(): Promise<void> {
+    if (Capacitor.getPlatform() === 'web') return;
+    const handle = await Browser.addListener('browserFinished', () => {
+      this.isBrowsing.set(false);
+    });
+    this.browserListeners.push(handle);
   }
 
   private async initSession(): Promise<void> {
@@ -136,21 +152,35 @@ export class CommerceService {
    */
   async openProductUrl(url: string): Promise<void> {
     const platform = Capacitor.getPlatform();
+    this.isBrowsing.set(true);
 
     if (platform === 'web') {
-      window.open(url, '_blank');
+      window.open(url, '_lyke_shop');
+      // No browserFinished event on web, reset after brief delay
+      setTimeout(() => this.isBrowsing.set(false), 1000);
     } else {
       // Use Capacitor Browser for native in-app browser
       try {
         await Browser.open({
           url,
           presentationStyle: 'popover',
-          toolbarColor: '#ffffff',
+          toolbarColor: '#c25b3f',
         });
       } catch {
-        // Fallback to window.open
-        window.open(url, '_blank');
+        this.isBrowsing.set(false);
+        window.open(url, '_lyke_shop');
       }
+    }
+  }
+
+  /**
+   * Programmatically close the in-app browser
+   */
+  async closeBrowser(): Promise<void> {
+    try {
+      await Browser.close();
+    } finally {
+      this.isBrowsing.set(false);
     }
   }
 
