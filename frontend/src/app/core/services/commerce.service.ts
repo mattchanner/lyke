@@ -1,10 +1,12 @@
 import { Injectable, inject, signal, OnDestroy } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
 import { Observable, tap, map, catchError, of } from 'rxjs';
 import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
+import { SUPPRESS_ERROR_TOAST } from '../interceptors/error.interceptor';
 import {
   ApiResponse,
   TrackClickRequest,
@@ -32,6 +34,8 @@ export class CommerceService implements OnDestroy {
 
   private sessionId: string | null = null;
   private browserListeners: PluginListenerHandle[] = [];
+
+  private readonly noToast = { context: new HttpContext().set(SUPPRESS_ERROR_TOAST, true) };
 
   readonly isTracking = signal(false);
   readonly isBrowsing = signal(false);
@@ -188,7 +192,7 @@ export class CommerceService implements OnDestroy {
    * Get product details
    */
   getProduct(productId: string): Observable<ProductResponse | null> {
-    return this.api.get<ProductResponse>('commerce', `products/${productId}`).pipe(
+    return this.api.get<ProductResponse>('commerce', `products/${productId}`, undefined, this.noToast).pipe(
       map((response) => (response.success ? response.data ?? null : null)),
       catchError(() => of(null))
     );
@@ -211,7 +215,7 @@ export class CommerceService implements OnDestroy {
         category,
         page,
         pageSize,
-      })
+      }, this.noToast)
       .pipe(
         map((response) => (response.success ? response.data ?? [] : [])),
         catchError(() => of([]))
@@ -222,7 +226,7 @@ export class CommerceService implements OnDestroy {
    * Get all active retailers
    */
   getRetailers(): Observable<RetailerResponse[]> {
-    return this.api.get<RetailerResponse[]>('commerce', 'retailers').pipe(
+    return this.api.get<RetailerResponse[]>('commerce', 'retailers', undefined, this.noToast).pipe(
       map((response) => (response.success ? response.data ?? [] : [])),
       catchError(() => of([]))
     );
@@ -240,7 +244,7 @@ export class CommerceService implements OnDestroy {
       .get<RetailerProductsResponse>('commerce', `retailers/${retailerId}/products`, {
         page,
         pageSize,
-      })
+      }, this.noToast)
       .pipe(
         map((response) => (response.success ? response.data?.products ?? [] : [])),
         catchError(() => of([]))
@@ -264,7 +268,7 @@ export class CommerceService implements OnDestroy {
         category,
         page,
         pageSize,
-      })
+      }, this.noToast)
       .pipe(catchError(() => of({ success: false, data: [] as ProductResponse[] })));
   }
 
@@ -280,7 +284,7 @@ export class CommerceService implements OnDestroy {
       .get<RetailerProductsResponse>('commerce', `retailers/${retailerId}/products`, {
         page,
         pageSize,
-      })
+      }, this.noToast)
       .pipe(
         map((response) => ({
           ...response,
