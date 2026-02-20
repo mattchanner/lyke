@@ -20,6 +20,7 @@ import {
   IonBadge,
   IonSkeletonText,
   IonRefresher,
+  IonAvatar,
   IonRefresherContent,
   RefresherCustomEvent,
 } from '@ionic/angular/standalone';
@@ -38,7 +39,7 @@ import {
   personCircleOutline,
   newspaperOutline,
 } from 'ionicons/icons';
-import { CreatorService } from '../../../core';
+import { AuthService, CreatorService } from '../../../core';
 import {
   CreatorProfileResponse,
   CreatorAnalyticsResponse,
@@ -71,6 +72,7 @@ import {
     IonCardContent,
     IonBadge,
     IonSkeletonText,
+    IonAvatar,
     IonRefresher,
     IonRefresherContent,
   ],
@@ -78,6 +80,7 @@ import {
   styleUrls: ['./dashboard.page.scss'],
 })
 export class DashboardPage implements OnInit {
+  readonly auth = inject(AuthService);
   private readonly creatorService = inject(CreatorService);
 
   readonly profile = signal<CreatorProfileResponse | null>(null);
