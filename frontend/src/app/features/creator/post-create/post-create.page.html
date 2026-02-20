@@ -3,303 +3,195 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/creator/posts"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ stepTitle() }}</ion-title>
-    <ion-buttons slot="end">
-      <ion-chip color="medium">{{ currentStep() }} / {{ totalSteps }}</ion-chip>
-    </ion-buttons>
+    <ion-title>Create Post</ion-title>
   </ion-toolbar>
-  <ion-progress-bar [value]="currentStep() / totalSteps" color="primary"></ion-progress-bar>
 </ion-header>
 
 <ion-content class="ion-padding">
-  <!-- Step 1: Media Upload -->
-  @if (currentStep() === 1) {
-    <div class="step-content">
-      <!-- Media Type Selector -->
-      <ion-item>
-        <ion-select
-          label="Media Type"
-          labelPlacement="stacked"
-          [value]="mediaType()"
-          (ionChange)="mediaType.set($any($event).detail.value)"
-        >
-          <ion-select-option [value]="MediaType.Image">Images</ion-select-option>
-          <ion-select-option [value]="MediaType.Video">Video</ion-select-option>
-        </ion-select>
-      </ion-item>
+  <!-- 1. Media Section -->
+  <section class="media-section">
+    @if (hasMedia()) {
+      <app-media-carousel [media]="mediaItems()" alt="Post media"></app-media-carousel>
 
-      <!-- Upload Area -->
-      <div class="upload-area" (click)="fileInput.click()">
-        <ion-icon name="cloud-upload-outline" class="upload-icon"></ion-icon>
-        <p>Tap to select {{ mediaType() === MediaType.Image ? 'images' : 'video' }}</p>
-        <input
-          #fileInput
-          type="file"
-          [accept]="mediaType() === MediaType.Image ? 'image/*' : 'video/*'"
-          [multiple]="mediaType() === MediaType.Image"
-          (change)="onFileSelected($event)"
-          hidden
-        />
-      </div>
-
-      @if (isUploading()) {
-        <div class="upload-progress">
-          <ion-spinner name="crescent"></ion-spinner>
-          <span>Uploading...</span>
-        </div>
-      }
-
-      <!-- Uploaded Media Previews -->
-      @if (uploadedMedia().length > 0) {
-        <div class="media-previews">
+      <!-- Thumbnail strip for 2+ items -->
+      @if (uploadedMedia().length > 1) {
+        <div class="thumb-strip">
           @for (media of uploadedMedia(); track media.mediaId; let i = $index) {
-            <div class="media-preview">
-              <img [src]="media.thumbnailUrl" alt="Uploaded media" />
-              <ion-button fill="clear" size="small" color="danger" class="remove-btn" (click)="removeMedia(i)">
-                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-              </ion-button>
+            <div class="thumb-item">
+              <img [src]="media.thumbnailUrl" alt="" />
+              <button class="thumb-remove" (click)="removeMedia(i)">
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
             </div>
           }
+          <button class="thumb-add" (click)="fileInput.click()">
+            <ion-icon name="add-outline"></ion-icon>
+          </button>
         </div>
-      }
-    </div>
-  }
-
-  <!-- Step 2: Post Details -->
-  @if (currentStep() === 2) {
-    <div class="step-content">
-      <ion-item>
-        <ion-input
-          label="Title"
-          labelPlacement="stacked"
-          placeholder="Give your post a title (optional)"
-          [value]="title()"
-          (ionInput)="title.set($event.detail.value || '')"
-        ></ion-input>
-      </ion-item>
-
-      <ion-item>
-        <ion-textarea
-          label="Description"
-          labelPlacement="stacked"
-          placeholder="Describe your outfit, styling tips, etc. (optional)"
-          [value]="description()"
-          (ionInput)="description.set($event.detail.value || '')"
-          [autoGrow]="true"
-          [rows]="4"
-        ></ion-textarea>
-      </ion-item>
-    </div>
-  }
-
-  <!-- Step 3: Product Tagging -->
-  @if (currentStep() === 3) {
-    <div class="step-content">
-      <!-- Product Search -->
-      <div class="search-bar">
-        <ion-item>
-          <ion-input
-            placeholder="Search products to tag..."
-            [value]="productSearchQuery()"
-            (ionInput)="productSearchQuery.set($event.detail.value || '')"
-            (keyup.enter)="searchProducts()"
-          ></ion-input>
-          <ion-button fill="clear" slot="end" (click)="searchProducts()" [disabled]="isSearching()">
-            @if (isSearching()) {
-              <ion-spinner name="crescent" slot="icon-only"></ion-spinner>
-            } @else {
-              <ion-icon name="search-outline" slot="icon-only"></ion-icon>
-            }
-          </ion-button>
-        </ion-item>
-      </div>
-
-      <!-- Search Results -->
-      @if (searchResults().length > 0) {
-        <ion-list class="search-results">
-          @for (product of searchResults(); track product.id) {
-            <ion-item button (click)="addProduct(product)">
-              @if (product.imageUrls.length > 0) {
-                <img [src]="product.imageUrls[0]" class="product-thumb" slot="start" alt="Product" />
-              }
-              <ion-label>
-                <h3>{{ product.name }}</h3>
-                <p>{{ product.retailerName }} - {{ product.currency }}{{ product.price | number:'1.2-2' }}</p>
-              </ion-label>
-              <ion-icon name="add-outline" slot="end" color="primary"></ion-icon>
-            </ion-item>
-          }
-        </ion-list>
-      }
-
-      <!-- Tagged Products -->
-      @if (taggedProducts().length > 0) {
-        <h3 class="section-title">Tagged Products ({{ taggedProducts().length }})</h3>
-        @for (tp of taggedProducts(); track tp.product.id; let i = $index) {
-          <ion-card class="tagged-product-card">
-            <ion-card-header>
-              <ion-card-title class="product-header">
-                <span>{{ tp.product.name }}</span>
-                <ion-button fill="clear" size="small" color="danger" (click)="removeProduct(i)">
-                  <ion-icon name="close-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-              </ion-card-title>
-              <ion-note>{{ tp.product.retailerName }}</ion-note>
-            </ion-card-header>
-            <ion-card-content>
-              <ion-item>
-                <ion-input
-                  label="Size Worn"
-                  labelPlacement="stacked"
-                  placeholder="e.g., M, 10, 32W"
-                  [value]="tp.sizeWorn"
-                  (ionInput)="updateProductSize(i, $event.detail.value || '')"
-                ></ion-input>
-              </ion-item>
-
-              <ion-item>
-                <ion-select
-                  label="Fit Rating"
-                  labelPlacement="stacked"
-                  placeholder="How did it fit?"
-                  [value]="tp.fitRating"
-                  (ionChange)="updateProductFitRating(i, $any($event).detail.value)"
-                >
-                  <ion-select-option [value]="FitRating.TooSmall">Too Small</ion-select-option>
-                  <ion-select-option [value]="FitRating.SlightlySmall">Slightly Small</ion-select-option>
-                  <ion-select-option [value]="FitRating.TrueToSize">True to Size</ion-select-option>
-                  <ion-select-option [value]="FitRating.SlightlyLarge">Slightly Large</ion-select-option>
-                  <ion-select-option [value]="FitRating.TooLarge">Too Large</ion-select-option>
-                </ion-select>
-              </ion-item>
-
-              <ion-item>
-                <ion-textarea
-                  label="Fit Notes"
-                  labelPlacement="stacked"
-                  placeholder="How does it fit? Any sizing tips? (optional)"
-                  [value]="tp.fitNotes"
-                  (ionInput)="updateProductFitNotes(i, $event.detail.value || '')"
-                  [autoGrow]="true"
-                  [rows]="2"
-                ></ion-textarea>
-              </ion-item>
-
-              <ion-item>
-                <ion-textarea
-                  label="Styling Notes"
-                  labelPlacement="stacked"
-                  placeholder="How did you style it? (optional)"
-                  [value]="tp.stylingNotes"
-                  (ionInput)="updateProductStylingNotes(i, $event.detail.value || '')"
-                  [autoGrow]="true"
-                  [rows]="2"
-                ></ion-textarea>
-              </ion-item>
-            </ion-card-content>
-          </ion-card>
-        }
       } @else {
-        <div class="empty-products">
-          <p>Search and add products you're wearing in this post.</p>
-        </div>
+        <ion-button fill="clear" size="small" class="add-more-btn" (click)="fileInput.click()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Add more
+        </ion-button>
       }
-    </div>
-  }
-
-  <!-- Step 4: Review & Submit -->
-  @if (currentStep() === 4) {
-    <div class="step-content">
-      <!-- Media Preview -->
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Media</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          @if (reviewMediaItems().length > 0) {
-            <app-media-carousel
-              [media]="reviewMediaItems()"
-              alt="Post media"
-            ></app-media-carousel>
-          }
-          <ion-note>{{ uploadedMedia().length }} {{ mediaType() === MediaType.Image ? 'image(s)' : 'video' }}</ion-note>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Details Preview -->
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Details</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          <p><strong>Title:</strong> {{ title() || '(none)' }}</p>
-          <p><strong>Description:</strong> {{ description() || '(none)' }}</p>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Products Preview -->
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>Products ({{ taggedProducts().length }})</ion-card-title>
-        </ion-card-header>
-        <ion-card-content>
-          @if (taggedProducts().length === 0) {
-            <ion-note>No products tagged</ion-note>
-          } @else {
-            @for (tp of taggedProducts(); track tp.product.id) {
-              <div class="review-product">
-                <strong>{{ tp.product.name }}</strong>
-                <span>Size: {{ tp.sizeWorn || '(not set)' }}</span>
-                @if (tp.fitRating !== undefined) {
-                  <ion-badge color="primary">{{ getFitRatingLabel(tp.fitRating) }}</ion-badge>
-                }
-              </div>
-            }
-          }
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Action Buttons -->
-      <div class="submit-actions">
-        <ion-button
-          expand="block"
-          fill="outline"
-          (click)="saveAsDraft()"
-          [disabled]="isSubmitting()"
-        >
-          <ion-icon name="save-outline" slot="start"></ion-icon>
-          Save as Draft
-        </ion-button>
-        <ion-button
-          expand="block"
-          (click)="submitForReview()"
-          [disabled]="isSubmitting()"
-        >
-          @if (isSubmitting()) {
-            <ion-spinner name="crescent"></ion-spinner>
-          } @else {
-            <ion-icon name="send-outline" slot="start"></ion-icon>
-            Submit for Review
-          }
-        </ion-button>
+    } @else {
+      <!-- Empty state: hero upload area -->
+      <div class="hero-upload" (click)="fileInput.click()">
+        @if (isUploading()) {
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p>Uploading...</p>
+        } @else {
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+          <p>Tap to add photos or video</p>
+        }
       </div>
-    </div>
-  }
+    }
 
-  <!-- Navigation Buttons (Steps 1-3) -->
-  @if (currentStep() < 4) {
-    <div class="step-nav">
-      @if (currentStep() > 1) {
-        <ion-button fill="outline" (click)="prevStep()">
-          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
-          Back
-        </ion-button>
-      }
-      <div class="spacer"></div>
-      <ion-button (click)="nextStep()" [disabled]="!canProceed()">
-        Next
-        <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+    @if (isUploading() && hasMedia()) {
+      <div class="upload-overlay">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    }
+
+    <input
+      #fileInput
+      type="file"
+      [accept]="fileAccept"
+      [multiple]="fileMultiple"
+      (change)="onFileSelected($event)"
+      hidden
+    />
+  </section>
+
+  <!-- 2. Form Fields -->
+  <section class="form-section">
+    <ion-item>
+      <ion-input
+        label="Title"
+        labelPlacement="stacked"
+        placeholder="Give your post a title (optional)"
+        [value]="title()"
+        (ionInput)="title.set($event.detail.value || '')"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-textarea
+        label="Description"
+        labelPlacement="stacked"
+        placeholder="Describe your outfit, styling tips... (optional)"
+        [value]="description()"
+        (ionInput)="description.set($event.detail.value || '')"
+        [autoGrow]="true"
+        [rows]="3"
+      ></ion-textarea>
+    </ion-item>
+  </section>
+
+  <!-- 3. Tagged Products -->
+  <section class="products-section">
+    <div class="section-header">
+      <h3>Products</h3>
+      <ion-button fill="outline" size="small" (click)="isProductSheetOpen.set(true)">
+        <ion-icon name="pricetag-outline" slot="start"></ion-icon>
+        Tag Products
       </ion-button>
     </div>
-  }
+
+    @if (taggedProducts().length === 0) {
+      <ion-note class="empty-hint">Tag the products you're wearing so shoppers can find them.</ion-note>
+    }
+
+    @for (tp of taggedProducts(); track tp.product.id; let i = $index) {
+      <div class="tagged-product-card">
+        <div class="product-row">
+          @if (tp.product.imageUrls.length > 0) {
+            <img [src]="tp.product.imageUrls[0]" alt="" class="product-thumb" />
+          }
+          <div class="product-info">
+            <span class="product-name">{{ tp.product.name }}</span>
+            <span class="product-retailer">{{ tp.product.retailerName }}</span>
+          </div>
+          <ion-button fill="clear" size="small" color="medium" (click)="removeProduct(i)">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <ion-item>
+          <ion-input
+            label="Size worn"
+            labelPlacement="stacked"
+            placeholder="e.g., M, 10, 32W"
+            [value]="tp.sizeWorn"
+            (ionInput)="updateProductSize(i, $event.detail.value || '')"
+          ></ion-input>
+        </ion-item>
+
+        <div class="fit-label">Fit rating</div>
+        <app-fit-rating-pills
+          [selected]="tp.fitRating"
+          (ratingChanged)="updateProductFitRating(i, $event)"
+        ></app-fit-rating-pills>
+
+        @if (!isNotesVisible(tp.product.id)) {
+          <ion-button fill="clear" size="small" class="notes-toggle" (click)="toggleNotes(tp.product.id)">
+            Add notes
+          </ion-button>
+        } @else {
+          <ion-item>
+            <ion-textarea
+              label="Fit notes"
+              labelPlacement="stacked"
+              placeholder="How does it fit? Sizing tips?"
+              [value]="tp.fitNotes"
+              (ionInput)="updateProductFitNotes(i, $event.detail.value || '')"
+              [autoGrow]="true"
+              [rows]="2"
+            ></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-textarea
+              label="Styling notes"
+              labelPlacement="stacked"
+              placeholder="How did you style it?"
+              [value]="tp.stylingNotes"
+              (ionInput)="updateProductStylingNotes(i, $event.detail.value || '')"
+              [autoGrow]="true"
+              [rows]="2"
+            ></ion-textarea>
+          </ion-item>
+        }
+      </div>
+    }
+  </section>
 </ion-content>
+
+<!-- Sticky Footer -->
+<ion-footer class="action-bar">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="outline" [disabled]="!hasMedia() || isSubmitting()" (click)="saveAsDraft()">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Save Draft
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="primary" [disabled]="!hasMedia() || isSubmitting()" (click)="submitForReview()">
+        @if (isSubmitting()) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+        } @else {
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+        }
+        Submit
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>
+
+<!-- Product Tag Bottom Sheet -->
+<app-product-tag-sheet
+  [isOpen]="isProductSheetOpen()"
+  [taggedProductIds]="taggedProductIds()"
+  (productSelected)="addProduct($event)"
+  (dismissed)="isProductSheetOpen.set(false)"
+></app-product-tag-sheet>

@@ -43,9 +43,6 @@ public class FeedService : IFeedService
 
         var query = BuildFeedQuery(request);
 
-        // Get total count for pagination
-        var totalCount = await query.CountAsync(cancellationToken);
-
         // Get posts with creator body profiles for matching
         var posts = await query
             .Include(p => p.Creator)
@@ -62,8 +59,9 @@ public class FeedService : IFeedService
             .OrderByDescending(p => p.PublishedAt)
             .ToListAsync(cancellationToken);
 
-        // Calculate similarity scores and rank
-        var scoredPosts = posts
+        // Calculate similarity scores and rank (no minimum threshold —
+        // similarity is used for ranking, not filtering)
+        var allScoredPosts = posts
             .Select(p => new
             {
                 Post = p,
@@ -73,10 +71,6 @@ public class FeedService : IFeedService
                 ),
                 RecencyScore = CalculateRecencyScore(p.PublishedAt),
             })
-            .Where(x =>
-                userBodyProfile == null
-                || x.SimilarityScore >= _matchingSettings.MinimumSimilarityScore
-            )
             .OrderByDescending(x =>
                 request.SortBy switch
                 {
@@ -87,6 +81,11 @@ public class FeedService : IFeedService
                     _ => x.SimilarityScore * 0.6 + x.RecencyScore * 0.4, // Relevance
                 }
             )
+            .ToList();
+
+        var totalCount = allScoredPosts.Count;
+
+        var scoredPosts = allScoredPosts
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .ToList();

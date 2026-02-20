@@ -1,187 +1,88 @@
-.step-content {
-  padding-bottom: 80px;
-}
+.media-section { position: relative; }
 
-// Step 1: Media
-.upload-area {
+.hero-upload {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  aspect-ratio: 4 / 5;
   border: 2px dashed var(--ion-color-medium);
   border-radius: 12px;
-  padding: 32px;
-  margin: 16px 0;
-  cursor: pointer;
-  transition: border-color 0.2s;
-
-  &:hover {
-    border-color: var(--ion-color-primary);
-  }
-
-  .upload-icon {
-    font-size: 3rem;
-    color: var(--ion-color-medium);
-    margin-bottom: 8px;
-  }
-
-  p {
-    color: var(--ion-color-medium);
-    margin: 0;
-  }
+  ion-icon { font-size: 3rem; color: var(--ion-color-medium); }
+  p { color: var(--ion-color-medium); margin: 8px 0 0; }
 }
 
-.upload-progress {
+.upload-overlay {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  color: var(--ion-color-medium);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
 }
 
-.media-previews {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 16px;
-}
+.thumb-strip { display: flex; gap: 8px; padding: 8px 0; overflow-x: auto; }
 
-.media-preview {
+.thumb-item {
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
-  aspect-ratio: 1;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .remove-btn {
+  flex: 0 0 56px;
+  img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; }
+  .thumb-remove {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    --padding-start: 4px;
-    --padding-end: 4px;
-  }
-}
-
-// Step 3: Products
-.search-bar {
-  margin-bottom: 8px;
-}
-
-.search-results {
-  margin-bottom: 16px;
-  border: 1px solid var(--ion-color-light);
-  border-radius: 8px;
-
-  .product-thumb {
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    object-fit: cover;
-    margin-right: 0;
-  }
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 16px 0 8px;
-}
-
-.tagged-product-card {
-  ion-card-title {
-    font-size: 0.95rem;
-  }
-
-  ion-card-content {
-    ion-item {
-      margin-bottom: 1rem;
-    }
-  }
-
-  .product-header {
+    top: -4px; right: -4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: var(--ion-color-danger);
+    color: #fff;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center;
+    font-size: 12px;
   }
 }
 
-.empty-products {
-  text-align: center;
-  padding: 32px 16px;
-
-  p {
-    color: var(--ion-color-medium);
-  }
-}
-
-// Step 4: Review
-.review-media {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-
-.review-thumb {
-  width: 64px;
-  height: 64px;
+.thumb-add {
+  flex: 0 0 56px; height: 56px;
   border-radius: 8px;
-  object-fit: cover;
-}
-
-.review-product {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--ion-color-light);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  strong {
-    font-size: 0.9rem;
-  }
-
-  span {
-    font-size: 0.8rem;
-    color: var(--ion-color-medium);
-  }
-
-  ion-badge {
-    align-self: flex-start;
-    margin-top: 4px;
-  }
-}
-
-.submit-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-// Navigation
-.step-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  border: 2px dashed var(--ion-color-medium);
+  color: var(--ion-color-medium);
+  background: none;
   display: flex;
   align-items: center;
-  padding: 12px 16px;
-  background: var(--ion-background-color);
-  border-top: 1px solid var(--ion-color-light);
-  z-index: 10;
-
-  .spacer {
-    flex: 1;
-  }
+  justify-content: center;
+  font-size: 1.4rem;
 }
+
+.form-section, .products-section { margin-top: 16px; }
+.products-section { padding-bottom: 16px; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  h3 { font-size: 1rem; font-weight: 600; margin: 0; }
+}
+
+.empty-hint { display: block; text-align: center; padding: 16px; }
+
+.tagged-product-card {
+  border: 1px solid var(--ion-color-light);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.product-row { display: flex; align-items: center; gap: 10px; }
+.product-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; }
+
+.product-info {
+  flex: 1; display: flex; flex-direction: column;
+  .product-name { font-weight: 600; font-size: 0.9rem; }
+  .product-retailer { font-size: 0.8rem; color: var(--ion-color-medium); }
+}
+
+.fit-label { font-size: 0.8rem; color: var(--ion-color-medium); margin: 8px 0 4px; }
+.notes-toggle { margin-top: 4px; }
+.action-bar ion-toolbar { --padding-start: 8px; --padding-end: 8px; }

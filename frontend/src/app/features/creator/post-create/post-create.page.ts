@@ -1,6 +1,5 @@
 import { Component, inject, signal, computed, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonContent,
@@ -12,36 +11,21 @@ import {
   IonButton,
   IonIcon,
   IonItem,
-  IonLabel,
   IonInput,
   IonTextarea,
-  IonSelect,
-  IonSelectOption,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonChip,
-  IonBadge,
-  IonList,
-  IonNote,
-  IonProgressBar,
+  IonFooter,
   IonSpinner,
+  IonNote,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
-  imageOutline,
-  videocamOutline,
   trashOutline,
   addOutline,
-  searchOutline,
-  arrowForwardOutline,
-  arrowBackOutline,
-  checkmarkOutline,
+  closeOutline,
   saveOutline,
   sendOutline,
-  closeOutline,
+  pricetagOutline,
 } from 'ionicons/icons';
 import { CreatorService, ToastService, ApiService } from '../../../core';
 import { CommerceService } from '../../../core/services/commerce.service';
@@ -56,6 +40,8 @@ import {
   MediaCarouselComponent,
   MediaItem,
 } from '../../../shared/components/media-carousel';
+import { FitRatingPillsComponent } from './fit-rating-pills.component';
+import { ProductTagSheetComponent } from './product-tag-sheet.component';
 
 interface TaggedProduct {
   product: ProductResponse;
@@ -69,7 +55,6 @@ interface TaggedProduct {
   selector: 'app-post-create',
   standalone: true,
   imports: [
-    DecimalPipe,
     FormsModule,
     IonContent,
     IonHeader,
@@ -80,22 +65,14 @@ interface TaggedProduct {
     IonButton,
     IonIcon,
     IonItem,
-    IonLabel,
     IonInput,
     IonTextarea,
-    IonSelect,
-    IonSelectOption,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent,
-    IonChip,
-    IonBadge,
-    IonList,
-    IonNote,
-    IonProgressBar,
+    IonFooter,
     IonSpinner,
+    IonNote,
     MediaCarouselComponent,
+    FitRatingPillsComponent,
+    ProductTagSheetComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './post-create.page.html',
@@ -103,38 +80,28 @@ interface TaggedProduct {
 })
 export class PostCreatePage {
   private readonly creatorService = inject(CreatorService);
-  private readonly commerceService = inject(CommerceService);
   private readonly apiService = inject(ApiService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
 
-  readonly FitRating = FitRating;
-  readonly MediaType = MediaType;
-
-  // Wizard state
-  readonly currentStep = signal(1);
-  readonly totalSteps = 4;
-
-  // Step 1: Media
+  // Media
   readonly mediaType = signal(MediaType.Image);
   readonly uploadedMedia = signal<MediaUploadResponse[]>([]);
   readonly isUploading = signal(false);
-  readonly uploadProgress = signal(0);
 
-  // Step 2: Details
+  // Details
   readonly title = signal('');
   readonly description = signal('');
 
-  // Step 3: Products
-  readonly productSearchQuery = signal('');
-  readonly searchResults = signal<ProductResponse[]>([]);
-  readonly isSearching = signal(false);
+  // Products
   readonly taggedProducts = signal<TaggedProduct[]>([]);
+  readonly isProductSheetOpen = signal(false);
+  readonly showNotes = signal<Record<string, boolean>>({});
 
-  // Step 4: Submit
+  // Submit
   readonly isSubmitting = signal(false);
 
-  readonly reviewMediaItems = computed<MediaItem[]>(() =>
+  readonly mediaItems = computed<MediaItem[]>(() =>
     this.uploadedMedia().map((m) => ({
       url: m.originalUrl,
       type: this.mediaType(),
@@ -142,67 +109,47 @@ export class PostCreatePage {
     }))
   );
 
-  readonly canProceed = computed(() => {
-    switch (this.currentStep()) {
-      case 1: return this.uploadedMedia().length > 0;
-      case 2: return true; // Title and description are optional
-      case 3: return true; // Products are optional but recommended
-      case 4: return true;
-      default: return false;
-    }
-  });
+  readonly taggedProductIds = computed(() =>
+    this.taggedProducts().map((tp) => tp.product.id)
+  );
 
-  readonly stepTitle = computed(() => {
-    switch (this.currentStep()) {
-      case 1: return 'Upload Media';
-      case 2: return 'Post Details';
-      case 3: return 'Tag Products';
-      case 4: return 'Review & Submit';
-      default: return 'Create Post';
-    }
-  });
+  readonly hasMedia = computed(() => this.uploadedMedia().length > 0);
 
   constructor() {
     addIcons({
       cloudUploadOutline,
-      imageOutline,
-      videocamOutline,
       trashOutline,
       addOutline,
-      searchOutline,
-      arrowForwardOutline,
-      arrowBackOutline,
-      checkmarkOutline,
+      closeOutline,
       saveOutline,
       sendOutline,
-      closeOutline,
+      pricetagOutline,
     });
   }
 
-  nextStep(): void {
-    if (this.currentStep() < this.totalSteps) {
-      this.currentStep.update((s) => s + 1);
-    }
-  }
+  // --- Media ---
 
-  prevStep(): void {
-    if (this.currentStep() > 1) {
-      this.currentStep.update((s) => s - 1);
-    }
-  }
-
-  // Step 1: Media upload
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
+    const file = input.files[0];
+    const detectedType = this.detectMediaType(file);
+
+    // If we already have media, reject mismatched types
+    if (this.uploadedMedia().length > 0 && detectedType !== this.mediaType()) {
+      this.toast.warning(`You can only add ${this.mediaType() === MediaType.Image ? 'images' : 'videos'} to this post`);
+      input.value = '';
+      return;
+    }
+
+    this.mediaType.set(detectedType);
     this.isUploading.set(true);
-    this.uploadProgress.set(0);
 
     const formData = new FormData();
     for (let i = 0; i < input.files.length; i++) {
-      const file = await this.normalizeImageFile(input.files[i]);
-      formData.append('files', file);
+      const normalized = await this.normalizeImageFile(input.files[i]);
+      formData.append('files', normalized);
     }
 
     this.apiService
@@ -211,7 +158,6 @@ export class PostCreatePage {
         next: (r) => {
           if (r.success && r.data) {
             this.uploadedMedia.update((current) => [...current, r.data!]);
-            this.toast.success('Media uploaded successfully');
           } else {
             this.toast.error(r.error?.message || 'Upload failed');
           }
@@ -219,21 +165,21 @@ export class PostCreatePage {
         error: () => this.toast.error('Failed to upload media'),
         complete: () => {
           this.isUploading.set(false);
-          this.uploadProgress.set(0);
           input.value = '';
         },
       });
   }
 
-  /** Convert HEIF/HEIC images to JPEG; pass other files through unchanged. */
+  private detectMediaType(file: File): MediaType {
+    return file.type.startsWith('video/') ? MediaType.Video : MediaType.Image;
+  }
+
   private async normalizeImageFile(file: File): Promise<File> {
     const heifTypes = ['image/heif', 'image/heic', 'image/heif-sequence', 'image/heic-sequence'];
     const heifExtensions = ['.heif', '.heic'];
     const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
     const isHeif = heifTypes.includes(file.type.toLowerCase()) || heifExtensions.includes(ext);
-    if (!isHeif) {
-      return file;
-    }
+    if (!isHeif) return file;
 
     const bitmap = await createImageBitmap(file);
     const canvas = document.createElement('canvas');
@@ -246,7 +192,6 @@ export class PostCreatePage {
     const blob = await new Promise<Blob>((resolve) =>
       canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.92)
     );
-
     const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
     return new File([blob], name, { type: 'image/jpeg' });
   }
@@ -255,33 +200,28 @@ export class PostCreatePage {
     this.uploadedMedia.update((media) => media.filter((_, i) => i !== index));
   }
 
-  // Step 3: Product search & tagging
-  searchProducts(): void {
-    const query = this.productSearchQuery().trim();
-    if (!query) return;
-
-    this.isSearching.set(true);
-    this.commerceService.searchProducts(query).subscribe({
-      next: (products) => this.searchResults.set(products),
-      complete: () => this.isSearching.set(false),
-    });
+  get fileAccept(): string {
+    if (this.uploadedMedia().length === 0) return 'image/*,video/*';
+    return this.mediaType() === MediaType.Image ? 'image/*' : 'video/*';
   }
+
+  get fileMultiple(): boolean {
+    if (this.uploadedMedia().length === 0) return true;
+    return this.mediaType() === MediaType.Image;
+  }
+
+  // --- Products ---
 
   addProduct(product: ProductResponse): void {
     const alreadyAdded = this.taggedProducts().some(
       (tp) => tp.product.id === product.id
     );
-    if (alreadyAdded) {
-      this.toast.warning('Product already added');
-      return;
-    }
+    if (alreadyAdded) return;
 
     this.taggedProducts.update((products) => [
       ...products,
       { product, sizeWorn: '', fitRating: undefined, fitNotes: '', stylingNotes: '' },
     ]);
-    this.searchResults.set([]);
-    this.productSearchQuery.set('');
   }
 
   removeProduct(index: number): void {
@@ -314,18 +254,16 @@ export class PostCreatePage {
     );
   }
 
-  getFitRatingLabel(rating: FitRating): string {
-    switch (rating) {
-      case FitRating.TooSmall: return 'Too Small';
-      case FitRating.SlightlySmall: return 'Slightly Small';
-      case FitRating.TrueToSize: return 'True to Size';
-      case FitRating.SlightlyLarge: return 'Slightly Large';
-      case FitRating.TooLarge: return 'Too Large';
-      default: return 'Unknown';
-    }
+  toggleNotes(productId: string): void {
+    this.showNotes.update((map) => ({ ...map, [productId]: !map[productId] }));
   }
 
-  // Step 4: Save / Submit
+  isNotesVisible(productId: string): boolean {
+    return !!this.showNotes()[productId];
+  }
+
+  // --- Submit ---
+
   saveAsDraft(): void {
     this.submitForm(false);
   }
