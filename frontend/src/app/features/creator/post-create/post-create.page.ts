@@ -273,15 +273,13 @@ export class PostCreatePage {
   }
 
   private submitForm(submitAfterCreate: boolean): void {
-    const products: PostProductRequest[] = this.taggedProducts()
-      .filter((tp) => tp.sizeWorn.trim().length > 0)
-      .map((tp) => ({
-        productId: tp.product.id,
-        sizeWorn: tp.sizeWorn,
-        fitRating: tp.fitRating,
-        fitNotes: tp.fitNotes || undefined,
-        stylingNotes: tp.stylingNotes || undefined,
-      }));
+    const products: PostProductRequest[] = this.taggedProducts().map((tp) => ({
+      productId: tp.product.id,
+      sizeWorn: tp.sizeWorn,
+      fitRating: tp.fitRating,
+      fitNotes: tp.fitNotes || undefined,
+      stylingNotes: tp.stylingNotes || undefined,
+    }));
 
     this.isSubmitting.set(true);
 
