@@ -8,5 +8,6 @@ public record UserProfileResponse(
     UserType UserType,
     bool HasBodyProfile,
     int ProfileCompleteness,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    string? ProfileImageUrl
 );

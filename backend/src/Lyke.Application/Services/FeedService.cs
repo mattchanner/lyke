@@ -729,7 +729,8 @@ public class FeedService : IFeedService
             post.Creator.Id,
             post.Creator.DisplayName,
             post.Creator.IsVerified,
-            anonymizedProfile
+            anonymizedProfile,
+            post.Creator.User.ProfileImageUrl
         );
 
         var products = post
@@ -800,7 +801,8 @@ public class FeedService : IFeedService
             post.Creator.Bio,
             post.Creator.IsVerified,
             anonymizedProfile,
-            post.Creator.Posts.Count(p => p.Status == PostStatus.Published)
+            post.Creator.Posts.Count(p => p.Status == PostStatus.Published),
+            post.Creator.User.ProfileImageUrl
         );
 
         var products = post

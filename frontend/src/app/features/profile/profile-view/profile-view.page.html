@@ -18,7 +18,7 @@
   } @else if (profile()) {
     <div class="profile-header">
       <ion-avatar>
-        <img src="assets/default-avatar.svg" alt="Profile" />
+        <img [src]="profile()!.profileImageUrl || 'assets/default-avatar.svg'" alt="Profile" />
       </ion-avatar>
       <h2>{{ profile()!.email }}</h2>
       <p>Member since {{ profile()!.createdAt | date:'mediumDate' }}</p>

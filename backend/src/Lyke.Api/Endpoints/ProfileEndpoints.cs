@@ -61,6 +61,23 @@ public static class ProfileEndpoints
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
+        group
+            .MapPost("/me/image", UploadProfileImageAsync)
+            .WithName("UploadProfileImage")
+            .WithSummary("Upload profile image")
+            .DisableAntiforgery()
+            .Accepts<IFormFile>("multipart/form-data")
+            .Produces<ApiResponse<UserProfileResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapDelete("/me/image", DeleteProfileImageAsync)
+            .WithName("DeleteProfileImage")
+            .WithSummary("Delete profile image")
+            .Produces<ApiResponse>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
+
         return app;
     }
 
@@ -221,6 +238,52 @@ public static class ProfileEndpoints
     {
         var result = await profileService.GetFitTagsAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<FitTagResponse>>.Ok(result));
+    }
+
+    private static readonly HashSet<string> AllowedImageTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/png", "image/webp"
+    };
+
+    private const long MaxImageSize = 5 * 1024 * 1024; // 5MB
+
+    private static async Task<IResult> UploadProfileImageAsync(
+        [FromForm] IFormFile file,
+        ClaimsPrincipal user,
+        IProfileService profileService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        if (userId == null)
+            return Results.Unauthorized();
+
+        if (file == null || file.Length == 0)
+            return Results.BadRequest(ApiResponse.Fail("VALIDATION_ERROR", "No file provided"));
+
+        if (!AllowedImageTypes.Contains(file.ContentType))
+            return Results.BadRequest(ApiResponse.Fail("VALIDATION_ERROR", "Only JPEG, PNG, and WebP images are allowed"));
+
+        if (file.Length > MaxImageSize)
+            return Results.BadRequest(ApiResponse.Fail("VALIDATION_ERROR", "Image must be 5MB or smaller"));
+
+        using var stream = file.OpenReadStream();
+        var result = await profileService.UploadProfileImageAsync(userId.Value, stream, file.ContentType, cancellationToken);
+        return Results.Ok(ApiResponse<UserProfileResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> DeleteProfileImageAsync(
+        ClaimsPrincipal user,
+        IProfileService profileService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        if (userId == null)
+            return Results.Unauthorized();
+
+        await profileService.DeleteProfileImageAsync(userId.Value, cancellationToken);
+        return Results.Ok(ApiResponse.Ok());
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)

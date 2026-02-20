@@ -17,7 +17,7 @@
     <div class="creator-row" (click)="$event.stopPropagation()">
       <ion-avatar>
         <img
-          src="assets/default-avatar.svg"
+          [src]="post.creator.profileImageUrl || 'assets/default-avatar.svg'"
           [alt]="post.creator.displayName"
         />
       </ion-avatar>

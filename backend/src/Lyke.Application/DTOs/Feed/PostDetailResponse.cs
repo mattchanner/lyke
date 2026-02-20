@@ -26,7 +26,8 @@ public record CreatorDetailResponse(
     string? Bio,
     bool IsVerified,
     AnonymizedBodyProfileResponse? BodyProfile,
-    int TotalPosts
+    int TotalPosts,
+    string? ProfileImageUrl
 );
 
 public record PostProductDetailResponse(

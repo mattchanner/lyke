@@ -14,6 +14,10 @@ public interface IProfileService
     Task<BodyProfileResponse> UpdateBodyProfileAsync(Guid userId, UpdateBodyProfileRequest request, CancellationToken cancellationToken = default);
     Task DeleteBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default);
 
+    // Profile Image
+    Task<UserProfileResponse> UploadProfileImageAsync(Guid userId, Stream imageStream, string contentType, CancellationToken cancellationToken = default);
+    Task DeleteProfileImageAsync(Guid userId, CancellationToken cancellationToken = default);
+
     // Anonymized profile for display to other users
     Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default);
 

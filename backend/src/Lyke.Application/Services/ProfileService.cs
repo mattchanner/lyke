@@ -14,15 +14,18 @@ public class ProfileService : IProfileService
 {
     private readonly UserManager<User> _userManager;
     private readonly DbContext _dbContext;
+    private readonly IStorageService _storageService;
     private readonly ILogger<ProfileService> _logger;
 
     public ProfileService(
         UserManager<User> userManager,
         DbContext dbContext,
+        IStorageService storageService,
         ILogger<ProfileService> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
+        _storageService = storageService;
         _logger = logger;
     }
 
@@ -45,7 +48,8 @@ public class ProfileService : IProfileService
             UserType: user.UserType,
             HasBodyProfile: user.BodyProfile != null,
             ProfileCompleteness: completeness,
-            CreatedAt: user.CreatedAt
+            CreatedAt: user.CreatedAt,
+            ProfileImageUrl: user.ProfileImageUrl
         );
     }
 
@@ -79,6 +83,90 @@ public class ProfileService : IProfileService
         _logger.LogInformation("User {UserId} profile updated", userId);
 
         return await GetProfileAsync(userId, cancellationToken);
+    }
+
+    public async Task<UserProfileResponse> UploadProfileImageAsync(Guid userId, Stream imageStream, string contentType, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.Users
+            .Include(u => u.BodyProfile)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (user == null)
+        {
+            throw new NotFoundException(nameof(User), userId);
+        }
+
+        // Derive extension from content type
+        var ext = contentType switch
+        {
+            "image/jpeg" => "jpg",
+            "image/png" => "png",
+            "image/webp" => "webp",
+            _ => throw new ValidationException("ContentType", "Unsupported image type. Use JPEG, PNG, or WebP.")
+        };
+
+        var blobPath = $"profile-images/{userId}.{ext}";
+
+        // Delete old image if it exists
+        if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+        {
+            try
+            {
+                var oldBlobPath = new Uri(user.ProfileImageUrl).AbsolutePath.TrimStart('/');
+                await _storageService.DeleteAsync(oldBlobPath, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete old profile image for user {UserId}", userId);
+            }
+        }
+
+        var result = await _storageService.UploadAsync(imageStream, blobPath, contentType, cancellationToken);
+        user.ProfileImageUrl = result.Url;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _userManager.UpdateAsync(user);
+
+        _logger.LogInformation("Profile image uploaded for user {UserId}", userId);
+
+        var completeness = CalculateProfileCompleteness(user);
+        return new UserProfileResponse(
+            Id: user.Id,
+            Email: user.Email!,
+            UserType: user.UserType,
+            HasBodyProfile: user.BodyProfile != null,
+            ProfileCompleteness: completeness,
+            CreatedAt: user.CreatedAt,
+            ProfileImageUrl: user.ProfileImageUrl
+        );
+    }
+
+    public async Task DeleteProfileImageAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+
+        if (user == null)
+        {
+            throw new NotFoundException(nameof(User), userId);
+        }
+
+        if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+        {
+            try
+            {
+                var blobPath = new Uri(user.ProfileImageUrl).AbsolutePath.TrimStart('/');
+                await _storageService.DeleteAsync(blobPath, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete profile image blob for user {UserId}", userId);
+            }
+
+            user.ProfileImageUrl = null;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("Profile image deleted for user {UserId}", userId);
+        }
     }
 
     public async Task<BodyProfileResponse?> GetBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default)
@@ -287,7 +375,7 @@ public class ProfileService : IProfileService
     private static int CalculateProfileCompleteness(User user)
     {
         var score = 0;
-        var total = 4;
+        var total = 5;
 
         // Email verified (assuming it's always set for now)
         if (!string.IsNullOrEmpty(user.Email)) score++;
@@ -303,6 +391,9 @@ public class ProfileService : IProfileService
 
         // Account is active
         if (user.IsActive) score++;
+
+        // Has profile image
+        if (!string.IsNullOrEmpty(user.ProfileImageUrl)) score++;
 
         return (int)Math.Round((double)score / total * 100);
     }

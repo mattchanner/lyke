@@ -13,6 +13,7 @@ export interface CreatorSummaryResponse {
   displayName: string;
   isVerified: boolean;
   bodyProfile: AnonymizedBodyProfileResponse | null;
+  profileImageUrl: string | null;
 }
 
 export interface CreatorDetailResponse {
@@ -22,6 +23,7 @@ export interface CreatorDetailResponse {
   isVerified: boolean;
   bodyProfile: AnonymizedBodyProfileResponse | null;
   totalPosts: number;
+  profileImageUrl: string | null;
 }
 
 // Product summaries

@@ -14,6 +14,27 @@
     </div>
   } @else {
     <div class="form-container">
+      <div class="avatar-section" (click)="fileInput.click()">
+        <ion-avatar class="avatar-upload">
+          <img [src]="imagePreview() || 'assets/default-avatar.svg'" alt="Profile" />
+        </ion-avatar>
+        <div class="avatar-overlay">
+          <ion-icon name="camera-outline"></ion-icon>
+        </div>
+        @if (isUploading()) {
+          <div class="avatar-spinner">
+            <ion-spinner name="crescent"></ion-spinner>
+          </div>
+        }
+        <input
+          #fileInput
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          hidden
+          (change)="onFileSelected($event)"
+        />
+      </div>
+
       <form [formGroup]="form" (ngSubmit)="onSubmit()">
         <ion-item>
           <ion-input

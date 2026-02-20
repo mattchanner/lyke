@@ -19,6 +19,7 @@ public class User : IdentityUser<Guid>
     public DateTime? PrivacyPolicyAcceptedAt { get; set; }
     public string? PrivacyPolicyVersion { get; set; }
     public bool MarketingOptIn { get; set; } = false;
+    public string? ProfileImageUrl { get; set; }
 
     // Navigation properties
     public BodyProfile? BodyProfile { get; set; }

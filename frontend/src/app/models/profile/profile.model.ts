@@ -8,6 +8,7 @@ export interface UserProfileResponse {
   hasBodyProfile: boolean;
   profileCompleteness: number;
   createdAt: string;
+  profileImageUrl: string | null;
 }
 
 export interface BodyProfileResponse {

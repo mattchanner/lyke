@@ -9,6 +9,49 @@
   margin: 0 auto;
 }
 
+.avatar-section {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  width: fit-content;
+  margin-inline: auto;
+  cursor: pointer;
+}
+
+.avatar-upload {
+  width: 96px;
+  height: 96px;
+}
+
+.avatar-overlay {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--ion-color-primary);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 16px;
+    color: #fff;
+  }
+}
+
+.avatar-spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+}
+
 ion-item {
   --background: var(--ion-color-light);
   --border-radius: 8px;

@@ -2,8 +2,10 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
+  IonAvatar,
   IonContent,
   IonHeader,
+  IonIcon,
   IonTitle,
   IonToolbar,
   IonBackButton,
@@ -25,8 +27,10 @@ import {
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    IonAvatar,
     IonContent,
     IonHeader,
+    IonIcon,
     IonTitle,
     IonToolbar,
     IonBackButton,
@@ -48,6 +52,8 @@ export class ProfileEditPage implements OnInit {
 
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
+  readonly isUploading = signal(false);
+  readonly imagePreview = signal<string | null>(null);
 
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -70,6 +76,7 @@ export class ProfileEditPage implements OnInit {
         if (response.success && response.data) {
           this.originalEmail = response.data.email;
           this.form.patchValue({ email: response.data.email });
+          this.imagePreview.set(response.data.profileImageUrl);
         }
       },
       complete: () => this.isLoading.set(false),
@@ -98,6 +105,40 @@ export class ProfileEditPage implements OnInit {
         this.isSaving.set(false);
       },
       complete: () => this.isSaving.set(false),
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('Image must be 5MB or smaller');
+      return;
+    }
+
+    this.isUploading.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.api.uploadFile<UserProfileResponse>('profile', 'me/image', formData).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.imagePreview.set(response.data.profileImageUrl);
+          this.toast.success('Profile image updated');
+        } else {
+          this.toast.error(response.error?.message || 'Failed to upload image');
+        }
+      },
+      error: () => {
+        this.toast.error('Failed to upload image');
+        this.isUploading.set(false);
+      },
+      complete: () => {
+        this.isUploading.set(false);
+        input.value = '';
+      },
     });
   }
 }

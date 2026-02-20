@@ -23,7 +23,8 @@ public record CreatorSummaryResponse(
     Guid Id,
     string DisplayName,
     bool IsVerified,
-    AnonymizedBodyProfileResponse? BodyProfile
+    AnonymizedBodyProfileResponse? BodyProfile,
+    string? ProfileImageUrl
 );
 
 public record PostProductSummaryResponse(

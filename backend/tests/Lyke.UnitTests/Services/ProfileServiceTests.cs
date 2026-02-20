@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Lyke.Application.DTOs.Profile;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -17,6 +18,7 @@ public class ProfileServiceTests : IDisposable
 {
     private readonly LykeDbContext _context;
     private readonly Mock<UserManager<User>> _userManagerMock;
+    private readonly Mock<IStorageService> _storageServiceMock;
     private readonly Mock<ILogger<ProfileService>> _loggerMock;
     private readonly ProfileService _sut;
 
@@ -24,11 +26,13 @@ public class ProfileServiceTests : IDisposable
     {
         _context = TestDbContextFactory.Create();
         _userManagerMock = MockUserManager.Create();
+        _storageServiceMock = new Mock<IStorageService>();
         _loggerMock = new Mock<ILogger<ProfileService>>();
 
         _sut = new ProfileService(
             _userManagerMock.Object,
             _context,
+            _storageServiceMock.Object,
             _loggerMock.Object);
     }
 
