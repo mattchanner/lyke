@@ -5,6 +5,7 @@ import {
   IonHeader,
   IonTitle,
   IonToolbar,
+  IonAvatar,
   IonButton,
   IonButtons,
   IonMenuButton,
@@ -36,7 +37,7 @@ import {
   refreshOutline,
 } from 'ionicons/icons';
 
-import { AdminService } from '../../../core/services';
+import { AdminService, AuthService } from '../../../core/services';
 import { ToastService } from '../../../core/services';
 import { PlatformStatsResponse } from '../../../models';
 
@@ -49,6 +50,7 @@ import { PlatformStatsResponse } from '../../../models';
     IonHeader,
     IonTitle,
     IonToolbar,
+    IonAvatar,
     IonButton,
     IonButtons,
     IonMenuButton,
@@ -71,6 +73,7 @@ import { PlatformStatsResponse } from '../../../models';
 export class AdminDashboardPage implements OnInit {
   private readonly adminService = inject(AdminService);
   private readonly toast = inject(ToastService);
+  readonly auth = inject(AuthService);
 
   readonly stats = signal<PlatformStatsResponse | null>(null);
   readonly isLoading = signal(false);
