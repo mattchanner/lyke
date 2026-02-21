@@ -1,10 +1,13 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
 ion-card {
   margin: 0.5rem;
   border-radius: 0.5rem;
   box-shadow: none;
   background: var(--ion-card-background);
-
-  width: 100%;
 }
 
 .media-container {
