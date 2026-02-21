@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
+  <!-- Background -->
+  <rect width="480" height="320" fill="#f5f0ea"/>
+
+  <!-- Heart + Hanger icon -->
+  <g transform="translate(138.75, 51.69999999999999) scale(1.875)">
+    <!-- Hanger hook -->
+    <path d="M46,36 Q46,28 54,28 Q62,28 62,36" fill="none" stroke="#ab5037" stroke-width="3" stroke-linecap="round"/>
+    <!-- Small circle at top of hook -->
+    <circle cx="54" cy="25" r="3" fill="#ab5037"/>
+    <!-- Heart shape -->
+    <path d="M54,78 C54,78 30,62 30,46 C30,38 36,33 43,33 C48,33 52,36 54,40 C56,36 60,33 65,33 C72,33 78,38 78,46 C78,62 54,78 54,78 Z" fill="#c25b3f"/>
+    <!-- Subtle highlight on left lobe -->
+    <path d="M43,36 C39,36 34,40 34,46 C34,50 38,56 43,60 C40,54 37,48 37,44 C37,40 39,37 43,36 Z" fill="#c86b52"/>
+  </g>
+
+  <!-- LYKE text -->
+  <text x="240" y="205" text-anchor="middle" dominant-baseline="hanging"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="700" font-size="34" letter-spacing="9"
+        fill="#ab5037">LYKE</text>
+</svg>
