@@ -1,3 +1,7 @@
+using System.Reflection;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Lyke.Api.Endpoints;
 using Lyke.Api.Middleware;
 using Lyke.Application;
@@ -5,16 +9,12 @@ using Lyke.Application.DTOs;
 using Lyke.Infrastructure;
 using Lyke.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
 using SharpGrip.FluentValidation.AutoValidation.Endpoints.Extensions;
-using System.Reflection;
-using System.Text;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,21 +150,30 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
         context.HttpContext.Response.ContentType = "application/json";
-        var response = ApiResponse.Fail("RATE_LIMITED", "Too many requests. Please try again later.");
+        var response = ApiResponse.Fail(
+            "RATE_LIMITED",
+            "Too many requests. Please try again later."
+        );
         await context.HttpContext.Response.WriteAsJsonAsync(response, cancellationToken);
     };
 
-    options.AddFixedWindowLimiter("auth", limiter =>
-    {
-        limiter.PermitLimit = 10;
-        limiter.Window = TimeSpan.FromSeconds(60);
-    });
+    options.AddFixedWindowLimiter(
+        "auth",
+        limiter =>
+        {
+            limiter.PermitLimit = 10;
+            limiter.Window = TimeSpan.FromSeconds(60);
+        }
+    );
 
-    options.AddFixedWindowLimiter("api", limiter =>
-    {
-        limiter.PermitLimit = 100;
-        limiter.Window = TimeSpan.FromSeconds(60);
-    });
+    options.AddFixedWindowLimiter(
+        "api",
+        limiter =>
+        {
+            limiter.PermitLimit = 100;
+            limiter.Window = TimeSpan.FromSeconds(60);
+        }
+    );
 
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -173,7 +182,9 @@ builder.Services.AddRateLimiter(options =>
             {
                 PermitLimit = 100,
                 Window = TimeSpan.FromSeconds(60),
-            }));
+            }
+        )
+    );
 });
 
 var app = builder.Build();
@@ -201,9 +212,7 @@ if (app.Environment.IsDevelopment())
     app.UseRedirectToScalarUiMiddleware();
     app.MapScalarApiReference(configure =>
     {
-        configure
-            .WithOpenApiRoutePattern("/openapi/{documentName}.json")
-            .WithTitle("Be-Lyke API v1");
+        configure.WithOpenApiRoutePattern("/openapi/{documentName}.json").WithTitle("LYKE API v1");
 
         configure.ShowSidebar = false;
         configure.Theme = ScalarTheme.Purple;

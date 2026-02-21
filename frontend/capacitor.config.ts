@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'clothing.belyke.app',
-  appName: 'Be-Lyke',
+  appName: 'LYKE',
   webDir: 'www',
   server: {
     androidScheme: 'http',
