@@ -155,6 +155,15 @@ public static class DataSeeder
             (RetailerUser3Id, "asos.retail", "contact@asos-example.com", UserType.Retailer),
         };
 
+        // Profile images for creator accounts
+        var profileImages = new Dictionary<Guid, string>
+        {
+            [CreatorUser1Id] = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop", // Jessica Style
+            [CreatorUser2Id] = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop", // Maya Fits
+            [CreatorUser3Id] = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop", // Taylor Petite
+            [CreatorUser4Id] = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop", // Priya Looks
+        };
+
         foreach (var (id, userName, email, userType) in users)
         {
             var user = new User
@@ -165,6 +174,7 @@ public static class DataSeeder
                 EmailConfirmed = true,
                 UserType = userType,
                 IsActive = true,
+                ProfileImageUrl = profileImages.GetValueOrDefault(id),
             };
 
             var result = await userManager.CreateAsync(user, DefaultPassword);
@@ -333,7 +343,7 @@ public static class DataSeeder
                 Id = Retailer1Id,
                 UserId = RetailerUser1Id,
                 Name = "Zara",
-                LogoUrl = "https://picsum.photos/seed/zara-logo/200/200",
+                LogoUrl = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.zara.com",
                 ContactEmail = "partners@zara-example.com",
                 AffiliateConfig =
@@ -345,7 +355,7 @@ public static class DataSeeder
                 Id = Retailer2Id,
                 UserId = RetailerUser2Id,
                 Name = "H&M",
-                LogoUrl = "https://picsum.photos/seed/hm-logo/200/200",
+                LogoUrl = "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.hm.com",
                 ContactEmail = "partners@hm-example.com",
                 AffiliateConfig =
@@ -357,7 +367,7 @@ public static class DataSeeder
                 Id = Retailer3Id,
                 UserId = RetailerUser3Id,
                 Name = "ASOS",
-                LogoUrl = "https://picsum.photos/seed/asos-logo/200/200",
+                LogoUrl = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.asos.com",
                 ContactEmail = "partners@asos-example.com",
                 AffiliateConfig =
@@ -384,7 +394,7 @@ public static class DataSeeder
                 Description = "Structured single-breasted blazer with padded shoulders",
                 Category = "Outerwear",
                 SubCategory = "Blazers",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-blazer/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/blazer",
                 Price = 89.99m,
                 Currency = "GBP",
@@ -399,7 +409,7 @@ public static class DataSeeder
                 Description = "Flowing wide-leg trousers with front pleats",
                 Category = "Bottoms",
                 SubCategory = "Trousers",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-trousers/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/trousers",
                 Price = 49.99m,
                 Currency = "GBP",
@@ -414,7 +424,7 @@ public static class DataSeeder
                 Description = "A-line satin skirt with elastic waistband",
                 Category = "Bottoms",
                 SubCategory = "Skirts",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-skirt/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0uj7h?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/skirt",
                 Price = 35.99m,
                 Currency = "GBP",
@@ -429,7 +439,7 @@ public static class DataSeeder
                 Description = "Slim fit ribbed knit top with round neck",
                 Category = "Tops",
                 SubCategory = "Knitwear",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-knit/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/knit",
                 Price = 25.99m,
                 Currency = "GBP",
@@ -444,7 +454,7 @@ public static class DataSeeder
                 Description = "V-neck midi dress with floral print and ruched detail",
                 Category = "Dresses",
                 SubCategory = "Midi",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-dress/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/dress",
                 Price = 59.99m,
                 Currency = "GBP",
@@ -459,7 +469,7 @@ public static class DataSeeder
                 Description = "Compact leather belt bag with adjustable strap",
                 Category = "Accessories",
                 SubCategory = "Bags",
-                ImageUrls = "[\"https://picsum.photos/seed/zara-bag/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/bag",
                 Price = 29.99m,
                 Currency = "GBP",
@@ -475,7 +485,7 @@ public static class DataSeeder
                 Description = "Relaxed fit cotton hoodie with kangaroo pocket",
                 Category = "Tops",
                 SubCategory = "Hoodies",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-hoodie/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/hoodie",
                 Price = 24.99m,
                 Currency = "GBP",
@@ -490,7 +500,7 @@ public static class DataSeeder
                 Description = "Classic straight leg jeans in medium wash",
                 Category = "Bottoms",
                 SubCategory = "Jeans",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-jeans/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/jeans",
                 Price = 34.99m,
                 Currency = "GBP",
@@ -505,7 +515,7 @@ public static class DataSeeder
                 Description = "Soft-knit cropped cardigan with pearl buttons",
                 Category = "Tops",
                 SubCategory = "Knitwear",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-cardigan/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/cardigan",
                 Price = 19.99m,
                 Currency = "GBP",
@@ -520,7 +530,7 @@ public static class DataSeeder
                 Description = "Lightweight quilted puffer jacket with stand collar",
                 Category = "Outerwear",
                 SubCategory = "Jackets",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-puffer/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/puffer",
                 Price = 44.99m,
                 Currency = "GBP",
@@ -535,7 +545,7 @@ public static class DataSeeder
                 Description = "High-waist linen blend shorts with belt",
                 Category = "Bottoms",
                 SubCategory = "Shorts",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-shorts/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/shorts",
                 Price = 22.99m,
                 Currency = "GBP",
@@ -550,7 +560,7 @@ public static class DataSeeder
                 Description = "Relaxed t-shirt dress in organic cotton",
                 Category = "Dresses",
                 SubCategory = "Mini",
-                ImageUrls = "[\"https://picsum.photos/seed/hm-tshirtdress/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/tshirtdress",
                 Price = 17.99m,
                 Currency = "GBP",
@@ -566,7 +576,7 @@ public static class DataSeeder
                 Description = "Jersey wrap maxi dress with long sleeves",
                 Category = "Dresses",
                 SubCategory = "Maxi",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-maxidress/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/maxidress",
                 Price = 42.00m,
                 Currency = "GBP",
@@ -581,7 +591,7 @@ public static class DataSeeder
                 Description = "Slim-fit tailored trousers with pressed crease",
                 Category = "Bottoms",
                 SubCategory = "Trousers",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-trousers/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/trousers",
                 Price = 36.00m,
                 Currency = "GBP",
@@ -596,7 +606,7 @@ public static class DataSeeder
                 Description = "Fitted mesh bodysuit with high neck",
                 Category = "Tops",
                 SubCategory = "Bodysuits",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-bodysuit/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/bodysuit",
                 Price = 18.00m,
                 Currency = "GBP",
@@ -611,7 +621,7 @@ public static class DataSeeder
                 Description = "Classic denim jacket in mid-wash blue",
                 Category = "Outerwear",
                 SubCategory = "Jackets",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-denim/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/denim",
                 Price = 45.00m,
                 Currency = "GBP",
@@ -626,7 +636,7 @@ public static class DataSeeder
                 Description = "Satin pleated midi skirt in emerald green",
                 Category = "Bottoms",
                 SubCategory = "Skirts",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-pleated/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0aaef?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/pleated",
                 Price = 32.00m,
                 Currency = "GBP",
@@ -641,7 +651,7 @@ public static class DataSeeder
                 Description = "Platform chunky trainers in white leather",
                 Category = "Footwear",
                 SubCategory = "Trainers",
-                ImageUrls = "[\"https://picsum.photos/seed/asos-trainers/400/500\"]",
+                ImageUrls = "[\"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/trainers",
                 Price = 55.00m,
                 Currency = "GBP",
@@ -669,7 +679,7 @@ public static class DataSeeder
                     "My go-to blazer and trouser combo for important meetings. The blazer nips in at the waist perfectly!",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post1a/400/600\",\"https://picsum.photos/seed/post1b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate,
             },
@@ -682,7 +692,7 @@ public static class DataSeeder
                     "Satin skirt with a knit top — elevated but comfy. The elastic waist is so forgiving after dinner!",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post2a/400/600\",\"https://picsum.photos/seed/post2b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(2),
             },
@@ -695,7 +705,7 @@ public static class DataSeeder
                     "Floral dress season is here! This one is amazing for hourglass shapes — wraps right at the waist",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post3a/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(5),
             },
@@ -709,7 +719,7 @@ public static class DataSeeder
                     "Hoodie and jeans but make it fashion. These straight leg jeans are perfect for athletic thighs",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post4a/400/600\",\"https://picsum.photos/seed/post4b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(1),
             },
@@ -722,7 +732,7 @@ public static class DataSeeder
                     "Puffer jacket over workout gear — instant outfit upgrade. This puffer fits broad shoulders great",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post5a/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(3),
             },
@@ -735,7 +745,7 @@ public static class DataSeeder
                     "Linen shorts and a cropped cardigan for warm weather workouts and coffee runs",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post6a/400/600\",\"https://picsum.photos/seed/post6b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(7),
             },
@@ -749,7 +759,7 @@ public static class DataSeeder
                     "Yes, short girls CAN wear maxi dresses! This wrap style doesn't drown me at 5'2\"",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post7a/400/600\",\"https://picsum.photos/seed/post7b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1502716119720-b23a1e3f7f11?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(2),
             },
@@ -762,7 +772,7 @@ public static class DataSeeder
                     "Cropped cardigan is a petite girl's best friend — no awkward length issues!",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post8a/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(4),
             },
@@ -775,7 +785,7 @@ public static class DataSeeder
                     "Pleated skirts hit at the perfect length on petite frames. Paired with a bodysuit underneath",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post9a/400/600\",\"https://picsum.photos/seed/post9b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0aaef?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(6),
             },
@@ -789,7 +799,7 @@ public static class DataSeeder
                     "Emerald green skirt with a mesh top — turning heads at every party this season",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post10a/400/600\",\"https://picsum.photos/seed/post10b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(3),
             },
@@ -802,7 +812,7 @@ public static class DataSeeder
                     "Double denim is BACK. Denim jacket with tailored trousers — casual but put together",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post11a/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(5),
             },
@@ -815,7 +825,7 @@ public static class DataSeeder
                     "Styled these chunky trainers with a t-shirt dress. Comfort meets cool",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://picsum.photos/seed/post12a/400/600\",\"https://picsum.photos/seed/post12b/400/600\"]",
+                    "[\"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(8),
             },
