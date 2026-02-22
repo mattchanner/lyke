@@ -31,16 +31,19 @@ import {
   videocamOutline,
   flagOutline,
   alertCircleOutline,
+  eyeOutline,
 } from 'ionicons/icons';
 
 import { AdminService } from '../../../core/services';
 import { ToastService } from '../../../core/services';
 import {
   ModerationQueueItemResponse,
+  PostReviewData,
   PostStatus,
   MediaType,
 } from '../../../models';
 import { SkeletonListComponent } from '../../../shared/components/skeleton-list';
+import { PostReviewModalComponent } from '../components/post-review-modal';
 
 @Component({
   selector: 'app-moderation-queue',
@@ -66,6 +69,7 @@ import { SkeletonListComponent } from '../../../shared/components/skeleton-list'
     IonCard,
     IonCardContent,
     SkeletonListComponent,
+    PostReviewModalComponent,
   ],
   templateUrl: './moderation-queue.page.html',
   styleUrls: ['./moderation-queue.page.scss'],
@@ -85,6 +89,9 @@ export class ModerationQueuePage implements OnInit {
   readonly PostStatus = PostStatus;
   readonly MediaType = MediaType;
 
+  readonly reviewModalOpen = signal(false);
+  readonly reviewItem = signal<PostReviewData | null>(null);
+
   constructor() {
     addIcons({
       checkmarkOutline,
@@ -95,6 +102,7 @@ export class ModerationQueuePage implements OnInit {
       videocamOutline,
       flagOutline,
       alertCircleOutline,
+      eyeOutline,
     });
   }
 
@@ -211,6 +219,23 @@ export class ModerationQueuePage implements OnInit {
         error: () => this.toast.error('Failed to moderate post'),
         complete: () => this.isActioning.set(false),
       });
+  }
+
+  openReview(item: ModerationQueueItemResponse): void {
+    this.reviewItem.set(item);
+    this.reviewModalOpen.set(true);
+  }
+
+  onPostModerated(postId: string): void {
+    this.items.update((items) => items.filter((i) => i.id !== postId));
+    this.reviewModalOpen.set(false);
+    this.reviewItem.set(null);
+    this.expandedId.set(null);
+  }
+
+  onReviewDismissed(): void {
+    this.reviewModalOpen.set(false);
+    this.reviewItem.set(null);
   }
 
   getPriorityLevel(priority: number): string {

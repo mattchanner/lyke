@@ -1,0 +1,141 @@
+<ion-modal
+  [isOpen]="isOpen()"
+  (didDismiss)="close()"
+  [breakpoints]="[0, 1]"
+  [initialBreakpoint]="1"
+>
+  <ng-template>
+    @if (post(); as post) {
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="close()">
+              <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Review Post</ion-title>
+          <ion-buttons slot="end">
+            <ion-badge [color]="getStatusColor(post.status)">
+              {{ post.status }}
+            </ion-badge>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content class="ion-padding">
+        <!-- Media carousel -->
+        @if (mediaItems().length > 0) {
+          <div class="media-section">
+            <app-media-carousel
+              [media]="mediaItems()"
+              [alt]="post.title || 'Post media'"
+              [showFullscreenButton]="true"
+            ></app-media-carousel>
+          </div>
+        }
+
+        <!-- Title & description -->
+        @if (post.title) {
+          <h2 class="post-title">{{ post.title }}</h2>
+        }
+        @if (post.description) {
+          <p class="post-description">{{ post.description }}</p>
+        }
+
+        <!-- Report info (moderation-queue items) -->
+        @if (post.reportCount && post.reportCount > 0) {
+          <ion-card class="report-card" color="danger">
+            <ion-card-content>
+              <div class="report-header">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+                <strong>Report Information</strong>
+              </div>
+              <div class="report-badges">
+                <ion-badge color="danger">
+                  {{ post.reportCount }} report{{ post.reportCount > 1 ? 's' : '' }}
+                </ion-badge>
+                @if (post.topReportReason) {
+                  <ion-badge color="tertiary">{{ post.topReportReason }}</ion-badge>
+                }
+                @if (post.isFlagged) {
+                  <ion-badge color="warning">
+                    <ion-icon name="flag-outline"></ion-icon>
+                    Flagged
+                  </ion-badge>
+                }
+              </div>
+              @if (post.priority != null) {
+                <p class="priority-info">Priority score: <strong>{{ post.priority }}</strong></p>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+
+        <!-- Creator info -->
+        <div class="detail-section">
+          <strong>Creator</strong>
+          <p>
+            {{ post.creator.displayName }}
+            @if (post.creator.isVerified) {
+              <ion-icon name="checkmark-circle" color="primary" class="verified-icon"></ion-icon>
+            }
+          </p>
+          <p class="meta">
+            {{ post.creator.publishedPosts }} / {{ post.creator.totalPosts }} posts published
+          </p>
+        </div>
+
+        <!-- Products -->
+        @if (post.products.length) {
+          <div class="detail-section">
+            <strong>Products Tagged ({{ post.products.length }})</strong>
+            @for (product of post.products; track product.productId) {
+              <p class="product-item">
+                {{ product.productName }}
+                @if (product.sizeWorn) {
+                  <span class="meta"> - Size: {{ product.sizeWorn }}</span>
+                }
+                @if (product.fitNotes) {
+                  <span class="meta"> - {{ product.fitNotes }}</span>
+                }
+              </p>
+            }
+          </div>
+        }
+
+        <!-- Submitted date -->
+        <div class="detail-section">
+          <strong>Submitted</strong>
+          <p>{{ formatDate(post.submittedAt || post.createdAt) }}</p>
+        </div>
+      </ion-content>
+
+      @if (canModerate()) {
+        <ion-footer>
+          <ion-toolbar class="action-toolbar">
+            <div class="action-buttons">
+              <ion-button
+                color="success"
+                expand="block"
+                [disabled]="isActioning()"
+                (click)="onApprove()"
+              >
+                <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                Approve
+              </ion-button>
+              <ion-button
+                color="danger"
+                expand="block"
+                [disabled]="isActioning()"
+                (click)="onReject()"
+              >
+                <ion-icon slot="start" name="close-outline"></ion-icon>
+                Reject
+              </ion-button>
+            </div>
+          </ion-toolbar>
+        </ion-footer>
+      }
+    }
+  </ng-template>
+</ion-modal>

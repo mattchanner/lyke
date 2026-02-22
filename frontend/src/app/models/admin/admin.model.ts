@@ -230,6 +230,26 @@ export interface ModerationQueueItemResponse {
   priority: number;
 }
 
+// Post review modal
+export interface PostReviewData {
+  id: string;
+  title: string | null;
+  description: string | null;
+  mediaType: MediaType;
+  mediaUrls: string[];
+  thumbnailUrls: string[];
+  status: PostStatus;
+  createdAt: string;
+  submittedAt: string | null;
+  creator: CreatorSummary;
+  products: PostProductSummary[];
+  // Optional — present on moderation-queue items
+  reportCount?: number;
+  topReportReason?: ReportReason | null;
+  isFlagged?: boolean;
+  priority?: number;
+}
+
 // Bulk actions
 export interface BulkModeratePostsRequest {
   postIds: string[];

@@ -125,6 +125,14 @@
 
               <div class="action-buttons">
                 <ion-button
+                  color="primary"
+                  fill="outline"
+                  (click)="openReview(item); $event.stopPropagation()"
+                >
+                  <ion-icon slot="start" name="eye-outline"></ion-icon>
+                  Review
+                </ion-button>
+                <ion-button
                   color="success"
                   [disabled]="isActioning()"
                   (click)="onApprove(item); $event.stopPropagation()"
@@ -152,3 +160,10 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+<app-post-review-modal
+  [isOpen]="reviewModalOpen()"
+  [post]="reviewItem()"
+  (moderated)="onPostModerated($event)"
+  (dismissed)="onReviewDismissed()"
+></app-post-review-modal>

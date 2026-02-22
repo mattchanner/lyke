@@ -130,8 +130,16 @@
                 </div>
               }
 
-              @if (post.status === PostStatus.PendingReview || post.status === PostStatus.Flagged) {
-                <div class="action-buttons">
+              <div class="action-buttons">
+                <ion-button
+                  color="primary"
+                  fill="outline"
+                  (click)="openReview(post); $event.stopPropagation()"
+                >
+                  <ion-icon slot="start" name="eye-outline"></ion-icon>
+                  Review
+                </ion-button>
+                @if (post.status === PostStatus.PendingReview || post.status === PostStatus.Flagged) {
                   <ion-button
                     color="success"
                     [disabled]="isActioning()"
@@ -148,8 +156,8 @@
                     <ion-icon slot="start" name="close-outline"></ion-icon>
                     Reject
                   </ion-button>
-                </div>
-              }
+                }
+              </div>
             </ion-card-content>
           </ion-card>
         }
@@ -161,6 +169,13 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+<app-post-review-modal
+  [isOpen]="reviewModalOpen()"
+  [post]="reviewPost()"
+  (moderated)="onPostModerated($event)"
+  (dismissed)="onReviewDismissed()"
+></app-post-review-modal>
 
 @if (selectionMode() && selectedCount() > 0) {
   <ion-footer>

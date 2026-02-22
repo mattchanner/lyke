@@ -36,18 +36,21 @@ import {
   videocamOutline,
   flagOutline,
   trashOutline,
+  eyeOutline,
 } from 'ionicons/icons';
 
 import { AdminService } from '../../../core/services';
 import { ToastService } from '../../../core/services';
 import {
   PendingPostResponse,
+  PostReviewData,
   PostStatus,
   MediaType,
   BulkPostAction,
   BulkModeratePostsRequest,
 } from '../../../models';
 import { SkeletonListComponent } from '../../../shared/components/skeleton-list';
+import { PostReviewModalComponent } from '../components/post-review-modal';
 
 type TabFilter = PostStatus | 'all';
 
@@ -80,6 +83,7 @@ type TabFilter = PostStatus | 'all';
     IonCheckbox,
     IonFooter,
     SkeletonListComponent,
+    PostReviewModalComponent,
   ],
   templateUrl: './post-moderation.page.html',
   styleUrls: ['./post-moderation.page.scss'],
@@ -106,6 +110,9 @@ export class PostModerationPage implements OnInit {
   readonly MediaType = MediaType;
   readonly BulkPostAction = BulkPostAction;
 
+  readonly reviewModalOpen = signal(false);
+  readonly reviewPost = signal<PostReviewData | null>(null);
+
   constructor() {
     addIcons({
       checkmarkOutline,
@@ -116,6 +123,7 @@ export class PostModerationPage implements OnInit {
       videocamOutline,
       flagOutline,
       trashOutline,
+      eyeOutline,
     });
   }
 
@@ -328,6 +336,23 @@ export class PostModerationPage implements OnInit {
       error: () => this.toast.error('Bulk action failed'),
       complete: () => this.isBulkActioning.set(false),
     });
+  }
+
+  openReview(post: PendingPostResponse): void {
+    this.reviewPost.set(post);
+    this.reviewModalOpen.set(true);
+  }
+
+  onPostModerated(postId: string): void {
+    this.posts.update((posts) => posts.filter((p) => p.id !== postId));
+    this.reviewModalOpen.set(false);
+    this.reviewPost.set(null);
+    this.expandedPostId.set(null);
+  }
+
+  onReviewDismissed(): void {
+    this.reviewModalOpen.set(false);
+    this.reviewPost.set(null);
   }
 
   getStatusColor(status: PostStatus): string {
