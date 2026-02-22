@@ -12,6 +12,8 @@ import {
   IonLabel,
   IonAvatar,
   IonBadge,
+  ActionSheetController,
+  AlertController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -22,9 +24,11 @@ import {
   shareSocialOutline,
   checkmarkCircle,
   eyeOutline,
+  ellipsisVertical,
+  flagOutline,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType } from '../../../models';
+import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { MediaCarouselComponent, MediaItem } from '../media-carousel';
 
 @Component({
@@ -52,11 +56,14 @@ import { MediaCarouselComponent, MediaItem } from '../media-carousel';
 export class PostCardComponent {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
 
   @Input({ required: true }) post!: FeedPostResponse;
   @Output() liked = new EventEmitter<{ postId: string; liked: boolean }>();
   @Output() saved = new EventEmitter<{ postId: string; saved: boolean }>();
   @Output() productTapped = new EventEmitter<{ postId: string; product: PostProductSummaryResponse }>();
+  @Output() reported = new EventEmitter<string>();
 
   constructor() {
     addIcons({
@@ -67,6 +74,8 @@ export class PostCardComponent {
       shareSocialOutline,
       checkmarkCircle,
       eyeOutline,
+      ellipsisVertical,
+      flagOutline,
     });
   }
 
@@ -166,5 +175,85 @@ export class PostCardComponent {
       );
       this.toast.success('Link copied!');
     }
+  }
+
+  async reportPost(event: Event): Promise<void> {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const actionSheet = await this.actionSheetCtrl.create({
+      buttons: [
+        {
+          text: 'Report Post',
+          role: 'destructive',
+          icon: 'flag-outline',
+          handler: () => {
+            this.showReportDialog();
+          },
+        },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await actionSheet.present();
+  }
+
+  private async showReportDialog(): Promise<void> {
+    const reasonLabels: Record<ReportReason, string> = {
+      [ReportReason.InappropriateContent]: 'Inappropriate Content',
+      [ReportReason.Spam]: 'Spam',
+      [ReportReason.MisleadingProductTag]: 'Misleading Product Tag',
+      [ReportReason.Copyright]: 'Copyright Violation',
+      [ReportReason.HateSpeech]: 'Hate Speech',
+      [ReportReason.Other]: 'Other',
+    };
+
+    const alert = await this.alertCtrl.create({
+      header: 'Report Post',
+      message: 'Why are you reporting this post?',
+      inputs: [
+        ...Object.entries(reasonLabels).map(([value, label], i) => ({
+          name: 'reason',
+          type: 'radio' as const,
+          label,
+          value,
+          checked: i === 0,
+        })),
+        {
+          name: 'additionalDetails',
+          type: 'textarea' as const,
+          placeholder: 'Additional details (optional)...',
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Submit',
+          handler: (data) => {
+            const body: CreateReportRequest = {
+              reason: data.reason || data,
+              additionalDetails: data.additionalDetails?.trim() || undefined,
+            };
+            this.submitReport(body);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private submitReport(body: CreateReportRequest): void {
+    this.api.post('posts', `${this.post.id}/report`, body).subscribe({
+      next: () => {
+        this.toast.success('Report submitted');
+        this.reported.emit(this.post.id);
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.toast.error("You've already reported this post");
+        } else {
+          this.toast.error('Failed to submit report');
+        }
+      },
+    });
   }
 }

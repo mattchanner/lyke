@@ -3,6 +3,7 @@ import {
   FeedSortBy,
   FitRating,
   MediaType,
+  ReportReason,
   SearchType,
 } from '../enums';
 import { AnonymizedBodyProfileResponse } from '../profile';
@@ -117,6 +118,11 @@ export interface FeedRequest {
 
 export interface EngageRequest {
   type: EngagementType;
+}
+
+export interface CreateReportRequest {
+  reason: ReportReason;
+  additionalDetails?: string;
 }
 
 export interface SearchRequest {

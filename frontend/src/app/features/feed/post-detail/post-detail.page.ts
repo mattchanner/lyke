@@ -12,6 +12,8 @@ import {
   IonButton,
   IonIcon,
   IonAvatar,
+  ActionSheetController,
+  AlertController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -21,9 +23,11 @@ import {
   bookmark,
   shareSocialOutline,
   checkmarkCircle,
+  ellipsisVertical,
+  flagOutline,
 } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
-import { PostDetailResponse, EngagementType, MediaType } from '../../../models';
+import { PostDetailResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
 import { ShopTheLookComponent } from '../../../shared/components/shop-the-look';
 import { MediaCarouselComponent, MediaItem } from '../../../shared/components/media-carousel';
@@ -56,6 +60,8 @@ export class PostDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly alertCtrl = inject(AlertController);
 
   readonly post = signal<PostDetailResponse | null>(null);
   readonly isLoading = signal(false);
@@ -78,6 +84,8 @@ export class PostDetailPage implements OnInit {
       bookmark,
       shareSocialOutline,
       checkmarkCircle,
+      ellipsisVertical,
+      flagOutline,
     });
   }
 
@@ -175,4 +183,82 @@ export class PostDetailPage implements OnInit {
     }
   }
 
+  async reportPost(): Promise<void> {
+    const currentPost = this.post();
+    if (!currentPost) return;
+
+    const actionSheet = await this.actionSheetCtrl.create({
+      buttons: [
+        {
+          text: 'Report Post',
+          role: 'destructive',
+          icon: 'flag-outline',
+          handler: () => {
+            this.showReportDialog(currentPost.id);
+          },
+        },
+        { text: 'Cancel', role: 'cancel' },
+      ],
+    });
+    await actionSheet.present();
+  }
+
+  private async showReportDialog(postId: string): Promise<void> {
+    const reasonLabels: Record<ReportReason, string> = {
+      [ReportReason.InappropriateContent]: 'Inappropriate Content',
+      [ReportReason.Spam]: 'Spam',
+      [ReportReason.MisleadingProductTag]: 'Misleading Product Tag',
+      [ReportReason.Copyright]: 'Copyright Violation',
+      [ReportReason.HateSpeech]: 'Hate Speech',
+      [ReportReason.Other]: 'Other',
+    };
+
+    const alert = await this.alertCtrl.create({
+      header: 'Report Post',
+      message: 'Why are you reporting this post?',
+      inputs: [
+        ...Object.entries(reasonLabels).map(([value, label], i) => ({
+          name: 'reason',
+          type: 'radio' as const,
+          label,
+          value,
+          checked: i === 0,
+        })),
+        {
+          name: 'additionalDetails',
+          type: 'textarea' as const,
+          placeholder: 'Additional details (optional)...',
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Submit',
+          handler: (data) => {
+            const body: CreateReportRequest = {
+              reason: data.reason || data,
+              additionalDetails: data.additionalDetails?.trim() || undefined,
+            };
+            this.submitReport(postId, body);
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private submitReport(postId: string, body: CreateReportRequest): void {
+    this.api.post('posts', `${postId}/report`, body).subscribe({
+      next: () => {
+        this.toast.success('Report submitted');
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.toast.error("You've already reported this post");
+        } else {
+          this.toast.error('Failed to submit report');
+        }
+      },
+    });
+  }
 }
