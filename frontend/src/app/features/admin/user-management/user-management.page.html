@@ -4,6 +4,11 @@
       <ion-back-button defaultHref="/admin"></ion-back-button>
     </ion-buttons>
     <ion-title>User Management</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSelectionMode()">
+        {{ selectionMode() ? 'Cancel' : 'Select' }}
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-searchbar
@@ -41,7 +46,18 @@
   } @else {
     <ion-list>
       @for (user of users(); track user.id) {
-        <ion-item [button]="true" (click)="navigateToUser(user)" [detail]="true">
+        <ion-item
+          [button]="true"
+          (click)="selectionMode() ? toggleSelect(user.id) : navigateToUser(user)"
+          [detail]="!selectionMode()"
+        >
+          @if (selectionMode()) {
+            <ion-checkbox
+              slot="start"
+              [checked]="isSelected(user.id)"
+              (ionChange)="toggleSelect(user.id); $event.stopPropagation()"
+            ></ion-checkbox>
+          }
           <ion-avatar slot="start">
             <div class="avatar-placeholder">
               <ion-icon name="person-outline"></ion-icon>
@@ -71,3 +87,23 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+@if (selectionMode() && selectedCount() > 0) {
+  <ion-footer>
+    <ion-toolbar class="bulk-toolbar">
+      <div class="bulk-toolbar-content">
+        <div class="bulk-info">
+          <span>{{ selectedCount() }} selected</span>
+          <ion-button fill="clear" size="small" (click)="selectAll()">All</ion-button>
+          <ion-button fill="clear" size="small" (click)="deselectAll()">None</ion-button>
+        </div>
+        <div class="bulk-actions">
+          <ion-button size="small" color="danger" [disabled]="isBulkActioning()" (click)="onBulkSuspend()">
+            <ion-icon slot="start" name="ban-outline"></ion-icon>
+            Suspend
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+}

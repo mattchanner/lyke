@@ -1,0 +1,144 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Content Reports</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-segment [value]="activeStatusTab()" (ionChange)="onTabChange($event)">
+      <ion-segment-button value="all">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ReportStatus.Pending">
+        <ion-label>Pending</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ReportStatus.UnderReview">
+        <ion-label>Reviewing</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ReportStatus.Dismissed">
+        <ion-label>Dismissed</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="ReportStatus.ActionTaken">
+        <ion-label>Actioned</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="filter-chips">
+    @for (option of reasonOptions; track option.value) {
+      <ion-chip
+        [color]="activeReasonFilter() === option.value ? 'primary' : 'medium'"
+        [outline]="activeReasonFilter() !== option.value"
+        (click)="onReasonFilterChange(option.value)"
+      >
+        <ion-label>{{ option.label }}</ion-label>
+      </ion-chip>
+    }
+  </div>
+
+  @if (isLoading() && reports().length === 0) {
+    <app-skeleton-list [count]="5" [showAvatar]="false"></app-skeleton-list>
+  } @else if (!isLoading() && reports().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="flag-outline" class="empty-icon"></ion-icon>
+      <p>No reports found</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (report of reports(); track report.id) {
+        <ion-item
+          [button]="true"
+          (click)="toggleExpand(report.id)"
+          [class.expanded]="expandedId() === report.id"
+        >
+          <ion-label>
+            <h2>{{ report.postTitle || 'Untitled Post' }}</h2>
+            <p>
+              <ion-badge [color]="getReasonColor(report.reason)" class="reason-badge">
+                {{ report.reason }}
+              </ion-badge>
+            </p>
+            <p>
+              <ion-note>{{ formatDate(report.createdAt) }}</ion-note>
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(report.status)">
+            {{ report.status }}
+          </ion-badge>
+          <ion-icon
+            slot="end"
+            [name]="expandedId() === report.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+          ></ion-icon>
+        </ion-item>
+
+        @if (expandedId() === report.id) {
+          <ion-card class="detail-card">
+            <ion-card-content>
+              <div class="detail-section">
+                <strong>Post</strong>
+                <p>{{ report.postTitle || 'Untitled' }} ({{ report.postId }})</p>
+              </div>
+
+              <div class="detail-section">
+                <strong>Reason</strong>
+                <p>
+                  <ion-badge [color]="getReasonColor(report.reason)">{{ report.reason }}</ion-badge>
+                </p>
+                @if (report.additionalDetails) {
+                  <p class="meta">{{ report.additionalDetails }}</p>
+                }
+              </div>
+
+              <div class="detail-section">
+                <strong>Reporter</strong>
+                <p class="meta">User ID: {{ report.reportedByUserId }}</p>
+              </div>
+
+              @if (report.reviewNotes) {
+                <div class="detail-section notes-section">
+                  <strong>Review Notes</strong>
+                  <p>{{ report.reviewNotes }}</p>
+                  @if (report.reviewedAt) {
+                    <p class="meta">Reviewed {{ formatDate(report.reviewedAt) }}</p>
+                  }
+                </div>
+              }
+
+              @if (report.status === ReportStatus.Pending || report.status === ReportStatus.UnderReview) {
+                <div class="action-buttons">
+                  <ion-button
+                    color="medium"
+                    [disabled]="isActioning()"
+                    (click)="onDismiss(report); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="close-outline"></ion-icon>
+                    Dismiss
+                  </ion-button>
+                  <ion-button
+                    color="danger"
+                    [disabled]="isActioning()"
+                    (click)="onTakeAction(report); $event.stopPropagation()"
+                  >
+                    <ion-icon slot="start" name="eye-outline"></ion-icon>
+                    Take Action
+                  </ion-button>
+                </div>
+              }
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+    </ion-list>
+
+    <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

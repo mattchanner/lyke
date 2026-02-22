@@ -93,6 +93,16 @@
               <ion-badge color="warning">{{ stats()!.content.pendingReviewPosts }} pending review</ion-badge>
             </div>
           }
+          @if (stats()!.content.flaggedPosts > 0) {
+            <div class="alert-badge">
+              <ion-badge color="danger">{{ stats()!.content.flaggedPosts }} flagged</ion-badge>
+            </div>
+          }
+          @if (stats()!.content.pendingReports > 0) {
+            <div class="alert-badge">
+              <ion-badge color="tertiary">{{ stats()!.content.pendingReports }} pending reports</ion-badge>
+            </div>
+          }
         </ion-card-content>
       </ion-card>
 
@@ -168,6 +178,28 @@
       </ion-label>
       @if (stats()?.verifications?.pendingVerifications) {
         <ion-badge slot="end" color="warning">{{ stats()!.verifications.pendingVerifications }}</ion-badge>
+      }
+    </ion-item>
+    <ion-item routerLink="/admin/reports" detail>
+      <ion-icon name="flag-outline" slot="start"></ion-icon>
+      <ion-label>
+        <h2>Content Reports</h2>
+        <p>Review user-submitted reports</p>
+      </ion-label>
+      @if (stats()?.content?.pendingReports) {
+        <ion-badge slot="end" color="tertiary">{{ stats()!.content.pendingReports }}</ion-badge>
+      }
+    </ion-item>
+    <ion-item routerLink="/admin/moderation-queue" detail>
+      <ion-icon name="warning-outline" slot="start"></ion-icon>
+      <ion-label>
+        <h2>Moderation Queue</h2>
+        <p>Priority-ranked posts needing review</p>
+      </ion-label>
+      @if (stats(); as s) {
+        @if (s.content.pendingReviewPosts + s.content.flaggedPosts > 0) {
+          <ion-badge slot="end" color="danger">{{ s.content.pendingReviewPosts + s.content.flaggedPosts }}</ion-badge>
+        }
       }
     </ion-item>
   </ion-list>

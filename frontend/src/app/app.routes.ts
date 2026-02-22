@@ -383,6 +383,20 @@ export const routes: Routes = [
             './features/admin/verification-review/verification-review.page'
           ).then((m) => m.VerificationReviewPage),
       },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import(
+            './features/admin/content-reports/content-reports.page'
+          ).then((m) => m.ContentReportsPage),
+      },
+      {
+        path: 'moderation-queue',
+        loadComponent: () =>
+          import(
+            './features/admin/moderation-queue/moderation-queue.page'
+          ).then((m) => m.ModerationQueuePage),
+      },
     ],
   },
 

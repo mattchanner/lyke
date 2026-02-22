@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import {
@@ -8,6 +8,7 @@ import {
   IonToolbar,
   IonBackButton,
   IonButtons,
+  IonButton,
   IonSearchbar,
   IonChip,
   IonLabel,
@@ -21,17 +22,21 @@ import {
   IonRefresher,
   IonRefresherContent,
   IonNote,
+  IonCheckbox,
+  IonFooter,
+  AlertController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   personOutline,
   alertCircleOutline,
   chevronForwardOutline,
+  banOutline,
 } from 'ionicons/icons';
 
 import { AdminService } from '../../../core/services';
 import { ToastService } from '../../../core/services';
-import { UserListResponse, UserType } from '../../../models';
+import { UserListResponse, UserType, BulkSuspendUsersRequest } from '../../../models';
 import { SkeletonListComponent } from '../../../shared/components/skeleton-list';
 
 type FilterType = UserType | 'all' | 'suspended';
@@ -46,6 +51,7 @@ type FilterType = UserType | 'all' | 'suspended';
     IonToolbar,
     IonBackButton,
     IonButtons,
+    IonButton,
     IonSearchbar,
     IonChip,
     IonLabel,
@@ -59,6 +65,8 @@ type FilterType = UserType | 'all' | 'suspended';
     IonRefresher,
     IonRefresherContent,
     IonNote,
+    IonCheckbox,
+    IonFooter,
     SkeletonListComponent,
   ],
   templateUrl: './user-management.page.html',
@@ -68,6 +76,7 @@ export class UserManagementPage implements OnInit, OnDestroy {
   private readonly adminService = inject(AdminService);
   private readonly toast = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly alertController = inject(AlertController);
   private readonly destroy$ = new Subject<void>();
   private readonly searchSubject = new Subject<string>();
 
@@ -77,6 +86,10 @@ export class UserManagementPage implements OnInit, OnDestroy {
   readonly filterType = signal<FilterType>('all');
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
+  readonly selectionMode = signal(false);
+  readonly selectedIds = signal(new Set<string>());
+  readonly selectedCount = computed(() => this.selectedIds().size);
+  readonly isBulkActioning = signal(false);
 
   readonly UserType = UserType;
   readonly filterOptions: { value: FilterType; label: string }[] = [
@@ -93,6 +106,7 @@ export class UserManagementPage implements OnInit, OnDestroy {
       personOutline,
       alertCircleOutline,
       chevronForwardOutline,
+      banOutline,
     });
   }
 
@@ -174,6 +188,96 @@ export class UserManagementPage implements OnInit, OnDestroy {
 
   navigateToUser(user: UserListResponse): void {
     this.router.navigate(['/admin/users', user.id]);
+  }
+
+  toggleSelectionMode(): void {
+    this.selectionMode.update((v) => !v);
+    if (!this.selectionMode()) {
+      this.selectedIds.set(new Set());
+    }
+  }
+
+  toggleSelect(id: string): void {
+    this.selectedIds.update((ids) => {
+      const next = new Set(ids);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  selectAll(): void {
+    this.selectedIds.set(new Set(this.users().map((u) => u.id)));
+  }
+
+  deselectAll(): void {
+    this.selectedIds.set(new Set());
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedIds().has(id);
+  }
+
+  async onBulkSuspend(): Promise<void> {
+    const count = this.selectedCount();
+    if (count === 0) return;
+
+    const alert = await this.alertController.create({
+      header: 'Bulk Suspend',
+      message: `Suspend ${count} selected user(s)?`,
+      inputs: [
+        {
+          name: 'reason',
+          type: 'textarea',
+          placeholder: 'Suspension reason (required)...',
+        },
+      ],
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Suspend',
+          role: 'destructive',
+          handler: (data) => {
+            if (!data.reason?.trim()) {
+              this.toast.error('Suspension reason is required');
+              return false;
+            }
+            this.executeBulkSuspend(data.reason.trim());
+            return true;
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private executeBulkSuspend(reason: string): void {
+    this.isBulkActioning.set(true);
+    const request: BulkSuspendUsersRequest = {
+      userIds: [...this.selectedIds()],
+      reason,
+    };
+    this.adminService.bulkSuspendUsers(request).subscribe({
+      next: (r) => {
+        if (r.success && r.data) {
+          const result = r.data;
+          this.toast.success(`${result.successCount} user(s) suspended`);
+          if (result.failureCount > 0) {
+            this.toast.error(`${result.failureCount} user(s) failed`);
+          }
+          this.selectionMode.set(false);
+          this.selectedIds.set(new Set());
+          this.loadUsers(true);
+        } else {
+          this.toast.error(r.error?.message || 'Bulk suspend failed');
+        }
+      },
+      error: () => this.toast.error('Bulk suspend failed'),
+      complete: () => this.isBulkActioning.set(false),
+    });
   }
 
   getUserTypeColor(userType: UserType): string {

@@ -35,6 +35,8 @@ import {
   heartOutline,
   chevronForwardOutline,
   refreshOutline,
+  flagOutline,
+  warningOutline,
 } from 'ionicons/icons';
 
 import { AdminService, AuthService } from '../../../core/services';
@@ -92,6 +94,8 @@ export class AdminDashboardPage implements OnInit {
       heartOutline,
       chevronForwardOutline,
       refreshOutline,
+      flagOutline,
+      warningOutline,
     });
   }
 

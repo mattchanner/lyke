@@ -1,0 +1,154 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Moderation Queue</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (isLoading() && items().length === 0) {
+    <app-skeleton-list [count]="5" [showAvatar]="true"></app-skeleton-list>
+  } @else if (!isLoading() && items().length === 0) {
+    <div class="empty-state">
+      <ion-icon name="checkmark-outline" class="empty-icon"></ion-icon>
+      <p>Moderation queue is empty</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (item of items(); track item.id) {
+        <ion-item
+          [button]="true"
+          (click)="toggleExpand(item.id)"
+          [class.expanded]="expandedId() === item.id"
+        >
+          <div class="priority-score" [class]="'priority-' + getPriorityLevel(item.priority)" slot="start">
+            {{ item.priority }}
+          </div>
+          <ion-thumbnail slot="start">
+            @if (item.mediaUrls?.length) {
+              <img [src]="item.thumbnailUrls?.[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" />
+            } @else {
+              <div class="no-media">
+                <ion-icon
+                  [name]="item.mediaType === MediaType.Video ? 'videocam-outline' : 'image-outline'"
+                ></ion-icon>
+              </div>
+            }
+            @if (item.isFlagged) {
+              <div class="flag-overlay">
+                <ion-icon name="flag-outline"></ion-icon>
+              </div>
+            }
+          </ion-thumbnail>
+          <ion-label>
+            <h2>
+              {{ item.title || 'Untitled' }}
+              @if (item.isFlagged) {
+                <ion-icon name="flag-outline" color="danger" class="flag-icon"></ion-icon>
+              }
+            </h2>
+            <p>By {{ item.creator.displayName }}</p>
+            <p>
+              @if (item.reportCount > 0) {
+                <ion-badge color="danger" class="report-badge">{{ item.reportCount }} report{{ item.reportCount > 1 ? 's' : '' }}</ion-badge>
+              }
+              @if (item.topReportReason) {
+                <ion-badge color="tertiary" class="report-badge">{{ item.topReportReason }}</ion-badge>
+              }
+            </p>
+          </ion-label>
+          <ion-badge slot="end" [color]="getStatusColor(item.status)">
+            {{ item.status }}
+          </ion-badge>
+          <ion-icon
+            slot="end"
+            [name]="expandedId() === item.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+          ></ion-icon>
+        </ion-item>
+
+        @if (expandedId() === item.id) {
+          <ion-card class="detail-card">
+            <ion-card-content>
+              @if (item.description) {
+                <div class="detail-section">
+                  <strong>Description</strong>
+                  <p>{{ item.description }}</p>
+                </div>
+              }
+
+              <div class="detail-section">
+                <strong>Creator</strong>
+                <p>
+                  {{ item.creator.displayName }}
+                  @if (item.creator.isVerified) {
+                    <ion-badge color="primary">Verified</ion-badge>
+                  }
+                </p>
+                <p class="meta">
+                  {{ item.creator.publishedPosts }} / {{ item.creator.totalPosts }} posts published
+                </p>
+              </div>
+
+              <div class="detail-section">
+                <strong>Priority Breakdown</strong>
+                <p>
+                  Priority Score: <strong>{{ item.priority }}</strong>
+                  <ion-badge [color]="getPriorityLevel(item.priority) === 'high' ? 'danger' : getPriorityLevel(item.priority) === 'medium' ? 'warning' : 'success'">
+                    {{ getPriorityLevel(item.priority) }}
+                  </ion-badge>
+                </p>
+                <p class="meta">
+                  {{ item.reportCount }} report(s)
+                  @if (item.isFlagged) { · Flagged }
+                </p>
+              </div>
+
+              @if (item.products?.length) {
+                <div class="detail-section">
+                  <strong>Products Tagged ({{ item.products.length }})</strong>
+                  @for (product of item.products; track product.productId) {
+                    <p class="product-item">
+                      {{ product.productName }}
+                      @if (product.sizeWorn) {
+                        <span class="meta"> - Size: {{ product.sizeWorn }}</span>
+                      }
+                    </p>
+                  }
+                </div>
+              }
+
+              <div class="action-buttons">
+                <ion-button
+                  color="success"
+                  [disabled]="isActioning()"
+                  (click)="onApprove(item); $event.stopPropagation()"
+                >
+                  <ion-icon slot="start" name="checkmark-outline"></ion-icon>
+                  Approve
+                </ion-button>
+                <ion-button
+                  color="danger"
+                  [disabled]="isActioning()"
+                  (click)="onReject(item); $event.stopPropagation()"
+                >
+                  <ion-icon slot="start" name="close-outline"></ion-icon>
+                  Reject
+                </ion-button>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        }
+      }
+    </ion-list>
+
+    <ion-infinite-scroll [disabled]="!hasMore()" (ionInfinite)="loadMore($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  }
+</ion-content>

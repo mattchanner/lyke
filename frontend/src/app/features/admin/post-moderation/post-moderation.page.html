@@ -4,6 +4,11 @@
       <ion-back-button defaultHref="/admin"></ion-back-button>
     </ion-buttons>
     <ion-title>Post Moderation</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="toggleSelectionMode()">
+        {{ selectionMode() ? 'Cancel' : 'Select' }}
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="activeTab()" (ionChange)="onTabChange($event)">
@@ -18,6 +23,12 @@
       </ion-segment-button>
       <ion-segment-button [value]="PostStatus.Rejected">
         <ion-label>Rejected</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="PostStatus.Flagged">
+        <ion-label>Flagged</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="PostStatus.Removed">
+        <ion-label>Removed</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -40,9 +51,16 @@
       @for (post of posts(); track post.id) {
         <ion-item
           [button]="true"
-          (click)="toggleExpand(post.id)"
+          (click)="selectionMode() ? toggleSelect(post.id) : toggleExpand(post.id)"
           [class.expanded]="expandedPostId() === post.id"
         >
+          @if (selectionMode()) {
+            <ion-checkbox
+              slot="start"
+              [checked]="isSelected(post.id)"
+              (ionChange)="toggleSelect(post.id); $event.stopPropagation()"
+            ></ion-checkbox>
+          }
           <ion-thumbnail slot="start">
             @if (post.mediaUrls?.length) {
               <img [src]="post.thumbnailUrls?.[0] || post.mediaUrls[0]" [alt]="post.title || 'Post'" />
@@ -64,13 +82,15 @@
           <ion-badge slot="end" [color]="getStatusColor(post.status)">
             {{ post.status }}
           </ion-badge>
-          <ion-icon
-            slot="end"
-            [name]="expandedPostId() === post.id ? 'chevron-up-outline' : 'chevron-down-outline'"
-          ></ion-icon>
+          @if (!selectionMode()) {
+            <ion-icon
+              slot="end"
+              [name]="expandedPostId() === post.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+            ></ion-icon>
+          }
         </ion-item>
 
-        @if (expandedPostId() === post.id) {
+        @if (expandedPostId() === post.id && !selectionMode()) {
           <ion-card class="detail-card">
             <ion-card-content>
               @if (post.description) {
@@ -110,7 +130,7 @@
                 </div>
               }
 
-              @if (post.status === PostStatus.PendingReview) {
+              @if (post.status === PostStatus.PendingReview || post.status === PostStatus.Flagged) {
                 <div class="action-buttons">
                   <ion-button
                     color="success"
@@ -141,3 +161,31 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+@if (selectionMode() && selectedCount() > 0) {
+  <ion-footer>
+    <ion-toolbar class="bulk-toolbar">
+      <div class="bulk-toolbar-content">
+        <div class="bulk-info">
+          <span>{{ selectedCount() }} selected</span>
+          <ion-button fill="clear" size="small" (click)="selectAll()">All</ion-button>
+          <ion-button fill="clear" size="small" (click)="deselectAll()">None</ion-button>
+        </div>
+        <div class="bulk-actions">
+          <ion-button size="small" color="success" [disabled]="isBulkActioning()" (click)="onBulkAction(BulkPostAction.Approve)">
+            Approve
+          </ion-button>
+          <ion-button size="small" color="warning" [disabled]="isBulkActioning()" (click)="onBulkAction(BulkPostAction.Flag)">
+            Flag
+          </ion-button>
+          <ion-button size="small" color="danger" [disabled]="isBulkActioning()" (click)="onBulkAction(BulkPostAction.Reject)">
+            Reject
+          </ion-button>
+          <ion-button size="small" color="dark" [disabled]="isBulkActioning()" (click)="onBulkAction(BulkPostAction.Remove)">
+            Remove
+          </ion-button>
+        </div>
+      </div>
+    </ion-toolbar>
+  </ion-footer>
+}
