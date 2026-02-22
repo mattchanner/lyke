@@ -1,4 +1,12 @@
-import { MediaType, PostStatus, UserType, VerificationStatus } from '../enums';
+import {
+  BulkPostAction,
+  MediaType,
+  PostStatus,
+  ReportReason,
+  ReportStatus,
+  UserType,
+  VerificationStatus,
+} from '../enums';
 
 // Post moderation
 export interface PendingPostResponse {
@@ -148,6 +156,10 @@ export interface ContentStats {
   pendingReviewPosts: number;
   draftPosts: number;
   rejectedPosts: number;
+  flaggedPosts: number;
+  removedPosts: number;
+  totalReports: number;
+  pendingReports: number;
   postsLast7Days: number;
   postsLast30Days: number;
 }
@@ -166,4 +178,77 @@ export interface EngagementStats {
   totalClicks: number;
   viewsLast7Days: number;
   clicksLast7Days: number;
+}
+
+// Content reports
+export interface ContentReportResponse {
+  id: string;
+  postId: string;
+  postTitle: string | null;
+  reportedByUserId: string;
+  reason: ReportReason;
+  additionalDetails: string | null;
+  status: ReportStatus;
+  reviewedByUserId: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  createdAt: string;
+}
+
+export interface ContentReportQueryRequest {
+  status?: ReportStatus;
+  reason?: ReportReason;
+  postId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface ReviewContentReportRequest {
+  newStatus: ReportStatus;
+  reviewNotes?: string;
+  postAction?: PostStatus;
+}
+
+// Moderation queue
+export interface ModerationQueueItemResponse {
+  id: string;
+  title: string | null;
+  description: string | null;
+  mediaType: MediaType;
+  mediaUrls: string[];
+  thumbnailUrls: string[];
+  status: PostStatus;
+  createdAt: string;
+  submittedAt: string | null;
+  creator: CreatorSummary;
+  products: PostProductSummary[];
+  reportCount: number;
+  topReportReason: ReportReason | null;
+  isFlagged: boolean;
+  priority: number;
+}
+
+// Bulk actions
+export interface BulkModeratePostsRequest {
+  postIds: string[];
+  action: BulkPostAction;
+  reason?: string;
+}
+
+export interface BulkSuspendUsersRequest {
+  userIds: string[];
+  reason: string;
+}
+
+export interface BulkActionResult {
+  successCount: number;
+  failureCount: number;
+  errors: BulkActionError[];
+}
+
+export interface BulkActionError {
+  id: string;
+  error: string;
 }

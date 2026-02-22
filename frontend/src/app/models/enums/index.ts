@@ -19,6 +19,31 @@ export enum PostStatus {
   PendingReview = "PendingReview",
   Published = "Published",
   Rejected = "Rejected",
+  Flagged = "Flagged",
+  Removed = "Removed",
+}
+
+export enum ReportReason {
+  InappropriateContent = "InappropriateContent",
+  Spam = "Spam",
+  MisleadingProductTag = "MisleadingProductTag",
+  Copyright = "Copyright",
+  HateSpeech = "HateSpeech",
+  Other = "Other",
+}
+
+export enum ReportStatus {
+  Pending = "Pending",
+  UnderReview = "UnderReview",
+  Dismissed = "Dismissed",
+  ActionTaken = "ActionTaken",
+}
+
+export enum BulkPostAction {
+  Approve = "Approve",
+  Reject = "Reject",
+  Remove = "Remove",
+  Flag = "Flag",
 }
 
 export enum MediaType {

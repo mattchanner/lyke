@@ -14,6 +14,13 @@ import {
   UserSuspensionResponse,
   PendingVerificationResponse,
   ReviewVerificationRequest,
+  ContentReportResponse,
+  ContentReportQueryRequest,
+  ReviewContentReportRequest,
+  ModerationQueueItemResponse,
+  BulkModeratePostsRequest,
+  BulkSuspendUsersRequest,
+  BulkActionResult,
   PostStatus,
   VerificationStatus,
 } from '../../models';
@@ -147,6 +154,74 @@ export class AdminService {
     return this.api.post<void>(
       this.resource,
       `verifications/${creatorId}/review`,
+      request
+    );
+  }
+
+  // Content reports
+  getContentReports(
+    request?: ContentReportQueryRequest
+  ): Observable<ApiResponse<ContentReportResponse[]>> {
+    const params: Record<string, unknown> = {};
+    if (request?.status !== undefined) params['status'] = request.status;
+    if (request?.reason !== undefined) params['reason'] = request.reason;
+    if (request?.postId) params['postId'] = request.postId;
+    if (request?.from) params['from'] = request.from;
+    if (request?.to) params['to'] = request.to;
+    if (request?.page) params['page'] = request.page;
+    if (request?.pageSize) params['pageSize'] = request.pageSize;
+    return this.api.get<ContentReportResponse[]>(this.resource, 'reports', params);
+  }
+
+  getContentReport(reportId: string): Observable<ContentReportResponse | null> {
+    return this.api
+      .get<ContentReportResponse>(this.resource, `reports/${reportId}`)
+      .pipe(
+        map((r) => (r.success ? r.data ?? null : null)),
+        catchError(() => of(null))
+      );
+  }
+
+  reviewContentReport(
+    reportId: string,
+    request: ReviewContentReportRequest
+  ): Observable<ApiResponse<ContentReportResponse>> {
+    return this.api.post<ContentReportResponse>(
+      this.resource,
+      `reports/${reportId}/review`,
+      request
+    );
+  }
+
+  // Moderation queue
+  getModerationQueue(
+    page = 1,
+    pageSize = 20
+  ): Observable<ApiResponse<ModerationQueueItemResponse[]>> {
+    return this.api.get<ModerationQueueItemResponse[]>(
+      this.resource,
+      'moderation-queue',
+      { page, pageSize }
+    );
+  }
+
+  // Bulk actions
+  bulkModeratePosts(
+    request: BulkModeratePostsRequest
+  ): Observable<ApiResponse<BulkActionResult>> {
+    return this.api.post<BulkActionResult>(
+      this.resource,
+      'posts/bulk-moderate',
+      request
+    );
+  }
+
+  bulkSuspendUsers(
+    request: BulkSuspendUsersRequest
+  ): Observable<ApiResponse<BulkActionResult>> {
+    return this.api.post<BulkActionResult>(
+      this.resource,
+      'users/bulk-suspend',
       request
     );
   }
