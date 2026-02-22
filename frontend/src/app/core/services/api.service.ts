@@ -51,11 +51,13 @@ export class ApiService {
   post<T>(
     resource: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
+    options?: { context?: HttpContext }
   ): Observable<ApiResponse<T>> {
     return this.http.post<ApiResponse<T>>(
       this.buildUrl(resource, endpoint),
-      body
+      body,
+      { context: options?.context }
     );
   }
 

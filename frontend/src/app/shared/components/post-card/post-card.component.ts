@@ -27,7 +27,9 @@ import {
   ellipsisVertical,
   flagOutline,
 } from 'ionicons/icons';
+import { HttpContext } from '@angular/common/http';
 import { ApiService, ToastService } from '../../../core';
+import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { MediaCarouselComponent, MediaItem } from '../media-carousel';
 
@@ -265,13 +267,14 @@ export class PostCardComponent {
   }
 
   private submitReport(body: CreateReportRequest): void {
-    this.api.post('posts', `${this.post.id}/report`, body).subscribe({
+    const context = new HttpContext().set(SUPPRESS_ERROR_TOAST, true);
+    this.api.post('posts', `${this.post.id}/report`, body, { context }).subscribe({
       next: () => {
         this.toast.success('Report submitted');
         this.reported.emit(this.post.id);
       },
       error: (err) => {
-        if (err.status === 409) {
+        if (err.details?.['Report']?.some((d: string) => d.includes('already'))) {
           this.toast.error("You've already reported this post");
         } else {
           this.toast.error('Failed to submit report');

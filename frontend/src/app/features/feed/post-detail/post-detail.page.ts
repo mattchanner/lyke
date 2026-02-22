@@ -26,7 +26,9 @@ import {
   ellipsisVertical,
   flagOutline,
 } from 'ionicons/icons';
+import { HttpContext } from '@angular/common/http';
 import { ApiService, ToastService } from '../../../core';
+import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { PostDetailResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
 import { ShopTheLookComponent } from '../../../shared/components/shop-the-look';
@@ -271,12 +273,13 @@ export class PostDetailPage implements OnInit {
   }
 
   private submitReport(postId: string, body: CreateReportRequest): void {
-    this.api.post('posts', `${postId}/report`, body).subscribe({
+    const context = new HttpContext().set(SUPPRESS_ERROR_TOAST, true);
+    this.api.post('posts', `${postId}/report`, body, { context }).subscribe({
       next: () => {
         this.toast.success('Report submitted');
       },
       error: (err) => {
-        if (err.status === 409) {
+        if (err.details?.['Report']?.some((d: string) => d.includes('already'))) {
           this.toast.error("You've already reported this post");
         } else {
           this.toast.error('Failed to submit report');
