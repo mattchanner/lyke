@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IRetailerService, RetailerService>();
         services.AddScoped<IPrivacyService, PrivacyService>();
+        services.AddScoped<IAuditService, AuditService>();
         services.AddHttpClient<ISocialTokenValidator, SocialTokenValidator>();
 
         return services;

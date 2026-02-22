@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Auth;
 using Lyke.Application.Interfaces;
+using Lyke.Core.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lyke.Api.Endpoints;
@@ -152,6 +153,8 @@ public static class AuthEndpoints
     private static async Task<IResult> DeleteAccountAsync(
         ClaimsPrincipal user,
         IAuthService authService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -164,6 +167,13 @@ public static class AuthEndpoints
         }
 
         await authService.DeleteAccountAsync(userId, cancellationToken);
+
+        await auditService.LogAsync(
+            userId,
+            AuditAction.AccountDeletion,
+            targetUserId: userId,
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse.Ok());
     }
 }

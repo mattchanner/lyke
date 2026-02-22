@@ -27,6 +27,7 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<SponsoredPlacement> SponsoredPlacements => Set<SponsoredPlacement>();
     public DbSet<CreatorEarning> CreatorEarnings => Set<CreatorEarning>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

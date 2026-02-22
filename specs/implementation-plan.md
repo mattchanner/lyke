@@ -680,8 +680,8 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [x] Add consent fields to User entity (PrivacyPolicyAcceptedAt, PrivacyPolicyVersion, MarketingOptIn)
 - [x] Record privacy policy acceptance during registration (validator + auto-set on register)
 - [x] Data export email notification
-- [ ] Implement data retention policies (scheduled cleanup of expired data)
-- [ ] Add audit trail for data access
+- [x] Implement data retention policies (scheduled cleanup of expired data)
+- [x] Add audit trail for data access
 - [ ] Implement cookie consent tracking (deferred - mobile app, not web)
 
 ### 11.2 Frontend Tasks
@@ -956,7 +956,7 @@ ANALYTICS_KEY=<key>
 | Phase 8: Retailer Portal | 22 | 22 | High | 100% |
 | Phase 9: Admin | 16 | 14 | High | 88% (analytics dashboard, content flagging remaining) |
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
-| Phase 11: Privacy | 12 | 9 | Critical | 75% (data retention policies, audit trail, cookie consent remaining) |
+| Phase 11: Privacy | 12 | 11 | Critical | ~95% (cookie consent deferred — mobile app) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
 | Phase 13: Performance | 12 | 1 | Medium | 8% (request rate limiting done) |
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |

@@ -121,6 +121,15 @@ public static class AdminEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
 
+        // Audit Logs
+        group
+            .MapGet("/audit-logs", GetAuditLogsAsync)
+            .WithName("GetAuditLogs")
+            .WithSummary("Query audit trail")
+            .Produces<ApiResponse<IReadOnlyList<AuditLogResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
         return app;
     }
 
@@ -158,6 +167,8 @@ public static class AdminEndpoints
         [FromBody] ReviewVerificationRequest request,
         ClaimsPrincipal user,
         ICreatorService creatorService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -171,6 +182,15 @@ public static class AdminEndpoints
             request,
             cancellationToken
         );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminReviewVerification,
+            entityType: "Creator",
+            entityId: creatorId,
+            details: new { request.Approve, request.RejectionReason },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse<VerificationStatusResponse>.Ok(result));
     }
 
@@ -207,6 +227,8 @@ public static class AdminEndpoints
         [FromBody] ModeratePostRequest request,
         ClaimsPrincipal user,
         IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -220,6 +242,15 @@ public static class AdminEndpoints
             request,
             cancellationToken
         );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminModeratePost,
+            entityType: "Post",
+            entityId: postId,
+            details: new { request.Approve, request.RejectionReason },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse<PostModerationResponse>.Ok(result));
     }
 
@@ -241,11 +272,25 @@ public static class AdminEndpoints
 
     private static async Task<IResult> GetUserAsync(
         Guid userId,
+        ClaimsPrincipal user,
         IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
+        var adminUserId = GetUserId(user);
+        if (adminUserId == null)
+            return Results.Unauthorized();
+
         var result = await adminService.GetUserAsync(userId, cancellationToken);
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminViewUserDetail,
+            targetUserId: userId,
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse<UserDetailResponse>.Ok(result));
     }
 
@@ -254,6 +299,8 @@ public static class AdminEndpoints
         [FromBody] SuspendUserRequest request,
         ClaimsPrincipal user,
         IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -267,6 +314,14 @@ public static class AdminEndpoints
             request,
             cancellationToken
         );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminSuspendUser,
+            targetUserId: userId,
+            details: new { request.Reason },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse<UserSuspensionResponse>.Ok(result));
     }
 
@@ -274,6 +329,8 @@ public static class AdminEndpoints
         Guid userId,
         ClaimsPrincipal user,
         IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
         CancellationToken cancellationToken
     )
     {
@@ -286,6 +343,13 @@ public static class AdminEndpoints
             userId,
             cancellationToken
         );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminUnsuspendUser,
+            targetUserId: userId,
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
         return Results.Ok(ApiResponse<UserSuspensionResponse>.Ok(result));
     }
 
@@ -297,6 +361,24 @@ public static class AdminEndpoints
     {
         var result = await adminService.GetPlatformStatsAsync(cancellationToken);
         return Results.Ok(ApiResponse<PlatformStatsResponse>.Ok(result));
+    }
+
+    // Audit Logs Handler
+    private static async Task<IResult> GetAuditLogsAsync(
+        [FromQuery] Guid? userId,
+        [FromQuery] Guid? targetUserId,
+        [FromQuery] AuditAction? action,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        IAuditService auditService = default!,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var request = new AuditLogQueryRequest(userId, targetUserId, action, from, to, page, pageSize);
+        var (logs, meta) = await auditService.GetAuditLogsAsync(request, cancellationToken);
+        return Results.Ok(ApiResponse<IReadOnlyList<AuditLogResponse>>.Ok(logs, meta));
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)
