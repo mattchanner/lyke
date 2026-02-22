@@ -21,5 +21,6 @@ public record CreatorSearchResult(
     Guid Id,
     string DisplayName,
     bool IsVerified,
+    string? ProfileImageUrl,
     int PostCount
 );

@@ -114,7 +114,8 @@ public static class FeedEndpoints
             queryParams.Category,
             queryParams.RetailerId,
             queryParams.FitTagIds?.Split(',').Select(int.Parse).ToList(),
-            queryParams.SortBy ?? FeedSortBy.Relevance
+            queryParams.SortBy ?? FeedSortBy.Relevance,
+            queryParams.CreatorId
         );
 
         var (posts, meta) = await feedService.GetFeedAsync(
@@ -140,7 +141,8 @@ public static class FeedEndpoints
             queryParams.Category,
             queryParams.RetailerId,
             queryParams.FitTagIds?.Split(',').Select(int.Parse).ToList(),
-            queryParams.SortBy ?? FeedSortBy.Recent
+            queryParams.SortBy ?? FeedSortBy.Recent,
+            queryParams.CreatorId
         );
 
         var (posts, meta) = await feedService.GetExploreFeedAsync(
@@ -315,6 +317,9 @@ public class FeedQueryParams
 
     [FromQuery(Name = "sortBy")]
     public FeedSortBy? SortBy { get; set; }
+
+    [FromQuery(Name = "creatorId")]
+    public Guid? CreatorId { get; set; }
 }
 
 public class SearchQueryParams

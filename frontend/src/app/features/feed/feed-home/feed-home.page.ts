@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -71,6 +71,7 @@ export class FeedHomePage implements OnInit {
   private readonly api = inject(ApiService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly engagementService = inject(PostEngagementService);
+  private readonly route = inject(ActivatedRoute);
   readonly auth = inject(AuthService);
 
   readonly FeedSortBy = FeedSortBy;
@@ -86,6 +87,8 @@ export class FeedHomePage implements OnInit {
   readonly filterCategory = signal<string | null>(null);
   readonly filterRetailerId = signal<string | null>(null);
   readonly filterRetailerName = signal<string | null>(null);
+  readonly filterCreatorId = signal<string | null>(null);
+  readonly filterCreatorName = signal<string | null>(null);
   readonly filterFitTagIds = signal<number[]>([]);
 
   readonly currentFilters = computed<FeedFilters>(() => ({
@@ -98,6 +101,7 @@ export class FeedHomePage implements OnInit {
     let count = 0;
     if (this.filterCategory()) count++;
     if (this.filterRetailerId()) count++;
+    if (this.filterCreatorId()) count++;
     count += this.filterFitTagIds().length;
     return count;
   });
@@ -113,6 +117,17 @@ export class FeedHomePage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.route.queryParams
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((params) => {
+        const creatorId = params['creatorId'] ?? null;
+        if (creatorId !== this.filterCreatorId()) {
+          this.filterCreatorId.set(creatorId);
+          this.filterCreatorName.set(params['creatorName'] ?? null);
+          this.loadFeed(true);
+        }
+      });
+
     this.loadFeed();
 
     this.engagementService.engagementChanged
@@ -158,6 +173,7 @@ export class FeedHomePage implements OnInit {
       sortBy: this.sortBy(),
       category: this.filterCategory() ?? undefined,
       retailerId: this.filterRetailerId() ?? undefined,
+      creatorId: this.filterCreatorId() ?? undefined,
       fitTagIds: this.filterFitTagIds().length > 0 ? this.filterFitTagIds() : undefined,
     }).subscribe({
       next: (response) => {
@@ -233,6 +249,12 @@ export class FeedHomePage implements OnInit {
   removeRetailer(): void {
     this.filterRetailerId.set(null);
     this.filterRetailerName.set(null);
+    this.loadFeed(true);
+  }
+
+  removeCreator(): void {
+    this.filterCreatorId.set(null);
+    this.filterCreatorName.set(null);
     this.loadFeed(true);
   }
 

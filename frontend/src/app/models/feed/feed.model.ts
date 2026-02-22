@@ -154,5 +154,6 @@ export interface CreatorSearchResult {
   id: string;
   displayName: string;
   isVerified: boolean;
+  profileImageUrl: string | null;
   postCount: number;
 }

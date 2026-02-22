@@ -15,16 +15,16 @@
   </ion-toolbar>
   <ion-toolbar>
     <ion-segment [value]="searchType()" (ionChange)="onTypeChange($event)">
-      <ion-segment-button value="0">
+      <ion-segment-button value="All">
         <ion-label>All</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="1">
+      <ion-segment-button value="Posts">
         <ion-label>Posts</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="2">
+      <ion-segment-button value="Products">
         <ion-label>Products</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="3">
+      <ion-segment-button value="Creators">
         <ion-label>Creators</ion-label>
       </ion-segment-button>
     </ion-segment>
@@ -45,6 +45,50 @@
       <p>No results found for "{{ searchQuery }}"</p>
     </div>
   } @else {
+    @if (results()?.creators?.length) {
+      <h3>Creators</h3>
+      <div class="creators-list">
+        @for (creator of results()!.creators; track creator.id) {
+          <ion-item lines="full" button (click)="onCreatorTap(creator)">
+            <ion-avatar slot="start">
+              <img [src]="creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="creator.displayName" />
+            </ion-avatar>
+            <ion-label>
+              <h2>
+                {{ creator.displayName }}
+                @if (creator.isVerified) {
+                  <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+                }
+              </h2>
+              <p>{{ creator.postCount }} {{ creator.postCount === 1 ? 'post' : 'posts' }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      </div>
+    }
+
+    @if (results()?.products?.length) {
+      <h3>Products</h3>
+      <div class="products-list">
+        @for (product of results()!.products; track product.id) {
+          <ion-item lines="full" [routerLink]="['/shop/product', product.id]">
+            <ion-thumbnail slot="start">
+              @if (product.imageUrl) {
+                <img [src]="product.imageUrl" [alt]="product.name" />
+              } @else {
+                <img src="assets/placeholder-product.svg" alt="Product" />
+              }
+            </ion-thumbnail>
+            <ion-label>
+              <h2>{{ product.name }}</h2>
+              <p>{{ product.retailerName }} · {{ product.currency }} {{ product.price | number:'1.2-2' }}</p>
+              <p>{{ product.postCount }} {{ product.postCount === 1 ? 'post' : 'posts' }}</p>
+            </ion-label>
+          </ion-item>
+        }
+      </div>
+    }
+
     @if (results()?.posts?.length) {
       <h3>Posts</h3>
       <div class="results-grid">

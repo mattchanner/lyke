@@ -569,7 +569,9 @@ public class FeedService : IFeedService
                         || (c.Bio != null && c.Bio.ToLower().Contains(searchTerm.ToLower())));
             }
 
-            var creatorIncluded = creatorBaseQuery.Include(c => c.Posts);
+            var creatorIncluded = creatorBaseQuery
+                .Include(c => c.User)
+                .Include(c => c.Posts);
 
             var creatorOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
                 ? creatorIncluded
@@ -587,6 +589,7 @@ public class FeedService : IFeedService
                     c.Id,
                     c.DisplayName,
                     c.IsVerified,
+                    c.User.ProfileImageUrl,
                     c.Posts.Count(p => p.Status == PostStatus.Published)
                 ))
                 .ToList();
@@ -696,6 +699,11 @@ public class FeedService : IFeedService
                     pp.FitTags.Any(ft => request.FitTagIds.Contains(ft.FitTagId))
                 )
             );
+        }
+
+        if (request.CreatorId.HasValue)
+        {
+            query = query.Where(p => p.CreatorId == request.CreatorId.Value);
         }
 
         return query;

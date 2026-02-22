@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -13,17 +14,24 @@ import {
   IonSegment,
   IonSegmentButton,
   IonLabel,
+  IonItem,
+  IonAvatar,
+  IonThumbnail,
+  IonIcon,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { checkmarkCircle } from 'ionicons/icons';
 import { ApiService } from '../../../core';
-import { SearchResponse, SearchType } from '../../../models';
+import { CreatorSearchResult, SearchResponse, SearchType } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 
 @Component({
   selector: 'app-explore',
   standalone: true,
   imports: [
-    CommonModule,
+    DecimalPipe,
     FormsModule,
+    RouterLink,
     IonContent,
     IonHeader,
     IonTitle,
@@ -35,13 +43,23 @@ import { PostCardComponent } from '../../../shared/components/post-card/post-car
     IonSegment,
     IonSegmentButton,
     IonLabel,
+    IonItem,
+    IonAvatar,
+    IonThumbnail,
+    IonIcon,
     PostCardComponent,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './explore.page.html',
   styleUrls: ['./explore.page.scss'],
 })
 export class ExplorePage {
   private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
+
+  constructor() {
+    addIcons({ checkmarkCircle });
+  }
 
   searchQuery = '';
   readonly searchType = signal<SearchType>(SearchType.All);
@@ -63,7 +81,7 @@ export class ExplorePage {
 
     this.api
       .get<SearchResponse>('feed', 'search', {
-        query: this.searchQuery,
+        q: this.searchQuery,
         type: this.searchType(),
         page: 1,
         pageSize: 20,
@@ -76,5 +94,11 @@ export class ExplorePage {
         },
         complete: () => this.isLoading.set(false),
       });
+  }
+
+  onCreatorTap(creator: CreatorSearchResult): void {
+    this.router.navigate(['/feed'], {
+      queryParams: { creatorId: creator.id, creatorName: creator.displayName },
+    });
   }
 }
