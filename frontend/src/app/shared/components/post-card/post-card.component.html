@@ -14,7 +14,7 @@
   </div>
 
   <ion-card-content>
-    <div class="creator-row" (click)="$event.stopPropagation()">
+    <div class="creator-row" (click)="$event.stopPropagation(); $event.preventDefault()">
       <ion-avatar>
         <img
           [src]="post.creator.profileImageUrl || 'assets/default-avatar.svg'"
@@ -56,7 +56,7 @@
       </div>
     }
 
-    <div class="engagement-row" (click)="$event.stopPropagation()">
+    <div class="engagement-row" (click)="$event.stopPropagation(); $event.preventDefault()">
       <div class="engagement-stats">
         <span>
           <ion-icon name="eye-outline"></ion-icon>

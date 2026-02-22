@@ -169,38 +169,14 @@ export class FeedHomePage implements OnInit {
     setTimeout(() => event.target.complete(), 1000);
   }
 
-  onPostLiked(event: { postId: string; liked: boolean }): void {
-    this.posts.update((posts) =>
-      posts.map((p) =>
-        p.id === event.postId
-          ? {
-              ...p,
-              isLiked: event.liked,
-              engagements: {
-                ...p.engagements,
-                likes: p.engagements.likes + (event.liked ? 1 : -1),
-              },
-            }
-          : p
-      )
-    );
+  onPostLiked(_event: { postId: string; liked: boolean }): void {
+    // Post-card already applies the optimistic update via direct mutation,
+    // so no signal update is needed here. Duplicating it would double-count.
   }
 
-  onPostSaved(event: { postId: string; saved: boolean }): void {
-    this.posts.update((posts) =>
-      posts.map((p) =>
-        p.id === event.postId
-          ? {
-              ...p,
-              isSaved: event.saved,
-              engagements: {
-                ...p.engagements,
-                saves: p.engagements.saves + (event.saved ? 1 : -1),
-              },
-            }
-          : p
-      )
-    );
+  onPostSaved(_event: { postId: string; saved: boolean }): void {
+    // Post-card already applies the optimistic update via direct mutation,
+    // so no signal update is needed here. Duplicating it would double-count.
   }
 
   openFilter(): void {
