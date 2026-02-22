@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
@@ -30,7 +31,7 @@ import {
   filterOutline,
   closeCircle,
 } from 'ionicons/icons';
-import { ApiService, AuthService } from '../../../core';
+import { ApiService, AuthService, PostEngagementService } from '../../../core';
 import { FeedPostResponse, FeedSortBy } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 import { SkeletonPostCardComponent } from '../../../shared/components/loading-skeleton';
@@ -68,6 +69,8 @@ import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter
 })
 export class FeedHomePage implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly engagementService = inject(PostEngagementService);
   readonly auth = inject(AuthService);
 
   readonly FeedSortBy = FeedSortBy;
@@ -111,6 +114,34 @@ export class FeedHomePage implements OnInit {
 
   ngOnInit(): void {
     this.loadFeed();
+
+    this.engagementService.engagementChanged
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((change) => {
+        this.posts.update((posts) =>
+          posts.map((p) => {
+            if (p.id !== change.postId) return p;
+            if (change.type === 'like') {
+              return {
+                ...p,
+                isLiked: change.state,
+                engagements: {
+                  ...p.engagements,
+                  likes: p.engagements.likes + (change.state ? 1 : -1),
+                },
+              };
+            }
+            return {
+              ...p,
+              isSaved: change.state,
+              engagements: {
+                ...p.engagements,
+                saves: p.engagements.saves + (change.state ? 1 : -1),
+              },
+            };
+          })
+        );
+      });
   }
 
   loadFeed(refresh = false): void {

@@ -27,7 +27,7 @@ import {
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
-import { ApiService, ToastService } from '../../../core';
+import { ApiService, ToastService, PostEngagementService } from '../../../core';
 import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { PostDetailResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
@@ -64,6 +64,7 @@ export class PostDetailPage implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
+  private readonly engagement = inject(PostEngagementService);
 
   readonly post = signal<PostDetailResponse | null>(null);
   readonly isLoading = signal(false);
@@ -136,6 +137,7 @@ export class PostDetailPage implements OnInit {
               }
             : null
         );
+        this.engagement.notify({ postId: currentPost.id, type: 'like', state: newLikedState });
       },
     });
   }
@@ -165,6 +167,7 @@ export class PostDetailPage implements OnInit {
               }
             : null
         );
+        this.engagement.notify({ postId: currentPost.id, type: 'save', state: newSavedState });
         this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
       },
     });
