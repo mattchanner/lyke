@@ -397,6 +397,13 @@ export const routes: Routes = [
             './features/admin/moderation-queue/moderation-queue.page'
           ).then((m) => m.ModerationQueuePage),
       },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import(
+            './features/admin/admin-analytics/admin-analytics.page'
+          ).then((m) => m.AdminAnalyticsPage),
+      },
     ],
   },
 

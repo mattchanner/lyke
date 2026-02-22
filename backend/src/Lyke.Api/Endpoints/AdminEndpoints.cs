@@ -121,6 +121,14 @@ public static class AdminEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
 
+        group
+            .MapGet("/analytics", GetPlatformAnalyticsAsync)
+            .WithName("GetPlatformAnalytics")
+            .WithSummary("Get platform analytics with daily metrics")
+            .Produces<ApiResponse<AdminAnalyticsResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
         // Content Reports
         group
             .MapGet("/reports", GetContentReportsAsync)
@@ -417,6 +425,18 @@ public static class AdminEndpoints
     {
         var result = await adminService.GetPlatformStatsAsync(cancellationToken);
         return Results.Ok(ApiResponse<PlatformStatsResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> GetPlatformAnalyticsAsync(
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate,
+        IAdminService adminService,
+        CancellationToken cancellationToken
+    )
+    {
+        var request = new AdminAnalyticsRequest(startDate, endDate);
+        var result = await adminService.GetPlatformAnalyticsAsync(request, cancellationToken);
+        return Results.Ok(ApiResponse<AdminAnalyticsResponse>.Ok(result));
     }
 
     // Content Reports Handlers

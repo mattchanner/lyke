@@ -272,3 +272,44 @@ export interface BulkActionError {
   id: string;
   error: string;
 }
+
+// Analytics
+export interface AdminAnalyticsRequest {
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface AdminAnalyticsResponse {
+  summary: AdminAnalyticsSummary;
+  dailyMetrics: AdminDailyMetrics[];
+  topCreators: TopCreatorAnalytics[];
+}
+
+export interface AdminAnalyticsSummary {
+  newUsers: number;
+  postsPublished: number;
+  views: number;
+  likes: number;
+  saves: number;
+  clicks: number;
+}
+
+export interface AdminDailyMetrics {
+  date: string;
+  newUsers: number;
+  postsPublished: number;
+  views: number;
+  likes: number;
+  saves: number;
+  clicks: number;
+}
+
+export interface TopCreatorAnalytics {
+  creatorId: string;
+  displayName: string;
+  isVerified: boolean;
+  totalEngagements: number;
+  views: number;
+  likes: number;
+  clicks: number;
+}

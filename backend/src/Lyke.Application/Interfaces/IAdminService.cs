@@ -78,4 +78,8 @@ public interface IAdminService
     // Platform Stats
     Task<PlatformStatsResponse> GetPlatformStatsAsync(
         CancellationToken cancellationToken = default);
+
+    Task<AdminAnalyticsResponse> GetPlatformAnalyticsAsync(
+        AdminAnalyticsRequest request,
+        CancellationToken cancellationToken = default);
 }

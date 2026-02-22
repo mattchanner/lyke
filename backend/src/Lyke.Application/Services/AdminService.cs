@@ -988,6 +988,100 @@ public class AdminService : IAdminService
         );
     }
 
+    public async Task<AdminAnalyticsResponse> GetPlatformAnalyticsAsync(
+        AdminAnalyticsRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var endDate = request.EndDate?.Date ?? DateTime.UtcNow.Date;
+        var startDate = request.StartDate?.Date ?? endDate.AddDays(-30);
+
+        var startUtc = startDate;
+        var endUtc = endDate.AddDays(1); // inclusive end
+
+        // Load data in range
+        var users = await _dbContext.Set<User>()
+            .Where(u => u.CreatedAt >= startUtc && u.CreatedAt < endUtc)
+            .ToListAsync(cancellationToken);
+
+        var posts = await _dbContext.Set<Post>()
+            .Where(p => p.Status == PostStatus.Published
+                && p.PublishedAt != null
+                && p.PublishedAt >= startUtc
+                && p.PublishedAt < endUtc)
+            .Include(p => p.Creator)
+            .ToListAsync(cancellationToken);
+
+        var engagements = await _dbContext.Set<Engagement>()
+            .Where(e => e.CreatedAt >= startUtc && e.CreatedAt < endUtc)
+            .ToListAsync(cancellationToken);
+
+        var clicks = await _dbContext.Set<ClickEvent>()
+            .Where(c => c.CreatedAt >= startUtc && c.CreatedAt < endUtc)
+            .ToListAsync(cancellationToken);
+
+        // Summary
+        var summary = new AdminAnalyticsSummary(
+            NewUsers: users.Count,
+            PostsPublished: posts.Count,
+            Views: engagements.Count(e => e.Type == EngagementType.View),
+            Likes: engagements.Count(e => e.Type == EngagementType.Like),
+            Saves: engagements.Count(e => e.Type == EngagementType.Save),
+            Clicks: clicks.Count
+        );
+
+        // Daily metrics
+        var totalDays = (int)(endDate - startDate).TotalDays + 1;
+        var dailyMetrics = Enumerable.Range(0, totalDays).Select(offset =>
+        {
+            var day = startDate.AddDays(offset);
+            var nextDay = day.AddDays(1);
+            return new AdminDailyMetrics(
+                Date: day,
+                NewUsers: users.Count(u => u.CreatedAt >= day && u.CreatedAt < nextDay),
+                PostsPublished: posts.Count(p => p.PublishedAt >= day && p.PublishedAt < nextDay),
+                Views: engagements.Count(e => e.Type == EngagementType.View && e.CreatedAt >= day && e.CreatedAt < nextDay),
+                Likes: engagements.Count(e => e.Type == EngagementType.Like && e.CreatedAt >= day && e.CreatedAt < nextDay),
+                Saves: engagements.Count(e => e.Type == EngagementType.Save && e.CreatedAt >= day && e.CreatedAt < nextDay),
+                Clicks: clicks.Count(c => c.CreatedAt >= day && c.CreatedAt < nextDay)
+            );
+        }).ToList();
+
+        // Top 10 creators by total engagements in the period
+        var postsByCreator = posts
+            .Where(p => p.Creator != null)
+            .GroupBy(p => p.CreatorId)
+            .ToList();
+
+        // Get all post IDs to find engagements/clicks for those posts
+        var postIds = posts.Select(p => p.Id).ToHashSet();
+        var postEngagements = engagements.Where(e => postIds.Contains(e.PostId)).ToList();
+        var postClicks = clicks.Where(c => postIds.Contains(c.PostId)).ToList();
+
+        var topCreators = postsByCreator.Select(g =>
+        {
+            var creator = g.First().Creator!;
+            var creatorPostIds = g.Select(p => p.Id).ToHashSet();
+            var views = postEngagements.Count(e => e.Type == EngagementType.View && creatorPostIds.Contains(e.PostId));
+            var likes = postEngagements.Count(e => e.Type == EngagementType.Like && creatorPostIds.Contains(e.PostId));
+            var creatorClicks = postClicks.Count(c => creatorPostIds.Contains(c.PostId));
+            return new TopCreatorAnalytics(
+                CreatorId: creator.Id,
+                DisplayName: creator.DisplayName,
+                IsVerified: creator.VerificationStatus == VerificationStatus.Approved,
+                TotalEngagements: views + likes + creatorClicks,
+                Views: views,
+                Likes: likes,
+                Clicks: creatorClicks
+            );
+        })
+        .OrderByDescending(c => c.TotalEngagements)
+        .Take(10)
+        .ToList();
+
+        return new AdminAnalyticsResponse(summary, dailyMetrics, topCreators);
+    }
+
     #endregion
 
     #region Private Methods

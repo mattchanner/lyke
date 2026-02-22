@@ -21,6 +21,8 @@ import {
   BulkModeratePostsRequest,
   BulkSuspendUsersRequest,
   BulkActionResult,
+  AdminAnalyticsRequest,
+  AdminAnalyticsResponse,
   PostStatus,
   VerificationStatus,
 } from '../../models';
@@ -50,6 +52,21 @@ export class AdminService {
       map((r) => (r.success ? r.data ?? null : null)),
       catchError(() => of(null))
     );
+  }
+
+  // Platform analytics
+  getPlatformAnalytics(
+    request?: AdminAnalyticsRequest
+  ): Observable<AdminAnalyticsResponse | null> {
+    const params: Record<string, unknown> = {};
+    if (request?.startDate) params['startDate'] = request.startDate;
+    if (request?.endDate) params['endDate'] = request.endDate;
+    return this.api
+      .get<AdminAnalyticsResponse>(this.resource, 'analytics', params)
+      .pipe(
+        map((r) => (r.success ? r.data ?? null : null)),
+        catchError(() => of(null))
+      );
   }
 
   // Post moderation

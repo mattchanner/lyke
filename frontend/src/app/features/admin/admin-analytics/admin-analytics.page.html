@@ -1,0 +1,168 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/admin"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Platform Analytics</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <!-- Date Range Selector -->
+  <div class="date-range-chips">
+    <ion-chip
+      [color]="dateRange() === '7d' ? 'primary' : 'medium'"
+      (click)="setDateRange('7d')"
+    >
+      <ion-label>7 Days</ion-label>
+    </ion-chip>
+    <ion-chip
+      [color]="dateRange() === '30d' ? 'primary' : 'medium'"
+      (click)="setDateRange('30d')"
+    >
+      <ion-label>30 Days</ion-label>
+    </ion-chip>
+    <ion-chip
+      [color]="dateRange() === '90d' ? 'primary' : 'medium'"
+      (click)="setDateRange('90d')"
+    >
+      <ion-label>90 Days</ion-label>
+    </ion-chip>
+  </div>
+
+  @if (isLoading() && !analytics()) {
+    <!-- Skeleton -->
+    <div class="stats-grid">
+      @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+        <ion-card class="stat-card">
+          <ion-card-content>
+            <ion-skeleton-text [animated]="true" style="width: 50%; height: 24px"></ion-skeleton-text>
+            <ion-skeleton-text [animated]="true" style="width: 70%; height: 12px; margin-top: 4px"></ion-skeleton-text>
+          </ion-card-content>
+        </ion-card>
+      }
+    </div>
+  } @else if (analytics(); as a) {
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="people-outline" color="success"></ion-icon>
+          <div class="stat-value">{{ a.summary.newUsers | number }}</div>
+          <div class="stat-label">New Users</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="images-outline" color="tertiary"></ion-icon>
+          <div class="stat-value">{{ a.summary.postsPublished | number }}</div>
+          <div class="stat-label">Posts</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="eye-outline" color="primary"></ion-icon>
+          <div class="stat-value">{{ a.summary.views | number }}</div>
+          <div class="stat-label">Views</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="heart-outline" color="danger"></ion-icon>
+          <div class="stat-value">{{ a.summary.likes | number }}</div>
+          <div class="stat-label">Likes</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="bookmark-outline" color="medium"></ion-icon>
+          <div class="stat-value">{{ a.summary.saves | number }}</div>
+          <div class="stat-label">Saves</div>
+        </ion-card-content>
+      </ion-card>
+      <ion-card class="stat-card">
+        <ion-card-content>
+          <ion-icon name="hand-left-outline" color="warning"></ion-icon>
+          <div class="stat-value">{{ a.summary.clicks | number }}</div>
+          <div class="stat-label">Clicks</div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+
+    <!-- Daily Metrics Chart -->
+    @if (a.dailyMetrics.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="trending-up-outline"></ion-icon>
+            Daily Trend
+          </ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="metric-toggle">
+            <ion-segment [value]="chartMetric()" (ionChange)="setChartMetric($any($event.detail.value))">
+              <ion-segment-button value="newUsers">
+                <ion-label>Users</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="postsPublished">
+                <ion-label>Posts</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="views">
+                <ion-label>Views</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="likes">
+                <ion-label>Likes</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="clicks">
+                <ion-label>Clicks</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+          <div class="chart-wrapper">
+            <canvas #chartCanvas></canvas>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Top Creators -->
+    @if (a.topCreators.length > 0) {
+      <ion-card>
+        <ion-card-header>
+          <ion-card-title>Top Creators</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="top-creators">
+          @for (creator of a.topCreators; track creator.creatorId; let i = $index) {
+            <div class="top-creator-row">
+              <span class="rank">#{{ i + 1 }}</span>
+              <div class="top-creator-info">
+                <div class="top-creator-name">
+                  {{ creator.displayName }}
+                  @if (creator.isVerified) {
+                    <ion-icon name="checkmark-circle-outline" color="primary" class="verified-badge"></ion-icon>
+                  }
+                </div>
+                <div class="top-creator-metrics">
+                  <span><ion-icon name="eye-outline"></ion-icon> {{ creator.views | number }}</span>
+                  <span><ion-icon name="heart-outline"></ion-icon> {{ creator.likes | number }}</span>
+                  <span><ion-icon name="hand-left-outline"></ion-icon> {{ creator.clicks | number }}</span>
+                </div>
+              </div>
+              <ion-badge color="medium">{{ creator.totalEngagements | number }}</ion-badge>
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+  } @else {
+    <div class="empty-state">
+      <ion-icon name="trending-up-outline" class="empty-icon"></ion-icon>
+      <h3>No analytics data yet</h3>
+      <p>Platform analytics will appear here as users engage with content.</p>
+    </div>
+  }
+</ion-content>
