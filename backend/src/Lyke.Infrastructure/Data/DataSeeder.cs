@@ -732,7 +732,7 @@ public static class DataSeeder
                     "Puffer jacket over workout gear — instant outfit upgrade. This puffer fits broad shoulders great",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(3),
             },
@@ -745,7 +745,7 @@ public static class DataSeeder
                     "Linen shorts and a cropped cardigan for warm weather workouts and coffee runs",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(7),
             },
@@ -759,7 +759,7 @@ public static class DataSeeder
                     "Yes, short girls CAN wear maxi dresses! This wrap style doesn't drown me at 5'2\"",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1502716119720-b23a1e3f7f11?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(2),
             },
@@ -772,7 +772,7 @@ public static class DataSeeder
                     "Cropped cardigan is a petite girl's best friend — no awkward length issues!",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(4),
             },
@@ -785,7 +785,7 @@ public static class DataSeeder
                     "Pleated skirts hit at the perfect length on petite frames. Paired with a bodysuit underneath",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0aaef?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(6),
             },
@@ -799,7 +799,7 @@ public static class DataSeeder
                     "Emerald green skirt with a mesh top — turning heads at every party this season",
                 MediaType = MediaType.Image,
                 MediaUrls =
-                    "[\"https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=600&fit=crop\",\"https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&h=600&fit=crop\"]",
+                    "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop\"]",
                 Status = PostStatus.Published,
                 PublishedAt = baseDate.AddDays(3),
             },
