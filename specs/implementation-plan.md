@@ -52,7 +52,7 @@
 | Frontend Profile Module | ✅ Complete (ProfileView, ProfileEdit, BodyProfileEdit) |
 | Frontend Creator Module | ✅ Complete (8 pages: Dashboard, Posts, PostCreate, PostEdit, Analytics, Earnings, Verification, Register) |
 | Frontend Settings | ✅ Complete (Settings hub, Privacy, DeleteAccount) |
-| Frontend Admin Module | ✅ Complete (5 pages: Dashboard, PostModeration, UserManagement, UserDetail, VerificationReview) |
+| Frontend Admin Module | ✅ Complete (7 pages: Dashboard, PostModeration, UserManagement, UserDetail, VerificationReview, ContentReports, ModerationQueue) |
 | Frontend Commerce Pages | ✅ Complete (ProductDetail, ProductSearch, RetailerList, RetailerStorefront, ProductGridCard) |
 | Frontend Social Login | ⏸️ On Hold (backend + frontend implemented, Google GIS web flow ready, disabled pending OAuth credential setup) |
 | Frontend Deep Linking | ✅ Complete (DeepLinkService with universal link handling) |
@@ -637,17 +637,20 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
   - Bulk suspend users - max 100 per request
 
 ### 9.3 Frontend - Admin Module
-- [x] Create AdminService (7 methods: pending posts, moderate post, users, user detail, suspend/unsuspend, verifications, stats)
-- [x] Create admin dashboard (platform stats cards, quick-link navigation, profile nav)
-- [x] Build moderation queue interface
-  - Post list with status indicators and segment tabs
-  - Approve/reject with feedback input
-  - Post detail preview
-- [x] Create user management interface (user list, search, status filtering)
+- [x] Create AdminService (17 methods: pending posts, moderate post, users, user detail, suspend/unsuspend, verifications, stats, content reports, moderation queue, bulk moderate, bulk suspend)
+- [x] Create admin dashboard (platform stats cards, flagged/reports badges, quick-link navigation with 5 sections, profile nav)
+- [x] Build post moderation interface
+  - Post list with 6 status segment tabs (All, Pending, Published, Rejected, Flagged, Removed)
+  - Approve/reject with feedback input (for PendingReview and Flagged posts)
+  - Post detail preview with expandable cards
+  - Bulk actions (Approve, Flag, Reject, Remove) with selection mode
+- [x] Create user management interface (user list, search, status filtering, bulk suspend with confirmation)
 - [x] Create user detail page (profile info, suspension controls, activity)
 - [x] Create verification review page (verification queue, approve/reject with notes)
+- [x] Create content reports page (segment tabs by status, reason filter chips, expandable detail cards, dismiss/take-action with post moderation options)
+- [x] Create moderation queue page (priority-sorted list, color-coded priority scores, flag indicators, report count badges, approve/reject actions)
+- [x] Update sidebar navigation with Content Reports and Moderation Queue links
 - [ ] Build platform analytics dashboard (charts and trends)
-- [ ] Create content flagging review interface
 
 ---
 
@@ -910,7 +913,7 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
       /settings        - Settings, Privacy, DeleteAccount
       /creator         - Dashboard, Posts, PostCreate, PostEdit, Analytics, Earnings, Verification, Register
       /commerce        - ProductDetail, ProductSearch, RetailerList, RetailerStorefront, ProductGridCard
-      /admin           - AdminDashboard, PostModeration, UserManagement, UserDetail, VerificationReview
+      /admin           - AdminDashboard, PostModeration, UserManagement, UserDetail, VerificationReview, ContentReports, ModerationQueue
       /retailer        - RetailerDashboard, RetailerProfile, Products, ProductEdit, Campaigns, CampaignCreate, RetailerAnalytics, Insights, Register
     /models
       /enums           - All 11 enums
@@ -967,7 +970,7 @@ ANALYTICS_KEY=<key>
 | Phase 6: Commerce | 18 | 18 | Critical | 100% |
 | Phase 7: Creator | 22 | 22 | High | 100% |
 | Phase 8: Retailer Portal | 22 | 22 | High | 100% |
-| Phase 9: Admin | 19 | 18 | High | 95% (analytics dashboard remaining) |
+| Phase 9: Admin | 22 | 21 | High | 95% (analytics dashboard remaining) |
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
 | Phase 11: Privacy | 12 | 11 | Critical | ~95% (cookie consent deferred — mobile app) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
@@ -975,7 +978,7 @@ ANALYTICS_KEY=<key>
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~240 actionable tasks (~206 completed, ~86% overall)**
+**Total: ~243 actionable tasks (~212 completed, ~87% overall)**
 
 ---
 
