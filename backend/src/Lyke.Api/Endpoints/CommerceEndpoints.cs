@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Commerce;
+using Lyke.Application.DTOs.Feed;
 using Lyke.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,6 +40,14 @@ public static class CommerceEndpoints
             .WithName("GetProduct")
             .WithSummary("Get product details by ID")
             .Produces<ApiResponse<ProductResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .AllowAnonymous();
+
+        group
+            .MapGet("/{id:guid}/posts", GetProductPostsAsync)
+            .WithName("GetProductPosts")
+            .WithSummary("Get published posts linked to a product")
+            .Produces<ApiResponse<IReadOnlyList<FeedPostResponse>>>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status404NotFound)
             .AllowAnonymous();
 
@@ -109,6 +118,24 @@ public static class CommerceEndpoints
     {
         var product = await commerceService.GetProductAsync(id, cancellationToken);
         return Results.Ok(ApiResponse<ProductResponse>.Ok(product));
+    }
+
+    private static async Task<IResult> GetProductPostsAsync(
+        Guid id,
+        [FromQuery] int? limit,
+        ClaimsPrincipal user,
+        ICommerceService commerceService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        var posts = await commerceService.GetProductPostsAsync(
+            id,
+            userId,
+            limit ?? 10,
+            cancellationToken
+        );
+        return Results.Ok(ApiResponse<IReadOnlyList<FeedPostResponse>>.Ok(posts));
     }
 
     private static async Task<IResult> SearchProductsAsync(

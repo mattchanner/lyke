@@ -19,7 +19,7 @@ import { addIcons } from 'ionicons';
 import { shareSocialOutline, cartOutline } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
 import { CommerceService } from '../../../core/services/commerce.service';
-import { ProductResponse, FeedPostResponse, SearchResponse, MediaType } from '../../../models';
+import { ProductResponse, FeedPostResponse, MediaType } from '../../../models';
 import {
   MediaCarouselComponent,
   MediaItem,
@@ -87,23 +87,20 @@ export class ProductDetailPage implements OnInit {
       next: (product) => {
         if (product) {
           this.product.set(product);
-          this.loadRelatedPosts(product.name);
+          this.loadRelatedPosts(product.id);
         }
       },
       complete: () => this.isLoading.set(false),
     });
   }
 
-  private loadRelatedPosts(productName: string): void {
+  private loadRelatedPosts(productId: string): void {
     this.api
-      .get<SearchResponse>('feed', 'search', {
-        q: productName,
-        pageSize: 5,
-      })
+      .get<FeedPostResponse[]>('commerce', `products/${productId}/posts`)
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
-            this.relatedPosts.set(response.data.posts);
+            this.relatedPosts.set(response.data);
           }
         },
       });

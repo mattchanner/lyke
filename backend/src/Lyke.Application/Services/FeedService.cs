@@ -523,7 +523,7 @@ public class FeedService : IFeedService
 
             var productIncluded = productBaseQuery
                 .Include(p => p.Retailer)
-                .Include(p => p.PostProducts);
+                .Include(p => p.PostProducts.Where(pp => pp.Post.Status == PostStatus.Published));
 
             var productOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
                 ? productIncluded

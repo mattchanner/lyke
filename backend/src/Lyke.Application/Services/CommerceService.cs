@@ -4,6 +4,8 @@ using System.Text.Json;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Commerce;
+using Lyke.Application.DTOs.Feed;
+using Lyke.Application.DTOs.Profile;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -328,6 +330,51 @@ public class CommerceService : ICommerceService
         return (data, meta);
     }
 
+    public async Task<IReadOnlyList<FeedPostResponse>> GetProductPostsAsync(
+        Guid productId,
+        Guid? userId,
+        int limit = 10,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var product = await _dbContext
+            .Set<Product>()
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+
+        if (product == null)
+        {
+            throw new NotFoundException(nameof(Product), productId);
+        }
+
+        var posts = await _dbContext
+            .Set<Post>()
+            .Where(p =>
+                p.Status == PostStatus.Published
+                && p.PostProducts.Any(pp => pp.ProductId == productId)
+            )
+            .Include(p => p.Creator)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.BodyType)
+            .Include(p => p.PostProducts)
+            .ThenInclude(pp => pp.Product)
+            .ThenInclude(prod => prod.Retailer)
+            .Include(p => p.PostProducts)
+            .ThenInclude(pp => pp.FitTags)
+            .ThenInclude(pft => pft.FitTag)
+            .Include(p => p.Engagements)
+            .OrderByDescending(p => p.PublishedAt)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+
+        var postIds = posts.Select(p => p.Id).ToList();
+        var userEngagements = userId.HasValue
+            ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
+            : new Dictionary<Guid, HashSet<EngagementType>>();
+
+        return posts.Select(p => MapToFeedPostResponse(p, userEngagements)).ToList();
+    }
+
     public async Task<bool> ProcessConversionAsync(
         Guid retailerId,
         ConversionWebhookRequest request,
@@ -506,6 +553,126 @@ public class CommerceService : ICommerceService
             product.IsActive,
             product.PostProducts.Count
         );
+    }
+
+    private async Task<Dictionary<Guid, HashSet<EngagementType>>> GetUserEngagementsAsync(
+        Guid userId,
+        IEnumerable<Guid> postIds,
+        CancellationToken cancellationToken
+    )
+    {
+        var engagements = await _dbContext
+            .Set<Engagement>()
+            .Where(e => e.UserId == userId && postIds.Contains(e.PostId))
+            .ToListAsync(cancellationToken);
+
+        return engagements
+            .GroupBy(e => e.PostId)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.Type).ToHashSet());
+    }
+
+    private static FeedPostResponse MapToFeedPostResponse(
+        Post post,
+        Dictionary<Guid, HashSet<EngagementType>> userEngagements
+    )
+    {
+        var engagementCounts = new EngagementCountsResponse(
+            post.Engagements.Count(e => e.Type == EngagementType.View),
+            post.Engagements.Count(e => e.Type == EngagementType.Like),
+            post.Engagements.Count(e => e.Type == EngagementType.Save),
+            post.Engagements.Count(e => e.Type == EngagementType.Share)
+        );
+
+        var userPostEngagements = userEngagements.GetValueOrDefault(
+            post.Id,
+            new HashSet<EngagementType>()
+        );
+
+        var creatorBodyProfile = post.Creator.User.BodyProfile;
+        AnonymizedBodyProfileResponse? anonymizedProfile = null;
+        if (creatorBodyProfile != null)
+        {
+            anonymizedProfile = new AnonymizedBodyProfileResponse(
+                GetHeightRange(creatorBodyProfile.HeightCm),
+                GetWeightRange(creatorBodyProfile.WeightKg),
+                creatorBodyProfile.BodyType.Name,
+                creatorBodyProfile.FitPreference
+            );
+        }
+
+        var creator = new CreatorSummaryResponse(
+            post.Creator.Id,
+            post.Creator.DisplayName,
+            post.Creator.IsVerified,
+            anonymizedProfile,
+            post.Creator.User.ProfileImageUrl
+        );
+
+        var products = post
+            .PostProducts.Select(pp => new PostProductSummaryResponse(
+                pp.Id,
+                pp.ProductId,
+                pp.Product.Name,
+                ParseMediaUrls(pp.Product.ImageUrls).FirstOrDefault(),
+                pp.Product.Price,
+                pp.Product.Currency,
+                pp.SizeWorn,
+                pp.FitRating,
+                pp.FitNotes,
+                pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
+            ))
+            .ToList();
+
+        return new FeedPostResponse(
+            post.Id,
+            post.Title,
+            post.Description,
+            post.MediaType,
+            ParseMediaUrls(post.MediaUrls),
+            ParseMediaUrls(post.ThumbnailUrls),
+            creator,
+            products,
+            engagementCounts,
+            0,
+            userPostEngagements.Contains(EngagementType.Like),
+            userPostEngagements.Contains(EngagementType.Save),
+            post.PublishedAt ?? post.CreatedAt
+        );
+    }
+
+    private static string GetHeightRange(int heightCm)
+    {
+        return heightCm switch
+        {
+            < 155 => "Under 155cm (5'1\")",
+            < 160 => "155-159cm (5'1\"-5'2\")",
+            < 165 => "160-164cm (5'3\"-5'4\")",
+            < 170 => "165-169cm (5'5\"-5'6\")",
+            < 175 => "170-174cm (5'7\"-5'8\")",
+            < 180 => "175-179cm (5'9\"-5'10\")",
+            < 185 => "180-184cm (5'11\"-6'0\")",
+            < 190 => "185-189cm (6'1\"-6'2\")",
+            _ => "190cm+ (6'3\"+)",
+        };
+    }
+
+    private static string GetWeightRange(decimal weightKg)
+    {
+        return weightKg switch
+        {
+            < 50 => "Under 50kg (110lbs)",
+            < 55 => "50-54kg (110-121lbs)",
+            < 60 => "55-59kg (121-130lbs)",
+            < 65 => "60-64kg (132-143lbs)",
+            < 70 => "65-69kg (143-152lbs)",
+            < 75 => "70-74kg (154-163lbs)",
+            < 80 => "75-79kg (165-174lbs)",
+            < 85 => "80-84kg (176-185lbs)",
+            < 90 => "85-89kg (187-196lbs)",
+            < 95 => "90-94kg (198-207lbs)",
+            < 100 => "95-99kg (209-218lbs)",
+            _ => "100kg+ (220lbs+)",
+        };
     }
 
     private static List<string> ParseMediaUrls(string? json)

@@ -1,5 +1,6 @@
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Commerce;
+using Lyke.Application.DTOs.Feed;
 
 namespace Lyke.Application.Interfaces;
 
@@ -43,6 +44,15 @@ public interface ICommerceService
         int page,
         int pageSize,
         string? category,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Get published posts linked to a product via PostProduct records
+    /// </summary>
+    Task<IReadOnlyList<FeedPostResponse>> GetProductPostsAsync(
+        Guid productId,
+        Guid? userId,
+        int limit = 10,
         CancellationToken cancellationToken = default);
 
     /// <summary>
