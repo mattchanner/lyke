@@ -34,6 +34,7 @@ import {
   settingsOutline,
   flagOutline,
   warningOutline,
+  trendingUpOutline
 } from 'ionicons/icons';
 import { AppInsightsService, AuthService, DeepLinkService } from './core';
 
@@ -84,6 +85,7 @@ export class AppComponent {
       settingsOutline,
       flagOutline,
       warningOutline,
+      trendingUpOutline
     });
   }
 }
