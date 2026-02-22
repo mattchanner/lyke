@@ -154,6 +154,18 @@
                   <ion-label>Verifications</ion-label>
                 </ion-item>
               </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin/reports" routerLinkActive="selected" button>
+                  <ion-icon name="flag-outline" slot="start"></ion-icon>
+                  <ion-label>Content Reports</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
+              <ion-menu-toggle auto-hide="false">
+                <ion-item routerLink="/admin/moderation-queue" routerLinkActive="selected" button>
+                  <ion-icon name="warning-outline" slot="start"></ion-icon>
+                  <ion-label>Moderation Queue</ion-label>
+                </ion-item>
+              </ion-menu-toggle>
             </ion-list>
           }
 

@@ -32,6 +32,8 @@ import {
   peopleOutline,
   personCircleOutline,
   settingsOutline,
+  flagOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { AppInsightsService, AuthService, DeepLinkService } from './core';
 
@@ -80,6 +82,8 @@ export class AppComponent {
       peopleOutline,
       personCircleOutline,
       settingsOutline,
+      flagOutline,
+      warningOutline,
     });
   }
 }
