@@ -200,7 +200,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Seed development data
-if (app.Environment.IsDevelopment())
+if (true || app.Environment.IsDevelopment())
 {
     await DataSeeder.SeedAsync(app.Services);
 }
