@@ -151,7 +151,7 @@ public class CommerceService : ICommerceService
         var product = await _dbContext
             .Set<Product>()
             .Include(p => p.Retailer)
-            .Include(p => p.PostProducts)
+            .Include(p => p.PostProducts.Where(pp => pp.Post.Status == PostStatus.Published))
             .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
 
         if (product == null)
@@ -175,7 +175,7 @@ public class CommerceService : ICommerceService
         var query = _dbContext
             .Set<Product>()
             .Include(p => p.Retailer)
-            .Include(p => p.PostProducts)
+            .Include(p => p.PostProducts.Where(pp => pp.Post.Status == PostStatus.Published))
             .Where(p => p.IsActive);
 
         // Apply search filter using full-text search (PostgreSQL) or LIKE fallback
@@ -298,7 +298,7 @@ public class CommerceService : ICommerceService
         var query = _dbContext
             .Set<Product>()
             .Include(p => p.Retailer)
-            .Include(p => p.PostProducts)
+            .Include(p => p.PostProducts.Where(pp => pp.Post.Status == PostStatus.Published))
             .Where(p => p.RetailerId == retailerId && p.IsActive);
 
         if (!string.IsNullOrEmpty(category))

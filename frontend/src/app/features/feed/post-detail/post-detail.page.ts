@@ -105,54 +105,59 @@ export class PostDetailPage implements OnInit {
     const currentPost = this.post();
     if (!currentPost) return;
 
-    this.api
-      .post(`posts`, `${currentPost.id}/engage`, {
-        type: EngagementType.Like,
-      })
-      .subscribe({
-        next: () => {
-          this.post.update((p) =>
-            p
-              ? {
-                  ...p,
-                  isLiked: !p.isLiked,
-                  engagements: {
-                    ...p.engagements,
-                    likes: p.engagements.likes + (p.isLiked ? -1 : 1),
-                  },
-                }
-              : null
-          );
-        },
-      });
+    const newLikedState = !currentPost.isLiked;
+    const body = { type: EngagementType.Like };
+
+    const request$ = newLikedState
+      ? this.api.post(`posts`, `${currentPost.id}/engage`, body)
+      : this.api.delete(`posts`, `${currentPost.id}/engage`, body);
+
+    request$.subscribe({
+      next: () => {
+        this.post.update((p) =>
+          p
+            ? {
+                ...p,
+                isLiked: newLikedState,
+                engagements: {
+                  ...p.engagements,
+                  likes: p.engagements.likes + (newLikedState ? 1 : -1),
+                },
+              }
+            : null
+        );
+      },
+    });
   }
 
   toggleSave(): void {
     const currentPost = this.post();
     if (!currentPost) return;
 
-    this.api
-      .post(`posts`, `${currentPost.id}/engage`, {
-        type: EngagementType.Save,
-      })
-      .subscribe({
-        next: () => {
-          const newSaved = !currentPost.isSaved;
-          this.post.update((p) =>
-            p
-              ? {
-                  ...p,
-                  isSaved: newSaved,
-                  engagements: {
-                    ...p.engagements,
-                    saves: p.engagements.saves + (newSaved ? 1 : -1),
-                  },
-                }
-              : null
-          );
-          this.toast.success(newSaved ? 'Saved!' : 'Removed from saved');
-        },
-      });
+    const newSavedState = !currentPost.isSaved;
+    const body = { type: EngagementType.Save };
+
+    const request$ = newSavedState
+      ? this.api.post(`posts`, `${currentPost.id}/engage`, body)
+      : this.api.delete(`posts`, `${currentPost.id}/engage`, body);
+
+    request$.subscribe({
+      next: () => {
+        this.post.update((p) =>
+          p
+            ? {
+                ...p,
+                isSaved: newSavedState,
+                engagements: {
+                  ...p.engagements,
+                  saves: p.engagements.saves + (newSavedState ? 1 : -1),
+                },
+              }
+            : null
+        );
+        this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
+      },
+    });
   }
 
   share(): void {
