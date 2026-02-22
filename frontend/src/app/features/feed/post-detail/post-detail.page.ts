@@ -213,38 +213,61 @@ export class PostDetailPage implements OnInit {
       [ReportReason.Other]: 'Other',
     };
 
-    const alert = await this.alertCtrl.create({
+    const reasonAlert = await this.alertCtrl.create({
       header: 'Report Post',
       message: 'Why are you reporting this post?',
-      inputs: [
-        ...Object.entries(reasonLabels).map(([value, label], i) => ({
-          name: 'reason',
-          type: 'radio' as const,
-          label,
-          value,
-          checked: i === 0,
-        })),
-        {
-          name: 'additionalDetails',
-          type: 'textarea' as const,
-          placeholder: 'Additional details (optional)...',
-        },
-      ],
+      inputs: Object.entries(reasonLabels).map(([value, label], i) => ({
+        name: 'reason',
+        type: 'radio' as const,
+        label,
+        value,
+        checked: i === 0,
+      })),
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
-          text: 'Submit',
-          handler: (data) => {
-            const body: CreateReportRequest = {
-              reason: data.reason || data,
-              additionalDetails: data.additionalDetails?.trim() || undefined,
-            };
-            this.submitReport(postId, body);
+          text: 'Next',
+          handler: (reason: string) => {
+            if (!reason) return false;
+            this.showDetailsDialog(postId, reason as ReportReason);
+            return true;
           },
         },
       ],
     });
-    await alert.present();
+    await reasonAlert.present();
+  }
+
+  private async showDetailsDialog(postId: string, reason: ReportReason): Promise<void> {
+    const detailsAlert = await this.alertCtrl.create({
+      header: 'Additional Details',
+      message: 'Any additional details? (optional)',
+      inputs: [
+        {
+          name: 'additionalDetails',
+          type: 'textarea' as const,
+          placeholder: 'Describe the issue...',
+        },
+      ],
+      buttons: [
+        {
+          text: 'Skip',
+          handler: () => {
+            this.submitReport(postId, { reason });
+          },
+        },
+        {
+          text: 'Submit',
+          handler: (data) => {
+            this.submitReport(postId, {
+              reason,
+              additionalDetails: data.additionalDetails?.trim() || undefined,
+            });
+          },
+        },
+      ],
+    });
+    await detailsAlert.present();
   }
 
   private submitReport(postId: string, body: CreateReportRequest): void {
