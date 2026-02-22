@@ -54,6 +54,7 @@ public static class DependencyInjection
 
         // Background services
         services.AddHostedService<DataRetentionService>();
+        services.AddHostedService<MetricsAggregationService>();
 
         // Storage
         services.AddStorage(configuration);

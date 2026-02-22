@@ -21,17 +21,20 @@ public class CommerceService : ICommerceService
 {
     private readonly DbContext _dbContext;
     private readonly CommerceSettings _settings;
+    private readonly IEventTrackingService _eventTracking;
     private readonly ILogger<CommerceService> _logger;
     private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     public CommerceService(
         DbContext dbContext,
         IOptions<CommerceSettings> settings,
+        IEventTrackingService eventTracking,
         ILogger<CommerceService> logger
     )
     {
         _dbContext = dbContext;
         _settings = settings.Value;
+        _eventTracking = eventTracking;
         _logger = logger;
     }
 
@@ -136,6 +139,19 @@ public class CommerceService : ICommerceService
             request.PostProductId,
             userId
         );
+
+        _ = _eventTracking.TrackAsync(
+            AnalyticsEventType.ProductClick,
+            userId,
+            request.PostProductId,
+            nameof(PostProduct),
+            new Dictionary<string, string>
+            {
+                ["postId"] = request.PostId.ToString(),
+                ["source"] = request.Source ?? ""
+            },
+            request.SessionId,
+            cancellationToken);
 
         return new TrackClickResponse(
             clickId,
@@ -450,6 +466,19 @@ public class CommerceService : ICommerceService
             creatorEarning.Amount,
             request.Currency
         );
+
+        _ = _eventTracking.TrackAsync(
+            AnalyticsEventType.ProductConvert,
+            clickEvent.UserId,
+            clickId,
+            nameof(ClickEvent),
+            new Dictionary<string, string>
+            {
+                ["orderId"] = request.OrderId,
+                ["amount"] = request.CommissionAmount.ToString("F2"),
+                ["currency"] = request.Currency
+            },
+            cancellationToken: cancellationToken);
 
         return true;
     }

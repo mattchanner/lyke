@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs.Commerce;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -36,6 +37,7 @@ public class CommerceServiceTests : IDisposable
         _sut = new CommerceService(
             _context,
             _commerceSettings,
+            new Mock<IEventTrackingService>().Object,
             _loggerMock.Object);
     }
 

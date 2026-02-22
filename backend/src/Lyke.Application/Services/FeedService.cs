@@ -18,6 +18,7 @@ public class FeedService : IFeedService
     private readonly DbContext _dbContext;
     private readonly MatchingSettings _matchingSettings;
     private readonly ModerationSettings _moderationSettings;
+    private readonly IEventTrackingService _eventTracking;
     private readonly ILogger<FeedService> _logger;
     private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
@@ -25,12 +26,14 @@ public class FeedService : IFeedService
         DbContext dbContext,
         IOptions<MatchingSettings> matchingSettings,
         IOptions<ModerationSettings> moderationSettings,
+        IEventTrackingService eventTracking,
         ILogger<FeedService> logger
     )
     {
         _dbContext = dbContext;
         _matchingSettings = matchingSettings.Value;
         _moderationSettings = moderationSettings.Value;
+        _eventTracking = eventTracking;
         _logger = logger;
     }
 
@@ -336,6 +339,16 @@ public class FeedService : IFeedService
         await engagements.AddAsync(engagement, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        var analyticsType = request.Type switch
+        {
+            EngagementType.View => AnalyticsEventType.PostView,
+            EngagementType.Like => AnalyticsEventType.PostLike,
+            EngagementType.Save => AnalyticsEventType.PostSave,
+            EngagementType.Share => AnalyticsEventType.PostShare,
+            _ => AnalyticsEventType.PostView
+        };
+        _ = _eventTracking.TrackAsync(analyticsType, userId, postId, nameof(Post), cancellationToken: cancellationToken);
+
         _logger.LogInformation(
             "User {UserId} engaged with post {PostId}: {Type}",
             userId,
@@ -594,6 +607,17 @@ public class FeedService : IFeedService
                 ))
                 .ToList();
         }
+
+        _ = _eventTracking.TrackAsync(
+            AnalyticsEventType.SearchExecute,
+            userId,
+            properties: new Dictionary<string, string>
+            {
+                ["query"] = request.Query ?? "",
+                ["type"] = request.Type?.ToString() ?? "All",
+                ["resultCount"] = (posts.Count + products.Count + creators.Count).ToString()
+            },
+            cancellationToken: cancellationToken);
 
         return new SearchResponse(
             posts,

@@ -23,7 +23,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, checkmarkOutline } from 'ionicons/icons';
-import { ApiService, ToastService } from '../../core';
+import { ApiService, ToastService, AnalyticsService } from '../../core';
 import {
   BodyTypeResponse,
   CreateBodyProfileRequest,
@@ -60,6 +60,7 @@ import {
 export class OnboardingPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
@@ -203,6 +204,10 @@ export class OnboardingPage implements OnInit {
     this.api.post('profile', 'body', request).subscribe({
       next: (response) => {
         if (response.success) {
+          this.analytics.track('profile.complete', {
+            bodyTypeId: String(this.selectedBodyTypeId()),
+            fitPreference: this.selectedFitPreference() ?? '',
+          });
           this.toast.success('Profile complete!');
           this.router.navigate(['/feed']);
         }

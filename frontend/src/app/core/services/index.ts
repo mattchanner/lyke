@@ -9,3 +9,5 @@ export { DeepLinkService } from './deep-link.service';
 export { RetailerService } from './retailer.service';
 export { AppInsightsService, AppInsightsErrorHandler } from './app-insights.service';
 export { PostEngagementService, type EngagementChange } from './post-engagement.service';
+export { AnalyticsService } from './analytics.service';
+export { WebVitalsService } from './web-vitals.service';

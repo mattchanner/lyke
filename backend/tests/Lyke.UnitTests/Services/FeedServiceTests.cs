@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lyke.Application.Configuration;
 using Lyke.Application.DTOs.Feed;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -40,6 +41,7 @@ public class FeedServiceTests : IDisposable
             _context,
             _matchingSettings,
             Options.Create(new ModerationSettings()),
+            new Mock<IEventTrackingService>().Object,
             _loggerMock.Object);
     }
 

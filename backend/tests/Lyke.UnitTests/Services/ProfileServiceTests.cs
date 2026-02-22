@@ -33,6 +33,7 @@ public class ProfileServiceTests : IDisposable
             _userManagerMock.Object,
             _context,
             _storageServiceMock.Object,
+            new Mock<IEventTrackingService>().Object,
             _loggerMock.Object);
     }
 

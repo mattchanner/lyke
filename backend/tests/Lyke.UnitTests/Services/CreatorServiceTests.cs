@@ -547,7 +547,7 @@ public class CreatorServiceTests : IDisposable
             ClickEventId = clickEvent.Id,
             EarningType = EarningType.Affiliate,
             Amount = 10.00m,
-            Currency = "USD",
+            Currency = "GBP",
             Status = EarningStatus.Pending,
             CreatedAt = DateTime.UtcNow
         };
@@ -561,7 +561,7 @@ public class CreatorServiceTests : IDisposable
         result.Should().NotBeNull();
         result.TotalEarnings.Should().Be(10.00m);
         result.PendingEarnings.Should().Be(10.00m);
-        result.Currency.Should().Be("USD");
+        result.Currency.Should().Be("GBP");
         result.EligibleForPayout.Should().BeFalse(); // Below threshold
     }
 

@@ -36,7 +36,7 @@ import {
   warningOutline,
   trendingUpOutline
 } from 'ionicons/icons';
-import { AppInsightsService, AuthService, DeepLinkService } from './core';
+import { AppInsightsService, AuthService, DeepLinkService, WebVitalsService } from './core';
 
 @Component({
   selector: 'app-root',
@@ -64,6 +64,7 @@ export class AppComponent {
   constructor() {
     inject(AppInsightsService).initialize();
     inject(DeepLinkService).initialize();
+    inject(WebVitalsService).initialize();
 
     addIcons({
       newspaperOutline,

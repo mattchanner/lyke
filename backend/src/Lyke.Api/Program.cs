@@ -252,6 +252,7 @@ app.MapMediaEndpoints();
 app.MapAdminEndpoints();
 app.MapRetailerEndpoints();
 app.MapPrivacyEndpoints();
+app.MapAnalyticsEndpoints();
 
 await app.RunAsync();
 

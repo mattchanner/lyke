@@ -23,6 +23,7 @@ public static class DependencyInjection
         services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
         services.Configure<PrivacySettings>(configuration.GetSection(PrivacySettings.SectionName));
         services.Configure<ModerationSettings>(configuration.GetSection(ModerationSettings.SectionName));
+        services.Configure<AnalyticsSettings>(configuration.GetSection(AnalyticsSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();
@@ -39,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IRetailerService, RetailerService>();
         services.AddScoped<IPrivacyService, PrivacyService>();
         services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IEventTrackingService, EventTrackingService>();
         services.AddHttpClient<ISocialTokenValidator, SocialTokenValidator>();
 
         return services;

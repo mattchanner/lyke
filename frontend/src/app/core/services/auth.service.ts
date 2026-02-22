@@ -4,6 +4,7 @@ import { Observable, from, of, throwError } from 'rxjs';
 import { map, switchMap, tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
 import { ApiService } from './api.service';
+import { AppInsightsService } from './app-insights.service';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
 import {
@@ -49,6 +50,7 @@ const INITIAL_STATE: AuthState = {
 })
 export class AuthService {
   private readonly api = inject(ApiService);
+  private readonly appInsights = inject(AppInsightsService);
   private readonly storage = inject(StorageService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
@@ -91,6 +93,7 @@ export class AuthService {
               isAuthenticated: true,
               isLoading: false,
             });
+            this.appInsights.setAuthenticatedUser(decoded.sub);
             this.loadProfileImage();
             return;
           }
@@ -234,6 +237,7 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
+    this.appInsights.clearAuthenticatedUser();
     await this.storage.clearAuthData();
     this.state.set({ ...INITIAL_STATE, isLoading: false });
     await this.router.navigate(['/auth/login']);
@@ -257,6 +261,7 @@ export class AuthService {
       isLoading: false,
     });
 
+    this.appInsights.setAuthenticatedUser(auth.userId);
     this.loadProfileImage();
   }
 

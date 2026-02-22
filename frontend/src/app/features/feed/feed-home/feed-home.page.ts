@@ -31,7 +31,7 @@ import {
   filterOutline,
   closeCircle,
 } from 'ionicons/icons';
-import { ApiService, AuthService, PostEngagementService } from '../../../core';
+import { ApiService, AuthService, PostEngagementService, AnalyticsService } from '../../../core';
 import { FeedPostResponse, FeedSortBy } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 import { SkeletonPostCardComponent } from '../../../shared/components/loading-skeleton';
@@ -69,6 +69,7 @@ import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter
 })
 export class FeedHomePage implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly engagementService = inject(PostEngagementService);
   private readonly route = inject(ActivatedRoute);
@@ -238,6 +239,11 @@ export class FeedHomePage implements OnInit {
     this.filterCategory.set(filters.category);
     this.filterRetailerId.set(filters.retailerId);
     this.filterFitTagIds.set(filters.fitTagIds);
+    this.analytics.track('feed.filter', {
+      category: filters.category ?? '',
+      retailerId: filters.retailerId ?? '',
+      fitTagCount: String(filters.fitTagIds.length),
+    });
     this.loadFeed(true);
   }
 

@@ -15,17 +15,20 @@ public class ProfileService : IProfileService
     private readonly UserManager<User> _userManager;
     private readonly DbContext _dbContext;
     private readonly IStorageService _storageService;
+    private readonly IEventTrackingService _eventTracking;
     private readonly ILogger<ProfileService> _logger;
 
     public ProfileService(
         UserManager<User> userManager,
         DbContext dbContext,
         IStorageService storageService,
+        IEventTrackingService eventTracking,
         ILogger<ProfileService> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _storageService = storageService;
+        _eventTracking = eventTracking;
         _logger = logger;
     }
 
@@ -218,6 +221,13 @@ public class ProfileService : IProfileService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Body profile created for user {UserId}", userId);
+
+        _ = _eventTracking.TrackAsync(
+            AnalyticsEventType.ProfileComplete,
+            userId,
+            profile.Id,
+            nameof(BodyProfile),
+            cancellationToken: cancellationToken);
 
         // Reload with body type
         profile.BodyType = bodyType;

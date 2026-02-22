@@ -21,7 +21,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { checkmarkCircle } from 'ionicons/icons';
-import { ApiService } from '../../../core';
+import { ApiService, AnalyticsService } from '../../../core';
 import { CreatorSearchResult, SearchResponse, SearchType } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 
@@ -55,6 +55,7 @@ import { PostCardComponent } from '../../../shared/components/post-card/post-car
 })
 export class ExplorePage {
   private readonly api = inject(ApiService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly router = inject(Router);
 
   constructor() {
@@ -90,6 +91,11 @@ export class ExplorePage {
         next: (response) => {
           if (response.success && response.data) {
             this.results.set(response.data);
+            this.analytics.track('search.execute', {
+              query: this.searchQuery,
+              type: this.searchType(),
+              resultCount: String(response.data.totalResults),
+            });
           }
         },
         complete: () => this.isLoading.set(false),

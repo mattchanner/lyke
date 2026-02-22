@@ -28,7 +28,7 @@ import {
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
-import { ApiService, ToastService } from '../../../core';
+import { ApiService, ToastService, AnalyticsService } from '../../../core';
 import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { MediaCarouselComponent, MediaItem } from '../media-carousel';
@@ -58,6 +58,7 @@ import { MediaCarouselComponent, MediaItem } from '../media-carousel';
 export class PostCardComponent {
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
 
@@ -117,6 +118,9 @@ export class PostCardComponent {
     request$.subscribe({
       next: () => {
         this.liked.emit({ postId: this.post.id, liked: newLikedState });
+        if (newLikedState) {
+          this.analytics.track('post.like', { postId: this.post.id, source: 'feed' }, this.post.id, 'Post');
+        }
       },
       error: () => {
         // Revert on failure
@@ -146,6 +150,9 @@ export class PostCardComponent {
       next: () => {
         this.saved.emit({ postId: this.post.id, saved: newSavedState });
         this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
+        if (newSavedState) {
+          this.analytics.track('post.save', { postId: this.post.id, source: 'feed' }, this.post.id, 'Post');
+        }
       },
       error: () => {
         // Revert on failure
@@ -165,6 +172,8 @@ export class PostCardComponent {
   share(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
+
+    this.analytics.track('post.share', { postId: this.post.id, source: 'feed' }, this.post.id, 'Post');
 
     if (navigator.share) {
       navigator.share({

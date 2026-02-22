@@ -27,7 +27,7 @@ import {
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
-import { ApiService, ToastService, PostEngagementService } from '../../../core';
+import { ApiService, ToastService, PostEngagementService, AnalyticsService } from '../../../core';
 import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { PostDetailResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { SkeletonPostDetailComponent } from '../../../shared/components/loading-skeleton';
@@ -62,6 +62,7 @@ export class PostDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
   private readonly toast = inject(ToastService);
+  private readonly analytics = inject(AnalyticsService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
   private readonly engagement = inject(PostEngagementService);
@@ -106,6 +107,7 @@ export class PostDetailPage implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.post.set(response.data);
+          this.analytics.track('post.view', { postId: id, source: 'post_detail' }, id, 'Post');
         }
       },
       complete: () => this.isLoading.set(false),
@@ -138,6 +140,9 @@ export class PostDetailPage implements OnInit {
             : null
         );
         this.engagement.notify({ postId: currentPost.id, type: 'like', state: newLikedState });
+        if (newLikedState) {
+          this.analytics.track('post.like', { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post');
+        }
       },
     });
   }
@@ -169,6 +174,9 @@ export class PostDetailPage implements OnInit {
         );
         this.engagement.notify({ postId: currentPost.id, type: 'save', state: newSavedState });
         this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
+        if (newSavedState) {
+          this.analytics.track('post.save', { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post');
+        }
       },
     });
   }
@@ -176,6 +184,8 @@ export class PostDetailPage implements OnInit {
   share(): void {
     const currentPost = this.post();
     if (!currentPost) return;
+
+    this.analytics.track('post.share', { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post');
 
     if (navigator.share) {
       navigator.share({
