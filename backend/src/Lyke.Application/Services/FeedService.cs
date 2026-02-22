@@ -17,17 +17,20 @@ public class FeedService : IFeedService
 {
     private readonly DbContext _dbContext;
     private readonly MatchingSettings _matchingSettings;
+    private readonly ModerationSettings _moderationSettings;
     private readonly ILogger<FeedService> _logger;
     private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     public FeedService(
         DbContext dbContext,
         IOptions<MatchingSettings> matchingSettings,
+        IOptions<ModerationSettings> moderationSettings,
         ILogger<FeedService> logger
     )
     {
         _dbContext = dbContext;
         _matchingSettings = matchingSettings.Value;
+        _moderationSettings = moderationSettings.Value;
         _logger = logger;
     }
 
@@ -594,6 +597,75 @@ public class FeedService : IFeedService
             products,
             creators,
             posts.Count + products.Count + creators.Count
+        );
+    }
+
+    public async Task ReportPostAsync(
+        Guid postId,
+        Guid userId,
+        CreateContentReportRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var post = await _dbContext
+            .Set<Post>()
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && (p.Status == PostStatus.Published || p.Status == PostStatus.Flagged),
+                cancellationToken
+            );
+
+        if (post == null)
+        {
+            throw new NotFoundException(nameof(Post), postId);
+        }
+
+        // Check for duplicate report
+        var existing = await _dbContext
+            .Set<ContentReport>()
+            .FirstOrDefaultAsync(
+                cr => cr.PostId == postId && cr.ReportedByUserId == userId,
+                cancellationToken
+            );
+
+        if (existing != null)
+        {
+            throw new ValidationException("Report", "You have already reported this post");
+        }
+
+        var report = new ContentReport
+        {
+            Id = Guid.NewGuid(),
+            PostId = postId,
+            ReportedByUserId = userId,
+            Reason = request.Reason,
+            AdditionalDetails = request.AdditionalDetails,
+            Status = ReportStatus.Pending,
+        };
+
+        await _dbContext.Set<ContentReport>().AddAsync(report, cancellationToken);
+
+        // Auto-flag if threshold reached
+        var reportCount = await _dbContext
+            .Set<ContentReport>()
+            .CountAsync(cr => cr.PostId == postId, cancellationToken) + 1; // +1 for the new report
+
+        if (reportCount >= _moderationSettings.AutoFlagThreshold && post.Status == PostStatus.Published)
+        {
+            post.Status = PostStatus.Flagged;
+            _logger.LogInformation(
+                "Post {PostId} auto-flagged after {ReportCount} reports",
+                postId,
+                reportCount
+            );
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "User {UserId} reported post {PostId} for {Reason}",
+            userId,
+            postId,
+            request.Reason
         );
     }
 

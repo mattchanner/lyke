@@ -480,6 +480,435 @@ public class AdminService : IAdminService
 
     #endregion
 
+    #region Content Reports
+
+    public async Task<(
+        IReadOnlyList<ContentReportResponse> Reports,
+        PaginationMeta Meta
+    )> GetContentReportsAsync(
+        ContentReportQueryRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = _dbContext.Set<ContentReport>().AsQueryable();
+
+        if (request.Status.HasValue)
+            query = query.Where(cr => cr.Status == request.Status.Value);
+
+        if (request.Reason.HasValue)
+            query = query.Where(cr => cr.Reason == request.Reason.Value);
+
+        if (request.PostId.HasValue)
+            query = query.Where(cr => cr.PostId == request.PostId.Value);
+
+        if (request.From.HasValue)
+            query = query.Where(cr => cr.CreatedAt >= request.From.Value);
+
+        if (request.To.HasValue)
+            query = query.Where(cr => cr.CreatedAt <= request.To.Value);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var reports = await query
+            .Include(cr => cr.Post)
+            .OrderByDescending(cr => cr.CreatedAt)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToListAsync(cancellationToken);
+
+        var responses = reports
+            .Select(cr => new ContentReportResponse(
+                Id: cr.Id,
+                PostId: cr.PostId,
+                PostTitle: cr.Post.Title,
+                ReportedByUserId: cr.ReportedByUserId,
+                Reason: cr.Reason,
+                AdditionalDetails: cr.AdditionalDetails,
+                Status: cr.Status,
+                ReviewedByUserId: cr.ReviewedByUserId,
+                ReviewedAt: cr.ReviewedAt,
+                ReviewNotes: cr.ReviewNotes,
+                CreatedAt: cr.CreatedAt
+            ))
+            .ToList();
+
+        var meta = new PaginationMeta
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = totalCount,
+        };
+
+        return (responses, meta);
+    }
+
+    public async Task<ContentReportResponse> GetContentReportAsync(
+        Guid reportId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var report = await _dbContext
+            .Set<ContentReport>()
+            .Include(cr => cr.Post)
+            .FirstOrDefaultAsync(cr => cr.Id == reportId, cancellationToken);
+
+        if (report == null)
+        {
+            throw new NotFoundException(nameof(ContentReport), reportId);
+        }
+
+        return new ContentReportResponse(
+            Id: report.Id,
+            PostId: report.PostId,
+            PostTitle: report.Post.Title,
+            ReportedByUserId: report.ReportedByUserId,
+            Reason: report.Reason,
+            AdditionalDetails: report.AdditionalDetails,
+            Status: report.Status,
+            ReviewedByUserId: report.ReviewedByUserId,
+            ReviewedAt: report.ReviewedAt,
+            ReviewNotes: report.ReviewNotes,
+            CreatedAt: report.CreatedAt
+        );
+    }
+
+    public async Task<ContentReportResponse> ReviewContentReportAsync(
+        Guid adminUserId,
+        Guid reportId,
+        ReviewContentReportRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var report = await _dbContext
+            .Set<ContentReport>()
+            .Include(cr => cr.Post)
+            .FirstOrDefaultAsync(cr => cr.Id == reportId, cancellationToken);
+
+        if (report == null)
+        {
+            throw new NotFoundException(nameof(ContentReport), reportId);
+        }
+
+        report.Status = request.NewStatus;
+        report.ReviewedByUserId = adminUserId;
+        report.ReviewedAt = DateTime.UtcNow;
+        report.ReviewNotes = request.ReviewNotes;
+
+        // Apply post action if specified
+        if (request.PostAction.HasValue)
+        {
+            report.Post.Status = request.PostAction.Value;
+
+            if (request.PostAction.Value == PostStatus.Published)
+            {
+                report.Post.PublishedAt ??= DateTime.UtcNow;
+            }
+
+            report.Post.ModeratedByUserId = adminUserId;
+            report.Post.ModeratedAt = DateTime.UtcNow;
+            report.Post.ModerationNotes = request.ReviewNotes;
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Admin {AdminUserId} reviewed report {ReportId} with status {Status}",
+            adminUserId,
+            reportId,
+            request.NewStatus
+        );
+
+        return new ContentReportResponse(
+            Id: report.Id,
+            PostId: report.PostId,
+            PostTitle: report.Post.Title,
+            ReportedByUserId: report.ReportedByUserId,
+            Reason: report.Reason,
+            AdditionalDetails: report.AdditionalDetails,
+            Status: report.Status,
+            ReviewedByUserId: report.ReviewedByUserId,
+            ReviewedAt: report.ReviewedAt,
+            ReviewNotes: report.ReviewNotes,
+            CreatedAt: report.CreatedAt
+        );
+    }
+
+    #endregion
+
+    #region Moderation Queue
+
+    public async Task<(
+        IReadOnlyList<ModerationQueueItemResponse> Items,
+        PaginationMeta Meta
+    )> GetModerationQueueAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var posts = await _dbContext
+            .Set<Post>()
+            .Where(p => p.Status == PostStatus.PendingReview || p.Status == PostStatus.Flagged)
+            .Include(p => p.Creator)
+            .Include(p => p.PostProducts)
+            .ThenInclude(pp => pp.Product)
+            .ToListAsync(cancellationToken);
+
+        var postIds = posts.Select(p => p.Id).ToList();
+
+        // Get report counts and top reasons per post
+        var reportData = await _dbContext
+            .Set<ContentReport>()
+            .Where(cr => postIds.Contains(cr.PostId))
+            .GroupBy(cr => cr.PostId)
+            .Select(g => new
+            {
+                PostId = g.Key,
+                Count = g.Count(),
+                TopReason = g.GroupBy(cr => cr.Reason)
+                    .OrderByDescending(rg => rg.Count())
+                    .Select(rg => rg.Key)
+                    .FirstOrDefault(),
+            })
+            .ToListAsync(cancellationToken);
+
+        var reportLookup = reportData.ToDictionary(r => r.PostId);
+
+        // Get creator post counts
+        var creatorIds = posts.Select(p => p.CreatorId).Distinct().ToList();
+        var creatorPostCounts = await _dbContext
+            .Set<Post>()
+            .Where(p => creatorIds.Contains(p.CreatorId))
+            .GroupBy(p => new { p.CreatorId, p.Status })
+            .Select(g => new
+            {
+                g.Key.CreatorId,
+                g.Key.Status,
+                Count = g.Count(),
+            })
+            .ToListAsync(cancellationToken);
+
+        // Calculate priority and build response
+        var items = posts
+            .Select(p =>
+            {
+                var report = reportLookup.GetValueOrDefault(p.Id);
+                var reportCount = report?.Count ?? 0;
+                var topReason = report?.TopReason;
+                var isFlagged = p.Status == PostStatus.Flagged;
+
+                // Priority calculation
+                var priority = 0;
+                if (isFlagged) priority += 100;
+                if (reportCount >= 10) priority += 75;
+                else if (reportCount >= 5) priority += 50;
+                if (topReason == ReportReason.HateSpeech || topReason == ReportReason.InappropriateContent)
+                    priority += 30;
+
+                var creatorCounts = creatorPostCounts
+                    .Where(c => c.CreatorId == p.CreatorId)
+                    .ToList();
+                var creatorPublished = creatorCounts
+                    .FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
+                if (creatorPublished < 3) priority += 20;
+
+                var hoursInQueue = (DateTime.UtcNow - p.CreatedAt).TotalHours;
+                if (hoursInQueue > 48) priority += 40;
+
+                var totalPosts = creatorCounts.Sum(c => c.Count);
+
+                return new ModerationQueueItemResponse(
+                    Id: p.Id,
+                    Title: p.Title,
+                    Description: p.Description,
+                    MediaType: p.MediaType,
+                    MediaUrls: ParseMediaUrls(p.MediaUrls),
+                    ThumbnailUrls: ParseMediaUrls(p.ThumbnailUrls),
+                    Status: p.Status,
+                    CreatedAt: p.CreatedAt,
+                    SubmittedAt: p.UpdatedAt,
+                    Creator: new CreatorSummary(
+                        Id: p.Creator.Id,
+                        DisplayName: p.Creator.DisplayName,
+                        IsVerified: p.Creator.IsVerified,
+                        TotalPosts: totalPosts,
+                        PublishedPosts: creatorPublished
+                    ),
+                    Products: p.PostProducts.Select(pp => new PostProductSummary(
+                        ProductId: pp.ProductId,
+                        ProductName: pp.Product.Name,
+                        SizeWorn: pp.SizeWorn,
+                        FitNotes: pp.FitNotes
+                    )).ToList(),
+                    ReportCount: reportCount,
+                    TopReportReason: topReason,
+                    IsFlagged: isFlagged,
+                    Priority: priority
+                );
+            })
+            .OrderByDescending(item => item.Priority)
+            .ThenBy(item => item.CreatedAt)
+            .ToList();
+
+        var totalCount = items.Count;
+        var pagedItems = items
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        var meta = new PaginationMeta
+        {
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+        };
+
+        return (pagedItems, meta);
+    }
+
+    #endregion
+
+    #region Bulk Actions
+
+    public async Task<BulkActionResult> BulkModeratePostsAsync(
+        Guid adminUserId,
+        BulkModeratePostsRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var posts = await _dbContext
+            .Set<Post>()
+            .Where(p => request.PostIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+
+        var successCount = 0;
+        var errors = new List<BulkActionError>();
+
+        foreach (var post in posts)
+        {
+            try
+            {
+                switch (request.Action)
+                {
+                    case BulkPostAction.Approve:
+                        if (post.Status != PostStatus.PendingReview && post.Status != PostStatus.Flagged)
+                        {
+                            errors.Add(new BulkActionError(post.Id, "Post is not pending review or flagged"));
+                            continue;
+                        }
+                        post.Status = PostStatus.Published;
+                        post.PublishedAt = DateTime.UtcNow;
+                        break;
+
+                    case BulkPostAction.Reject:
+                        if (post.Status != PostStatus.PendingReview && post.Status != PostStatus.Flagged)
+                        {
+                            errors.Add(new BulkActionError(post.Id, "Post is not pending review or flagged"));
+                            continue;
+                        }
+                        post.Status = PostStatus.Rejected;
+                        post.ModerationNotes = request.Reason;
+                        break;
+
+                    case BulkPostAction.Remove:
+                        post.Status = PostStatus.Removed;
+                        post.ModerationNotes = request.Reason;
+                        break;
+
+                    case BulkPostAction.Flag:
+                        if (post.Status != PostStatus.Published)
+                        {
+                            errors.Add(new BulkActionError(post.Id, "Only published posts can be flagged"));
+                            continue;
+                        }
+                        post.Status = PostStatus.Flagged;
+                        break;
+                }
+
+                post.ModeratedByUserId = adminUserId;
+                post.ModeratedAt = DateTime.UtcNow;
+                successCount++;
+            }
+            catch (Exception ex)
+            {
+                errors.Add(new BulkActionError(post.Id, ex.Message));
+            }
+        }
+
+        // Track post IDs not found
+        var foundIds = posts.Select(p => p.Id).ToHashSet();
+        foreach (var id in request.PostIds.Where(id => !foundIds.Contains(id)))
+        {
+            errors.Add(new BulkActionError(id, "Post not found"));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Admin {AdminUserId} bulk moderated {SuccessCount} posts with action {Action}",
+            adminUserId,
+            successCount,
+            request.Action
+        );
+
+        return new BulkActionResult(successCount, errors.Count, errors);
+    }
+
+    public async Task<BulkActionResult> BulkSuspendUsersAsync(
+        Guid adminUserId,
+        BulkSuspendUsersRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var users = await _dbContext
+            .Set<User>()
+            .Where(u => request.UserIds.Contains(u.Id))
+            .ToListAsync(cancellationToken);
+
+        var successCount = 0;
+        var errors = new List<BulkActionError>();
+
+        foreach (var user in users)
+        {
+            if (!user.IsActive)
+            {
+                errors.Add(new BulkActionError(user.Id, "User is already suspended"));
+                continue;
+            }
+
+            if (user.UserType == UserType.Admin)
+            {
+                errors.Add(new BulkActionError(user.Id, "Cannot suspend admin users"));
+                continue;
+            }
+
+            user.IsActive = false;
+            user.SuspendedAt = DateTime.UtcNow;
+            user.SuspendedByUserId = adminUserId;
+            user.SuspensionReason = request.Reason;
+            successCount++;
+        }
+
+        // Track user IDs not found
+        var foundIds = users.Select(u => u.Id).ToHashSet();
+        foreach (var id in request.UserIds.Where(id => !foundIds.Contains(id)))
+        {
+            errors.Add(new BulkActionError(id, "User not found"));
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Admin {AdminUserId} bulk suspended {SuccessCount} users",
+            adminUserId,
+            successCount
+        );
+
+        return new BulkActionResult(successCount, errors.Count, errors);
+    }
+
+    #endregion
+
     #region Platform Stats
 
     public async Task<PlatformStatsResponse> GetPlatformStatsAsync(
@@ -506,12 +935,17 @@ public class AdminService : IAdminService
 
         // Content stats
         var posts = await _dbContext.Set<Post>().ToListAsync(cancellationToken);
+        var reports = await _dbContext.Set<ContentReport>().ToListAsync(cancellationToken);
         var contentStats = new ContentStats(
             TotalPosts: posts.Count,
             PublishedPosts: posts.Count(p => p.Status == PostStatus.Published),
             PendingReviewPosts: posts.Count(p => p.Status == PostStatus.PendingReview),
             DraftPosts: posts.Count(p => p.Status == PostStatus.Draft),
             RejectedPosts: posts.Count(p => p.Status == PostStatus.Rejected),
+            FlaggedPosts: posts.Count(p => p.Status == PostStatus.Flagged),
+            RemovedPosts: posts.Count(p => p.Status == PostStatus.Removed),
+            TotalReports: reports.Count,
+            PendingReports: reports.Count(r => r.Status == ReportStatus.Pending),
             PostsLast7Days: posts.Count(p => p.CreatedAt >= sevenDaysAgo),
             PostsLast30Days: posts.Count(p => p.CreatedAt >= thirtyDaysAgo)
         );

@@ -39,6 +39,7 @@ public class FeedServiceTests : IDisposable
         _sut = new FeedService(
             _context,
             _matchingSettings,
+            Options.Create(new ModerationSettings()),
             _loggerMock.Object);
     }
 

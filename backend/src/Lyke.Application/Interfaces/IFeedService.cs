@@ -72,4 +72,13 @@ public interface IFeedService
         SearchRequest request,
         Guid? userId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Report a post for content violation
+    /// </summary>
+    Task ReportPostAsync(
+        Guid postId,
+        Guid userId,
+        CreateContentReportRequest request,
+        CancellationToken cancellationToken = default);
 }

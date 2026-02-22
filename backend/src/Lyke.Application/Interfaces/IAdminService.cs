@@ -43,6 +43,38 @@ public interface IAdminService
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    // Content Reports
+    Task<(IReadOnlyList<ContentReportResponse> Reports, PaginationMeta Meta)> GetContentReportsAsync(
+        ContentReportQueryRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<ContentReportResponse> GetContentReportAsync(
+        Guid reportId,
+        CancellationToken cancellationToken = default);
+
+    Task<ContentReportResponse> ReviewContentReportAsync(
+        Guid adminUserId,
+        Guid reportId,
+        ReviewContentReportRequest request,
+        CancellationToken cancellationToken = default);
+
+    // Moderation Queue
+    Task<(IReadOnlyList<ModerationQueueItemResponse> Items, PaginationMeta Meta)> GetModerationQueueAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    // Bulk Actions
+    Task<BulkActionResult> BulkModeratePostsAsync(
+        Guid adminUserId,
+        BulkModeratePostsRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<BulkActionResult> BulkSuspendUsersAsync(
+        Guid adminUserId,
+        BulkSuspendUsersRequest request,
+        CancellationToken cancellationToken = default);
+
     // Platform Stats
     Task<PlatformStatsResponse> GetPlatformStatsAsync(
         CancellationToken cancellationToken = default);

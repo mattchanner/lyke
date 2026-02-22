@@ -22,6 +22,7 @@ public static class DependencyInjection
         services.Configure<SocialAuthSettings>(configuration.GetSection(SocialAuthSettings.SectionName));
         services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
         services.Configure<PrivacySettings>(configuration.GetSection(PrivacySettings.SectionName));
+        services.Configure<ModerationSettings>(configuration.GetSection(ModerationSettings.SectionName));
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();

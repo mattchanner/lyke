@@ -30,12 +30,12 @@
 | JWT Infrastructure | ✅ Complete |
 | Auth Service & Endpoints | ✅ Complete (7 endpoints) |
 | Profile Service & Endpoints | ✅ Complete (8 endpoints) |
-| Feed Service & Endpoints | ✅ Complete (8 endpoints) |
+| Feed Service & Endpoints | ✅ Complete (9 endpoints) |
 | Commerce Service & Endpoints | ✅ Complete (6 endpoints) |
 | Creator Service & Endpoints | ✅ Complete (15 endpoints) |
 | Media Upload Service | ✅ Complete (4 endpoints) |
 | Creator Verification Workflow | ✅ Complete (5 endpoints) |
-| Admin Service & Endpoints | ✅ Complete (11 endpoints) |
+| Admin Service & Endpoints | ✅ Complete (17 endpoints) |
 | Retailer Portal Service & Endpoints | ✅ Complete (14 endpoints) |
 | FluentValidation | ✅ Complete (37 validators) |
 | Seed Data (Lookups) | ✅ Complete (8 body types, 12 fit tags) |
@@ -604,7 +604,13 @@ GET    /api/admin/users/{id}            - Get user details ✅
 POST   /api/admin/users/{id}/suspend    - Suspend user ✅
 POST   /api/admin/users/{id}/unsuspend  - Unsuspend user ✅
 GET    /api/admin/stats                 - Platform statistics ✅
-GET    /api/admin/reports               - Get reported content
+GET    /api/admin/reports               - Get reported content ✅
+GET    /api/admin/reports/{id}          - Get report details ✅
+POST   /api/admin/reports/{id}/review   - Review content report ✅
+GET    /api/admin/moderation-queue      - Priority moderation queue ✅
+POST   /api/admin/posts/bulk-moderate   - Bulk moderate posts ✅
+POST   /api/admin/users/bulk-suspend    - Bulk suspend users ✅
+POST   /api/posts/{id}/report           - Report post (shopper) ✅
 POST   /api/admin/posts/{id}/tags       - Correct product tags
 ```
 
@@ -615,13 +621,20 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [x] User suspension tracking (SuspendedAt, SuspendedByUserId, SuspensionReason)
 - [x] Platform statistics aggregation (users, content, verifications, engagement)
 - [x] Validators for moderation requests
-- [ ] Implement content flagging system
-  - Duplicate detection (image hashing)
-  - Text analysis for abuse
-  - Product tag validation
-- [ ] Build moderation queue with priority
+- [x] Implement content flagging system
+  - ContentReport entity with ReportReason/ReportStatus enums
+  - Auto-flag posts after configurable report threshold (ModerationSettings)
+  - Shopper report endpoint (POST /api/posts/{id}/report)
+  - Admin report review workflow (query, view, review with post action)
+  - [ ] Duplicate detection (image hashing) - future enhancement
+  - [ ] Text analysis for abuse - future enhancement
+  - [ ] Product tag validation - future enhancement
+- [x] Build moderation queue with priority
+  - Priority scoring: flagged(+100), reports≥10(+75), ≥5(+50), HateSpeech/Inappropriate(+30), new creator(+20), >48h queue(+40)
 - [x] Create admin audit logging
-- [ ] Implement bulk actions
+- [x] Implement bulk actions
+  - Bulk moderate posts (approve, reject, remove, flag) - max 100 per request
+  - Bulk suspend users - max 100 per request
 
 ### 9.3 Frontend - Admin Module
 - [x] Create AdminService (7 methods: pending posts, moderate post, users, user detail, suspend/unsuspend, verifications, stats)
@@ -954,7 +967,7 @@ ANALYTICS_KEY=<key>
 | Phase 6: Commerce | 18 | 18 | Critical | 100% |
 | Phase 7: Creator | 22 | 22 | High | 100% |
 | Phase 8: Retailer Portal | 22 | 22 | High | 100% |
-| Phase 9: Admin | 16 | 15 | High | 94% (analytics dashboard, content flagging remaining) |
+| Phase 9: Admin | 19 | 18 | High | 95% (analytics dashboard remaining) |
 | Phase 10: Analytics | 12 | 5 | Medium | 42% (frontend App Insights done, backend + engagement events remaining) |
 | Phase 11: Privacy | 12 | 11 | Critical | ~95% (cookie consent deferred — mobile app) |
 | Phase 12: Testing | 10 | 7 | High | 70% (no retailer integration tests, no CI test step) |
@@ -962,7 +975,7 @@ ANALYTICS_KEY=<key>
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~237 actionable tasks (~203 completed, ~86% overall)**
+**Total: ~240 actionable tasks (~206 completed, ~86% overall)**
 
 ---
 

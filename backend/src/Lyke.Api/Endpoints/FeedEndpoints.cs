@@ -71,6 +71,15 @@ public static class FeedEndpoints
             .Produces<ApiResponse<IReadOnlyList<FeedPostResponse>>>(StatusCodes.Status200OK)
             .RequireAuthorization();
 
+        group
+            .MapPost("/{id:guid}/report", ReportPostAsync)
+            .WithName("ReportPost")
+            .WithSummary("Report a post for content violation")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
+
         return app;
     }
 
@@ -244,6 +253,33 @@ public static class FeedEndpoints
 
         var result = await feedService.SearchAsync(request, userId, cancellationToken);
         return Results.Ok(ApiResponse<SearchResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> ReportPostAsync(
+        Guid id,
+        [FromBody] CreateContentReportRequest request,
+        ClaimsPrincipal user,
+        IFeedService feedService,
+        IAuditService auditService,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        if (userId == null)
+            return Results.Unauthorized();
+
+        await feedService.ReportPostAsync(id, userId.Value, request, cancellationToken);
+
+        await auditService.LogAsync(
+            userId.Value,
+            Core.Enums.AuditAction.UserReportContent,
+            entityType: "Post",
+            entityId: id,
+            details: new { request.Reason, request.AdditionalDetails },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
+        return Results.NoContent();
     }
 
     private static Guid? GetUserId(ClaimsPrincipal user)

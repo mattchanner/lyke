@@ -9,5 +9,9 @@ public enum AuditAction
     AdminSuspendUser = 4,
     AdminUnsuspendUser = 5,
     AdminModeratePost = 6,
-    AdminReviewVerification = 7
+    AdminReviewVerification = 7,
+    AdminReviewContentReport = 8,
+    AdminBulkModeratePost = 9,
+    AdminBulkSuspendUser = 10,
+    UserReportContent = 11
 }

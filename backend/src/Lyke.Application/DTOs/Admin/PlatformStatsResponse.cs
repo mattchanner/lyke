@@ -25,6 +25,10 @@ public record ContentStats(
     int PendingReviewPosts,
     int DraftPosts,
     int RejectedPosts,
+    int FlaggedPosts,
+    int RemovedPosts,
+    int TotalReports,
+    int PendingReports,
     int PostsLast7Days,
     int PostsLast30Days
 );

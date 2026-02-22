@@ -121,6 +121,62 @@ public static class AdminEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
 
+        // Content Reports
+        group
+            .MapGet("/reports", GetContentReportsAsync)
+            .WithName("GetContentReports")
+            .WithSummary("Query content reports")
+            .Produces<ApiResponse<IReadOnlyList<ContentReportResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
+        group
+            .MapGet("/reports/{reportId:guid}", GetContentReportAsync)
+            .WithName("GetContentReport")
+            .WithSummary("Get content report details")
+            .Produces<ApiResponse<ContentReportResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        group
+            .MapPost("/reports/{reportId:guid}/review", ReviewContentReportAsync)
+            .WithName("ReviewContentReport")
+            .WithSummary("Review a content report")
+            .Produces<ApiResponse<ContentReportResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
+        // Moderation Queue
+        group
+            .MapGet("/moderation-queue", GetModerationQueueAsync)
+            .WithName("GetModerationQueue")
+            .WithSummary("Get priority moderation queue")
+            .Produces<ApiResponse<IReadOnlyList<ModerationQueueItemResponse>>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
+        // Bulk Actions
+        group
+            .MapPost("/posts/bulk-moderate", BulkModeratePostsAsync)
+            .WithName("BulkModeratePosts")
+            .WithSummary("Bulk moderate multiple posts")
+            .Produces<ApiResponse<BulkActionResult>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
+        group
+            .MapPost("/users/bulk-suspend", BulkSuspendUsersAsync)
+            .WithName("BulkSuspendUsers")
+            .WithSummary("Bulk suspend multiple users")
+            .Produces<ApiResponse<BulkActionResult>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
+            .Produces<ApiResponse>(StatusCodes.Status403Forbidden);
+
         // Audit Logs
         group
             .MapGet("/audit-logs", GetAuditLogsAsync)
@@ -361,6 +417,135 @@ public static class AdminEndpoints
     {
         var result = await adminService.GetPlatformStatsAsync(cancellationToken);
         return Results.Ok(ApiResponse<PlatformStatsResponse>.Ok(result));
+    }
+
+    // Content Reports Handlers
+    private static async Task<IResult> GetContentReportsAsync(
+        [FromQuery] ReportStatus? status,
+        [FromQuery] ReportReason? reason,
+        [FromQuery] Guid? postId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        IAdminService adminService = default!,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var request = new ContentReportQueryRequest(status, reason, postId, from, to, page, pageSize);
+        var (reports, meta) = await adminService.GetContentReportsAsync(request, cancellationToken);
+        return Results.Ok(ApiResponse<IReadOnlyList<ContentReportResponse>>.Ok(reports, meta));
+    }
+
+    private static async Task<IResult> GetContentReportAsync(
+        Guid reportId,
+        IAdminService adminService,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await adminService.GetContentReportAsync(reportId, cancellationToken);
+        return Results.Ok(ApiResponse<ContentReportResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> ReviewContentReportAsync(
+        Guid reportId,
+        [FromBody] ReviewContentReportRequest request,
+        ClaimsPrincipal user,
+        IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var adminUserId = GetUserId(user);
+        if (adminUserId == null)
+            return Results.Unauthorized();
+
+        var result = await adminService.ReviewContentReportAsync(
+            adminUserId.Value,
+            reportId,
+            request,
+            cancellationToken
+        );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminReviewContentReport,
+            entityType: "ContentReport",
+            entityId: reportId,
+            details: new { request.NewStatus, request.PostAction, request.ReviewNotes },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
+        return Results.Ok(ApiResponse<ContentReportResponse>.Ok(result));
+    }
+
+    // Moderation Queue Handler
+    private static async Task<IResult> GetModerationQueueAsync(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        IAdminService adminService = default!,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var (items, meta) = await adminService.GetModerationQueueAsync(page, pageSize, cancellationToken);
+        return Results.Ok(ApiResponse<IReadOnlyList<ModerationQueueItemResponse>>.Ok(items, meta));
+    }
+
+    // Bulk Action Handlers
+    private static async Task<IResult> BulkModeratePostsAsync(
+        [FromBody] BulkModeratePostsRequest request,
+        ClaimsPrincipal user,
+        IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var adminUserId = GetUserId(user);
+        if (adminUserId == null)
+            return Results.Unauthorized();
+
+        var result = await adminService.BulkModeratePostsAsync(
+            adminUserId.Value,
+            request,
+            cancellationToken
+        );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminBulkModeratePost,
+            details: new { request.Action, PostCount = request.PostIds.Count, request.Reason },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
+        return Results.Ok(ApiResponse<BulkActionResult>.Ok(result));
+    }
+
+    private static async Task<IResult> BulkSuspendUsersAsync(
+        [FromBody] BulkSuspendUsersRequest request,
+        ClaimsPrincipal user,
+        IAdminService adminService,
+        IAuditService auditService,
+        HttpContext httpContext,
+        CancellationToken cancellationToken
+    )
+    {
+        var adminUserId = GetUserId(user);
+        if (adminUserId == null)
+            return Results.Unauthorized();
+
+        var result = await adminService.BulkSuspendUsersAsync(
+            adminUserId.Value,
+            request,
+            cancellationToken
+        );
+
+        await auditService.LogAsync(
+            adminUserId.Value,
+            AuditAction.AdminBulkSuspendUser,
+            details: new { UserCount = request.UserIds.Count, request.Reason },
+            ipAddress: httpContext.Connection.RemoteIpAddress?.ToString());
+
+        return Results.Ok(ApiResponse<BulkActionResult>.Ok(result));
     }
 
     // Audit Logs Handler
