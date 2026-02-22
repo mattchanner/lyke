@@ -94,6 +94,12 @@ export class CommerceService implements OnDestroy {
   ): void {
     this.isTracking.set(true);
 
+    // On web, open a blank window immediately (in the click gesture) so
+    // popup blockers don't prevent the redirect once the API responds.
+    const platform = Capacitor.getPlatform();
+    const preOpenedWindow =
+      platform === 'web' ? window.open('about:blank', '_lyke_shop') : null;
+
     const request: TrackClickRequest = {
       postId,
       postProductId,
@@ -110,13 +116,20 @@ export class CommerceService implements OnDestroy {
       .subscribe({
         next: (response) => {
           if (response.success && response.data) {
-            this.openProductUrl(response.data.affiliateUrl);
+            if (preOpenedWindow) {
+              preOpenedWindow.location.href = response.data.affiliateUrl;
+            } else {
+              this.openProductUrl(response.data.affiliateUrl);
+            }
           } else {
+            preOpenedWindow?.close();
             this.toast.error('Unable to open product link');
           }
         },
         error: () => {
+          preOpenedWindow?.close();
           this.toast.error('Unable to open product link');
+          this.isTracking.set(false);
         },
         complete: () => {
           this.isTracking.set(false);
