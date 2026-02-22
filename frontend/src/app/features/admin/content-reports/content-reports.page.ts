@@ -41,8 +41,10 @@ import {
   ReportStatus,
   ReportReason,
   PostStatus,
+  PostReviewData,
 } from '../../../models';
 import { SkeletonListComponent } from '../../../shared/components/skeleton-list';
+import { PostReviewModalComponent } from '../components/post-review-modal';
 
 type StatusTab = ReportStatus | 'all';
 
@@ -73,6 +75,7 @@ type StatusTab = ReportStatus | 'all';
     IonCard,
     IonCardContent,
     SkeletonListComponent,
+    PostReviewModalComponent,
   ],
   templateUrl: './content-reports.page.html',
   styleUrls: ['./content-reports.page.scss'],
@@ -90,6 +93,8 @@ export class ContentReportsPage implements OnInit {
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
   readonly expandedId = signal<string | null>(null);
+  readonly reviewModalOpen = signal(false);
+  readonly reviewPost = signal<PostReviewData | null>(null);
 
   readonly ReportStatus = ReportStatus;
   readonly ReportReason = ReportReason;
@@ -279,6 +284,32 @@ export class ContentReportsPage implements OnInit {
         error: () => this.toast.error('Failed to review report'),
         complete: () => this.isActioning.set(false),
       });
+  }
+
+  openReview(report: ContentReportResponse): void {
+    this.adminService.getPostForModeration(report.postId).subscribe({
+      next: (post) => {
+        if (post) {
+          this.reviewPost.set(post);
+          this.reviewModalOpen.set(true);
+        } else {
+          this.toast.error('Post not found');
+        }
+      },
+      error: () => this.toast.error('Failed to load post'),
+    });
+  }
+
+  onPostModerated(postId: string): void {
+    this.reports.update((rpts) => rpts.filter((r) => r.postId !== postId));
+    this.reviewModalOpen.set(false);
+    this.reviewPost.set(null);
+    this.expandedId.set(null);
+  }
+
+  onReviewDismissed(): void {
+    this.reviewModalOpen.set(false);
+    this.reviewPost.set(null);
   }
 
   getStatusColor(status: ReportStatus): string {

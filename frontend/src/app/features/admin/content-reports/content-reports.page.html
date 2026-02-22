@@ -111,8 +111,17 @@
                 </div>
               }
 
-              @if (report.status === ReportStatus.Pending || report.status === ReportStatus.UnderReview) {
-                <div class="action-buttons">
+              <div class="action-buttons">
+                <ion-button
+                  color="primary"
+                  fill="outline"
+                  [disabled]="isActioning()"
+                  (click)="openReview(report); $event.stopPropagation()"
+                >
+                  <ion-icon slot="start" name="eye-outline"></ion-icon>
+                  Review Post
+                </ion-button>
+                @if (report.status === ReportStatus.Pending || report.status === ReportStatus.UnderReview) {
                   <ion-button
                     color="medium"
                     [disabled]="isActioning()"
@@ -129,8 +138,8 @@
                     <ion-icon slot="start" name="eye-outline"></ion-icon>
                     Take Action
                   </ion-button>
-                </div>
-              }
+                }
+              </div>
             </ion-card-content>
           </ion-card>
         }
@@ -142,3 +151,10 @@
     </ion-infinite-scroll>
   }
 </ion-content>
+
+<app-post-review-modal
+  [isOpen]="reviewModalOpen()"
+  [post]="reviewPost()"
+  (moderated)="onPostModerated($event)"
+  (dismissed)="onReviewDismissed()"
+></app-post-review-modal>
