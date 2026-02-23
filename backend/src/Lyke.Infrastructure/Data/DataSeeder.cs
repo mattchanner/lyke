@@ -1073,9 +1073,34 @@ public static class DataSeeder
         await context.SaveChangesAsync();
     }
 
+    private static async Task EnsureFitTagsExistAsync(LykeDbContext context)
+    {
+        if (await context.Set<FitTag>().AnyAsync())
+            return;
+
+        // FitTags are normally seeded via HasData in the migration, but if missing we insert them here
+        context.Set<FitTag>().AddRange(
+            new FitTag { Id = 1, Name = "True to size", Category = "General", IsActive = true },
+            new FitTag { Id = 2, Name = "Runs small", Category = "General", IsActive = true },
+            new FitTag { Id = 3, Name = "Runs large", Category = "General", IsActive = true },
+            new FitTag { Id = 4, Name = "Tight on hips", Category = "Fit", IsActive = true },
+            new FitTag { Id = 5, Name = "Tight on bust", Category = "Fit", IsActive = true },
+            new FitTag { Id = 6, Name = "Loose on waist", Category = "Fit", IsActive = true },
+            new FitTag { Id = 7, Name = "Long in arms", Category = "Length", IsActive = true },
+            new FitTag { Id = 8, Name = "Short in arms", Category = "Length", IsActive = true },
+            new FitTag { Id = 9, Name = "Long in torso", Category = "Length", IsActive = true },
+            new FitTag { Id = 10, Name = "Short in torso", Category = "Length", IsActive = true },
+            new FitTag { Id = 11, Name = "Stretchy material", Category = "Material", IsActive = true },
+            new FitTag { Id = 12, Name = "Not stretchy", Category = "Material", IsActive = true }
+        );
+        await context.SaveChangesAsync();
+    }
+
     private static async Task SeedPostFitTagsAsync(LykeDbContext context)
     {
-        // FitTag IDs from seed data: 1=True to size, 2=Runs small, 3=Runs large,
+        await EnsureFitTagsExistAsync(context);
+
+        // FitTag IDs: 1=True to size, 2=Runs small, 3=Runs large,
         // 4=Tight on hips, 5=Tight on bust, 6=Loose on waist, 7=Long in arms,
         // 8=Short in arms, 9=Long in torso, 10=Short in torso, 11=Stretchy, 12=Not stretchy
         var fitTags = new PostFitTag[]
