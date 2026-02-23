@@ -1,2 +1,0 @@
-# Engagement not removed when toggling save
-On the post-detail.page.ts page, the toggleSave() does not toggle the engagement. It posts to the endpoint. To remove the engagement, the delete endpoint should be called, or the endpoint itself should toggle.
