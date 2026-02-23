@@ -30,7 +30,7 @@ public class MediaEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3, 4 });
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test.jpg");
+        content.Add(fileContent, "files","test.jpg");
 
         // Act
         var response = await _client.PostAsync("/api/media/v1/upload", content);
@@ -50,7 +50,7 @@ public class MediaEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3, 4 });
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test.jpg");
+        content.Add(fileContent, "files","test.jpg");
 
         // Act
         var response = await _client.PostAsync("/api/media/v1/upload", content);
@@ -86,7 +86,7 @@ public class MediaEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var fileBytes = CreateFakeJpegBytes();
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test-image.jpg");
+        content.Add(fileContent, "files","test-image.jpg");
 
         // Act
         var response = await _client.PostAsync("/api/media/v1/upload", content);
@@ -122,7 +122,7 @@ public class MediaEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(new byte[] { 1, 2, 3, 4 });
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-        content.Add(fileContent, "file", "test.exe");
+        content.Add(fileContent, "files","test.exe");
 
         // Act
         var response = await _client.PostAsync("/api/media/v1/upload", content);
@@ -233,7 +233,7 @@ public class MediaEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var fileBytes = CreateFakeJpegBytes();
         var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-        uploadContent.Add(fileContent, "file", "to-delete.jpg");
+        uploadContent.Add(fileContent, "files", "to-delete.jpg");
 
         var uploadResponse = await _client.PostAsync("/api/media/v1/upload", uploadContent);
         var uploadResult = await uploadResponse.Content.ReadFromJsonAsync<ApiResponse<MediaUploadResponse>>(LykeWebApplicationFactory.JsonOptions);

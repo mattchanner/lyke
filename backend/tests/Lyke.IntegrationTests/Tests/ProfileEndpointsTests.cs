@@ -34,7 +34,7 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.GetAsync("/api/profile/v1/");
+        var response = await _client.GetAsync("/api/profile/v1/me");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -54,7 +54,7 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetProfile_WithoutToken_ReturnsUnauthorized()
     {
         // Act
-        var response = await _client.GetAsync("/api/profile/v1/");
+        var response = await _client.GetAsync("/api/profile/v1/me");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

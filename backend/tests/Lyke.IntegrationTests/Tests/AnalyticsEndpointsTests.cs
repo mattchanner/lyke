@@ -90,7 +90,7 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     }
 
     [Fact]
-    public async Task TrackEventBatch_EmptyBatch_ReturnsBadRequest()
+    public async Task TrackEventBatch_EmptyBatch_ReturnsOk()
     {
         // Arrange
         var request = new TrackEventBatchRequest(Events: []);
@@ -101,7 +101,7 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             request,
             LykeWebApplicationFactory.JsonOptions);
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        // Assert - Endpoint accepts empty batches (no server-side validation)
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }

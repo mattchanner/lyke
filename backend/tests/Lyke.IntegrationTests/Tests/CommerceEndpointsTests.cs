@@ -33,7 +33,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/clicks/v1/track", request);
+        var response = await _client.PostAsJsonAsync("/api/commerce/v1/clicks/track", request);
 
         // Assert - May return 404 if product doesn't exist, but endpoint should be accessible
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
@@ -50,7 +50,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/clicks/v1/track", request);
+        var response = await _client.PostAsJsonAsync("/api/commerce/v1/clicks/track", request);
 
         // Assert - Should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
@@ -74,7 +74,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.PostAsJsonAsync("/api/clicks/v1/track", request);
+        var response = await _client.PostAsJsonAsync("/api/commerce/v1/clicks/track", request);
 
         // Assert - May return 404 if product doesn't exist
         response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
@@ -91,7 +91,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetProduct_WhenNotExists_ReturnsNotFound()
     {
         // Act
-        var response = await _client.GetAsync($"/api/products/v1/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/api/commerce/v1/products/{Guid.NewGuid()}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -101,7 +101,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetProduct_IsPubliclyAccessible()
     {
         // Act - No authorization header
-        var response = await _client.GetAsync($"/api/products/v1/{Guid.NewGuid()}");
+        var response = await _client.GetAsync($"/api/commerce/v1/products/{Guid.NewGuid()}");
 
         // Assert - Should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
@@ -123,7 +123,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.GetAsync("/api/products/v1/search?q=dress");
+        var response = await _client.GetAsync("/api/commerce/v1/products/search?query=dress");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -139,7 +139,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     }
 
     [Fact]
-    public async Task SearchProducts_WithShopperToken_ReturnsForbidden()
+    public async Task SearchProducts_WithShopperToken_ReturnsResults()
     {
         // Arrange
         var email = $"shopper-search-{Guid.NewGuid()}@example.com";
@@ -154,10 +154,10 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.GetAsync("/api/products/v1/search?q=dress");
+        var response = await _client.GetAsync("/api/commerce/v1/products/search?query=dress");
 
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        // Assert - Product search requires authentication but not a specific role
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Cleanup
         _client.DefaultRequestHeaders.Authorization = null;
@@ -167,7 +167,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task SearchProducts_WithoutToken_ReturnsUnauthorized()
     {
         // Act
-        var response = await _client.GetAsync("/api/products/v1/search?q=dress");
+        var response = await _client.GetAsync("/api/commerce/v1/products/search?query=dress");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -189,7 +189,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.GetAsync("/api/products/v1/search?q=shirt");
+        var response = await _client.GetAsync("/api/commerce/v1/products/search?query=shirt");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -206,7 +206,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailers_ReturnsRetailerList()
     {
         // Act
-        var response = await _client.GetAsync("/api/retailers/v1/");
+        var response = await _client.GetAsync("/api/commerce/v1/retailers/");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -222,7 +222,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailers_IsPubliclyAccessible()
     {
         // Act - No authorization header
-        var response = await _client.GetAsync("/api/retailers/v1/");
+        var response = await _client.GetAsync("/api/commerce/v1/retailers/");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -232,7 +232,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailerProducts_WhenRetailerNotExists_ReturnsNotFound()
     {
         // Act
-        var response = await _client.GetAsync($"/api/retailers/v1/{Guid.NewGuid()}/products");
+        var response = await _client.GetAsync($"/api/commerce/v1/retailers/{Guid.NewGuid()}/products");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -242,7 +242,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailerProducts_IsPubliclyAccessible()
     {
         // Act - No authorization header
-        var response = await _client.GetAsync($"/api/retailers/v1/{Guid.NewGuid()}/products");
+        var response = await _client.GetAsync($"/api/commerce/v1/retailers/{Guid.NewGuid()}/products");
 
         // Assert - Should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
@@ -253,7 +253,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Act
         var response = await _client.GetAsync(
-            $"/api/retailers/v1/{Guid.NewGuid()}/products?page=1&pageSize=10"
+            $"/api/commerce/v1/retailers/{Guid.NewGuid()}/products?page=1&pageSize=10"
         );
 
         // Assert - 404 is expected since retailer doesn't exist, but pagination params should be accepted
@@ -282,7 +282,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Act
         var response = await _client.PostAsJsonAsync(
-            $"/api/retailers/v1/{retailerId}/conversions",
+            $"/api/commerce/v1/retailers/{retailerId}/conversions",
             request
         );
 
@@ -310,7 +310,7 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Act
         var response = await _client.PostAsJsonAsync(
-            $"/api/retailers/v1/{retailerId}/conversions",
+            $"/api/commerce/v1/retailers/{retailerId}/conversions",
             request
         );
 

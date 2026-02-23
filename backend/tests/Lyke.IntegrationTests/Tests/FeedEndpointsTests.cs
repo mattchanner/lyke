@@ -489,7 +489,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task Search_WithQuery_ReturnsResults()
     {
         // Act
-        var response = await _client.GetAsync("/api/search/v1/?q=outfit");
+        var response = await _client.GetAsync("/api/feed/v1/search?q=outfit");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -505,7 +505,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task Search_WithEmptyQuery_ReturnsResults()
     {
         // Act
-        var response = await _client.GetAsync("/api/search/v1/?q=");
+        var response = await _client.GetAsync("/api/feed/v1/search?q=");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -520,7 +520,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task Search_WithTypeFilter_ReturnsFilteredResults()
     {
         // Act
-        var response = await _client.GetAsync("/api/search/v1/?q=fashion&type=Posts");
+        var response = await _client.GetAsync("/api/feed/v1/search?q=fashion&type=Posts");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -535,7 +535,7 @@ public class FeedEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task Search_IsPubliclyAccessible()
     {
         // Act - No token required
-        var response = await _client.GetAsync("/api/search/v1/?q=test");
+        var response = await _client.GetAsync("/api/feed/v1/search?q=test");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
