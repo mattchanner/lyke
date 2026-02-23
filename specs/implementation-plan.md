@@ -728,7 +728,15 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 - [ ] Security testing (OWASP ZAP)
 
 ### 12.2 Frontend Testing
-- [ ] Unit tests for services (Jasmine/Jest)
+- [x] Unit tests for services (Jasmine/Karma — 190 tests across 16 spec files)
+  - [x] PostEngagementService, StorageService, ToastService (simple services)
+  - [x] ApiService (HTTP method, URL building, param serialization, getData, uploadFile, getPaginated)
+  - [x] CreatorService, AdminService, RetailerService, CommerceService (API wrapper services)
+  - [x] AuthService (init, login, register, socialLogin, refresh, logout, getAccessToken, signals)
+  - [x] AnalyticsService (batching, flush timer, ngOnDestroy)
+  - [x] Guards: authGuard, noAuthGuard, roleGuard, creatorGuard, adminGuard, creatorOrAdminGuard
+  - [x] Interceptors: errorInterceptor (status codes, toast suppression, AppInsights), authInterceptor (token injection, public endpoints)
+  - [x] Karma CI config (ChromeHeadless, ChromeHeadlessCI launcher)
 - [ ] Component tests (Angular Testing Library)
 - [ ] E2E tests (Cypress or Playwright)
 - [ ] Visual regression testing
@@ -981,7 +989,7 @@ ANALYTICS_KEY=<key>
 | Phase 9: Admin | 22 | 22 | High | 100% |
 | Phase 10: Analytics | 12 | 12 | Medium | 100% |
 | Phase 11: Privacy | 12 | 11 | Critical | ~95% (cookie consent deferred — mobile app) |
-| Phase 12: Testing | 10 | 9 | High | 90% (120 unit tests pass, 89/105 integration tests pass; CI test step remaining) |
+| Phase 12: Testing | 10 | 9 | High | 95% (120 backend unit tests + 190 frontend unit tests pass, 89/105 integration tests pass; CI test step remaining) |
 | Phase 13: Performance | 14 | 11 | Medium | ~79% (backend optimization done, Redis/virtual scroll/service worker/WebP remaining) |
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
