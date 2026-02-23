@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 550 450">
+  <defs>
+    <style>
+      .status-draft { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; rx: 8; }
+      .status-pending { fill: #fff9c4; stroke: #fbc02d; stroke-width: 2; rx: 8; }
+      .status-published { fill: #e8f5e9; stroke: #388e3c; stroke-width: 2; rx: 8; }
+      .status-rejected { fill: #ffebee; stroke: #d32f2f; stroke-width: 2; rx: 8; }
+      .status-flagged { fill: #fce4ec; stroke: #c2185b; stroke-width: 2; rx: 8; }
+      .status-removed { fill: #efebe9; stroke: #5d4037; stroke-width: 2; rx: 8; }
+      .status-deleted { fill: #eceff1; stroke: #607d8b; stroke-width: 2; rx: 8; }
+      .action-text { font-family: system-ui, sans-serif; font-size: 10px; fill: #666; font-style: italic; }
+      .status-text { font-family: system-ui, sans-serif; font-size: 12px; font-weight: 500; fill: #212529; }
+      .arrow { stroke: #495057; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-red { stroke: #d32f2f; stroke-width: 2; fill: none; marker-end: url(#arrowhead-red); }
+      .title { font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #212529; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d32f2f"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="275" y="25" text-anchor="middle" class="title">Post Status Flow</text>
+
+  <!-- Draft -->
+  <rect x="175" y="50" width="120" height="40" class="status-draft"/>
+  <text x="235" y="75" text-anchor="middle" class="status-text">Draft</text>
+
+  <!-- Draft actions -->
+  <text x="360" y="70" class="action-text">Edit / Add Products</text>
+  <path d="M 295 60 Q 330 50, 330 70 Q 330 90, 295 80" class="arrow" style="marker-end: none"/>
+
+  <!-- Delete branch -->
+  <line x1="295" y1="70" x2="380" y2="70" stroke="#607d8b" stroke-width="2"/>
+  <line x1="380" y1="70" x2="380" y2="130" stroke="#607d8b" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <text x="390" y="100" class="action-text">Delete</text>
+
+  <!-- Deleted -->
+  <rect x="320" y="135" width="120" height="40" class="status-deleted"/>
+  <text x="380" y="160" text-anchor="middle" class="status-text">Deleted</text>
+
+  <!-- Submit arrow -->
+  <line x1="235" y1="90" x2="235" y2="130" class="arrow"/>
+  <text x="245" y="115" class="action-text">Submit</text>
+
+  <!-- PendingReview -->
+  <rect x="175" y="135" width="120" height="40" class="status-pending"/>
+  <text x="235" y="160" text-anchor="middle" class="status-text">PendingReview</text>
+
+  <!-- Branch to Published/Rejected -->
+  <line x1="235" y1="175" x2="235" y2="200" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="200" x2="330" y2="200" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="200" x2="140" y2="220" class="arrow"/>
+  <line x1="330" y1="200" x2="330" y2="220" class="arrow-red"/>
+
+  <text x="100" y="215" class="action-text">Approve</text>
+  <text x="340" y="215" class="action-text">Reject</text>
+
+  <!-- Published -->
+  <rect x="80" y="225" width="120" height="40" class="status-published"/>
+  <text x="140" y="250" text-anchor="middle" class="status-text">Published</text>
+
+  <!-- Rejected -->
+  <rect x="270" y="225" width="120" height="40" class="status-rejected"/>
+  <text x="330" y="250" text-anchor="middle" class="status-text">Rejected</text>
+
+  <!-- Edit & Resubmit from Rejected -->
+  <path d="M 330 265 Q 330 290, 280 290 Q 230 290, 235 175" class="arrow" style="stroke-dasharray: 5,3"/>
+  <text x="340" y="290" class="action-text">Edit &amp; Resubmit</text>
+
+  <!-- User reports -->
+  <line x1="140" y1="265" x2="140" y2="305" class="arrow"/>
+  <text x="85" y="290" class="action-text">User reports</text>
+
+  <!-- Flagged -->
+  <rect x="80" y="310" width="120" height="40" class="status-flagged"/>
+  <text x="140" y="335" text-anchor="middle" class="status-text">Flagged</text>
+
+  <!-- Admin reviews -->
+  <line x1="140" y1="350" x2="140" y2="370" stroke="#495057" stroke-width="2"/>
+  <text x="150" y="365" class="action-text">Admin reviews</text>
+  <line x1="80" y1="370" x2="200" y2="370" stroke="#495057" stroke-width="2"/>
+  <line x1="80" y1="370" x2="80" y2="390" class="arrow"/>
+  <line x1="200" y1="370" x2="200" y2="390" class="arrow-red"/>
+
+  <!-- Restored -->
+  <rect x="20" y="395" width="120" height="40" class="status-published"/>
+  <text x="80" y="420" text-anchor="middle" class="status-text">Restored</text>
+
+  <!-- Removed -->
+  <rect x="160" y="395" width="120" height="40" class="status-removed"/>
+  <text x="220" y="420" text-anchor="middle" class="status-text">Removed</text>
+</svg>

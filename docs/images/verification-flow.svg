@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 290">
+  <defs>
+    <style>
+      .status-pending { fill: #fff9c4; stroke: #fbc02d; stroke-width: 2; rx: 8; }
+      .status-approved { fill: #c8e6c9; stroke: #388e3c; stroke-width: 2; rx: 8; }
+      .status-rejected { fill: #ffcdd2; stroke: #d32f2f; stroke-width: 2; rx: 8; }
+      .action-box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; rx: 8; }
+      .result-box { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; rx: 8; }
+      .text-status { font-family: system-ui, sans-serif; font-size: 12px; font-weight: 500; fill: #212529; }
+      .text-action { font-family: system-ui, sans-serif; font-size: 11px; fill: #495057; }
+      .text-result { font-family: system-ui, sans-serif; font-size: 10px; fill: #666; }
+      .arrow { stroke: #495057; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-green { stroke: #388e3c; stroke-width: 2; fill: none; marker-end: url(#arrowhead-green); }
+      .arrow-red { stroke: #d32f2f; stroke-width: 2; fill: none; marker-end: url(#arrowhead-red); }
+      .title { font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; fill: #212529; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#388e3c"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#d32f2f"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="200" y="20" text-anchor="middle" class="title">Verification Request Flow</text>
+
+  <!-- Creator submits -->
+  <rect x="100" y="35" width="200" height="35" class="action-box"/>
+  <text x="200" y="57" text-anchor="middle" class="text-action">Creator submits verification</text>
+
+  <line x1="200" y1="70" x2="200" y2="95" class="arrow"/>
+
+  <!-- Pending -->
+  <rect x="140" y="100" width="120" height="35" class="status-pending"/>
+  <text x="200" y="122" text-anchor="middle" class="text-status">Pending</text>
+
+  <line x1="200" y1="135" x2="200" y2="155" class="arrow"/>
+
+  <!-- Admin reviews -->
+  <rect x="100" y="160" width="200" height="35" class="action-box"/>
+  <text x="200" y="182" text-anchor="middle" class="text-action">Admin reviews documents</text>
+
+  <!-- Branch -->
+  <line x1="200" y1="195" x2="200" y2="210" stroke="#495057" stroke-width="2"/>
+  <line x1="120" y1="210" x2="280" y2="210" stroke="#495057" stroke-width="2"/>
+  <line x1="120" y1="210" x2="120" y2="230" class="arrow-green"/>
+  <line x1="280" y1="210" x2="280" y2="230" class="arrow-red"/>
+
+  <!-- Approved -->
+  <rect x="60" y="235" width="120" height="35" class="status-approved"/>
+  <text x="120" y="257" text-anchor="middle" class="text-status">Approved</text>
+
+  <!-- Rejected -->
+  <rect x="220" y="235" width="120" height="35" class="status-rejected"/>
+  <text x="280" y="257" text-anchor="middle" class="text-status">Rejected</text>
+
+  <!-- Results -->
+  <text x="120" y="285" text-anchor="middle" class="text-result">Badge granted</text>
+  <text x="280" y="285" text-anchor="middle" class="text-result">Reason provided</text>
+</svg>

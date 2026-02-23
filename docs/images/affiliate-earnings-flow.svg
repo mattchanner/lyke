@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 470">
+  <defs>
+    <style>
+      .step-box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; rx: 8; }
+      .event-box { fill: #e8f5e9; stroke: #388e3c; stroke-width: 2; rx: 8; }
+      .status-box { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; rx: 8; }
+      .final-box { fill: #c8e6c9; stroke: #2e7d32; stroke-width: 2; rx: 8; }
+      .text-step { font-family: system-ui, sans-serif; font-size: 11px; fill: #212529; }
+      .text-event { font-family: system-ui, sans-serif; font-size: 10px; fill: #388e3c; font-style: italic; }
+      .arrow { stroke: #495057; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .title { font-family: system-ui, sans-serif; font-size: 14px; font-weight: 600; fill: #212529; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="190" y="20" text-anchor="middle" class="title">Affiliate Earnings Flow</text>
+
+  <!-- Step 1: Shopper views post -->
+  <rect x="90" y="35" width="200" height="35" class="step-box"/>
+  <text x="190" y="57" text-anchor="middle" class="text-step">Shopper views post</text>
+
+  <line x1="190" y1="70" x2="190" y2="90" class="arrow"/>
+
+  <!-- Step 2: Clicks product link -->
+  <rect x="65" y="95" width="250" height="35" class="step-box"/>
+  <text x="190" y="117" text-anchor="middle" class="text-step">Clicks product link</text>
+
+  <!-- Event: ClickEvent created -->
+  <text x="325" y="117" class="text-event">ClickEvent created</text>
+
+  <line x1="190" y1="130" x2="190" y2="150" class="arrow"/>
+
+  <!-- Step 3: Redirected to retailer -->
+  <rect x="65" y="155" width="250" height="35" class="step-box"/>
+  <text x="190" y="177" text-anchor="middle" class="text-step">Redirected to retailer</text>
+
+  <line x1="190" y1="190" x2="190" y2="210" class="arrow"/>
+
+  <!-- Step 4: Completes purchase -->
+  <rect x="65" y="215" width="250" height="35" class="event-box"/>
+  <text x="190" y="237" text-anchor="middle" class="text-step">Completes purchase</text>
+
+  <!-- Event: Retailer reports conversion -->
+  <text x="325" y="237" class="text-event">Retailer webhook</text>
+
+  <line x1="190" y1="250" x2="190" y2="270" class="arrow"/>
+
+  <!-- Step 5: CreatorEarning created -->
+  <rect x="45" y="275" width="290" height="35" class="status-box"/>
+  <text x="190" y="297" text-anchor="middle" class="text-step">CreatorEarning created (Status: Pending)</text>
+
+  <line x1="190" y1="310" x2="190" y2="330" class="arrow"/>
+
+  <!-- Step 6: Confirmation period -->
+  <rect x="45" y="335" width="290" height="35" class="status-box"/>
+  <text x="190" y="357" text-anchor="middle" class="text-step">Confirmation period (typically 30 days)</text>
+
+  <line x1="190" y1="370" x2="190" y2="390" class="arrow"/>
+
+  <!-- Step 7: Earning confirmed -->
+  <rect x="45" y="395" width="290" height="35" class="final-box"/>
+  <text x="190" y="417" text-anchor="middle" class="text-step">Monthly payout (Status: Paid)</text>
+</svg>

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 480">
+  <defs>
+    <style>
+      .step-box { fill: #e8f5e9; stroke: #388e3c; stroke-width: 2; rx: 8; }
+      .optional-box { fill: #fff3e0; stroke: #f57c00; stroke-width: 2; rx: 8; }
+      .result-box { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; rx: 8; }
+      .text-step { font-family: system-ui, sans-serif; font-size: 12px; fill: #212529; }
+      .text-num { font-family: system-ui, sans-serif; font-size: 11px; font-weight: 600; fill: #388e3c; }
+      .text-optional { font-family: system-ui, sans-serif; font-size: 10px; fill: #f57c00; font-style: italic; }
+      .arrow { stroke: #495057; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+      .arrow-dashed { stroke: #f57c00; stroke-width: 2; stroke-dasharray: 5,3; fill: none; marker-end: url(#arrowhead-orange); }
+      .title { font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #212529; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#495057"/>
+    </marker>
+    <marker id="arrowhead-orange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f57c00"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="260" y="25" text-anchor="middle" class="title">Creator Journey</text>
+
+  <!-- Step 1: Register -->
+  <rect x="160" y="45" width="200" height="35" class="step-box"/>
+  <text x="180" y="67" class="text-num">1.</text>
+  <text x="200" y="67" class="text-step">Register as Creator</text>
+
+  <line x1="260" y1="80" x2="260" y2="100" class="arrow"/>
+
+  <!-- Step 2: Complete Profile -->
+  <rect x="130" y="105" width="260" height="35" class="step-box"/>
+  <text x="150" y="127" class="text-num">2.</text>
+  <text x="170" y="127" class="text-step">Complete Profile + Body Profile</text>
+
+  <line x1="260" y1="140" x2="260" y2="160" class="arrow"/>
+
+  <!-- Step 3: Submit Verification -->
+  <rect x="130" y="165" width="260" height="35" class="step-box"/>
+  <text x="150" y="187" class="text-num">3.</text>
+  <text x="170" y="187" class="text-step">Submit Verification (Optional)</text>
+
+  <!-- Parallel paths -->
+  <line x1="260" y1="200" x2="260" y2="215" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="215" x2="380" y2="215" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="215" x2="140" y2="235" class="arrow-dashed"/>
+  <line x1="380" y1="215" x2="380" y2="235" class="arrow"/>
+
+  <!-- Step 4a: Wait for Approval -->
+  <rect x="50" y="240" width="180" height="50" class="optional-box"/>
+  <text x="70" y="262" class="text-num">4a.</text>
+  <text x="95" y="262" class="text-step">Wait for Approval</text>
+  <text x="95" y="278" class="text-optional">(optional)</text>
+
+  <!-- Step 4b: Start Creating -->
+  <rect x="290" y="240" width="180" height="50" class="step-box"/>
+  <text x="310" y="262" class="text-num">4b.</text>
+  <text x="335" y="262" class="text-step">Start Creating</text>
+  <text x="335" y="278" class="text-step">Content (Draft)</text>
+
+  <line x1="140" y1="290" x2="140" y2="305" class="arrow-dashed"/>
+  <line x1="380" y1="290" x2="380" y2="305" class="arrow"/>
+
+  <!-- Step 5a: Verified Badge -->
+  <rect x="50" y="310" width="180" height="35" class="result-box"/>
+  <text x="70" y="332" class="text-num">5a.</text>
+  <text x="95" y="332" class="text-step">Verified Badge</text>
+
+  <!-- Step 5b: Submit for Review -->
+  <rect x="290" y="310" width="180" height="35" class="step-box"/>
+  <text x="310" y="332" class="text-num">5b.</text>
+  <text x="335" y="332" class="text-step">Submit for Review</text>
+
+  <!-- Merge paths -->
+  <line x1="140" y1="345" x2="140" y2="360" stroke="#495057" stroke-width="2"/>
+  <line x1="380" y1="345" x2="380" y2="360" stroke="#495057" stroke-width="2"/>
+  <line x1="140" y1="360" x2="380" y2="360" stroke="#495057" stroke-width="2"/>
+  <line x1="260" y1="360" x2="260" y2="380" class="arrow"/>
+
+  <!-- Step 6: Post Published -->
+  <rect x="100" y="385" width="320" height="35" class="result-box"/>
+  <text x="120" y="407" class="text-num">6.</text>
+  <text x="140" y="407" class="text-step">Post Published → Shoppers Discover</text>
+
+  <line x1="260" y1="420" x2="260" y2="440" class="arrow"/>
+
+  <!-- Step 7: Track & Earn -->
+  <rect x="100" y="445" width="320" height="35" class="step-box"/>
+  <text x="120" y="467" class="text-num">7.</text>
+  <text x="140" y="467" class="text-step">Track Analytics &amp; Earn Revenue</text>
+</svg>

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 280">
+  <defs>
+    <style>
+      .card { fill: #fff; stroke: #dee2e6; stroke-width: 2; rx: 8; }
+      .card-header { fill: #f8f9fa; }
+      .moderation { fill: #ffebee; stroke: #ef5350; }
+      .verification { fill: #e8f5e9; stroke: #66bb6a; }
+      .users { fill: #e3f2fd; stroke: #42a5f5; }
+      .monitoring { fill: #fff3e0; stroke: #ffa726; }
+      .text-header { font-family: system-ui, sans-serif; font-size: 12px; font-weight: 600; fill: #212529; }
+      .text-item { font-family: system-ui, sans-serif; font-size: 11px; fill: #495057; }
+      .bullet { fill: #6c757d; }
+      .title { font-family: system-ui, sans-serif; font-size: 16px; font-weight: 600; fill: #212529; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="250" y="25" text-anchor="middle" class="title">Admin Responsibilities</text>
+
+  <!-- Content Moderation Card -->
+  <rect x="20" y="45" width="220" height="100" class="card moderation"/>
+  <rect x="20" y="45" width="220" height="30" class="card-header" rx="8" ry="8"/>
+  <rect x="20" y="65" width="220" height="10" fill="#f8f9fa"/>
+  <text x="130" y="65" text-anchor="middle" class="text-header">Content Moderation</text>
+
+  <circle cx="40" cy="92" r="3" class="bullet"/>
+  <text x="50" y="96" class="text-item">Review posts</text>
+
+  <circle cx="40" cy="112" r="3" class="bullet"/>
+  <text x="50" y="116" class="text-item">Approve / Reject</text>
+
+  <circle cx="40" cy="132" r="3" class="bullet"/>
+  <text x="50" y="136" class="text-item">Handle reports</text>
+
+  <!-- Creator Verification Card -->
+  <rect x="260" y="45" width="220" height="100" class="card verification"/>
+  <rect x="260" y="45" width="220" height="30" class="card-header" rx="8" ry="8"/>
+  <rect x="260" y="65" width="220" height="10" fill="#f8f9fa"/>
+  <text x="370" y="65" text-anchor="middle" class="text-header">Creator Verification</text>
+
+  <circle cx="280" cy="92" r="3" class="bullet"/>
+  <text x="290" y="96" class="text-item">Review documents</text>
+
+  <circle cx="280" cy="112" r="3" class="bullet"/>
+  <text x="290" y="116" class="text-item">Approve / Reject</text>
+
+  <circle cx="280" cy="132" r="3" class="bullet"/>
+  <text x="290" y="136" class="text-item">Add notes</text>
+
+  <!-- User Management Card -->
+  <rect x="20" y="160" width="220" height="100" class="card users"/>
+  <rect x="20" y="160" width="220" height="30" class="card-header" rx="8" ry="8"/>
+  <rect x="20" y="180" width="220" height="10" fill="#f8f9fa"/>
+  <text x="130" y="180" text-anchor="middle" class="text-header">User Management</text>
+
+  <circle cx="40" cy="207" r="3" class="bullet"/>
+  <text x="50" y="211" class="text-item">View accounts</text>
+
+  <circle cx="40" cy="227" r="3" class="bullet"/>
+  <text x="50" y="231" class="text-item">Suspend users</text>
+
+  <circle cx="40" cy="247" r="3" class="bullet"/>
+  <text x="50" y="251" class="text-item">Handle appeals</text>
+
+  <!-- Platform Monitoring Card -->
+  <rect x="260" y="160" width="220" height="100" class="card monitoring"/>
+  <rect x="260" y="160" width="220" height="30" class="card-header" rx="8" ry="8"/>
+  <rect x="260" y="180" width="220" height="10" fill="#f8f9fa"/>
+  <text x="370" y="180" text-anchor="middle" class="text-header">Platform Monitoring</text>
+
+  <circle cx="280" cy="207" r="3" class="bullet"/>
+  <text x="290" y="211" class="text-item">Statistics</text>
+
+  <circle cx="280" cy="227" r="3" class="bullet"/>
+  <text x="290" y="231" class="text-item">Analytics</text>
+
+  <circle cx="280" cy="247" r="3" class="bullet"/>
+  <text x="290" y="251" class="text-item">Audit logs</text>
+</svg>
