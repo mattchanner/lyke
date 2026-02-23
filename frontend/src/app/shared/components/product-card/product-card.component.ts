@@ -11,6 +11,7 @@ import {
 import { addIcons } from 'ionicons';
 import { cartOutline } from 'ionicons/icons';
 import { CommerceService } from '../../../core/services/commerce.service';
+import { AnalyticsService } from '../../../core';
 import { PostProductDetailResponse, FitRating } from '../../../models';
 
 @Component({
@@ -30,6 +31,7 @@ import { PostProductDetailResponse, FitRating } from '../../../models';
 })
 export class ProductCardComponent {
   private readonly commerce = inject(CommerceService);
+  private readonly analytics = inject(AnalyticsService);
 
   @Input({ required: true }) product!: PostProductDetailResponse;
   @Input({ required: true }) postId!: string;
@@ -60,6 +62,11 @@ export class ProductCardComponent {
   }
 
   shopProduct(): void {
+    this.analytics.track('product.click', {
+      postId: this.postId,
+      productId: this.product.id,
+      source: this.source,
+    }, this.product.id, 'Product');
     this.commerce.trackAndShop(this.postId, this.product.id, {
       source: this.source,
     });

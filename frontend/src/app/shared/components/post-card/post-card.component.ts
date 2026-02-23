@@ -118,9 +118,10 @@ export class PostCardComponent {
     request$.subscribe({
       next: () => {
         this.liked.emit({ postId: this.post.id, liked: newLikedState });
-        if (newLikedState) {
-          this.analytics.track('post.like', { postId: this.post.id, source: 'feed' }, this.post.id, 'Post');
-        }
+        this.analytics.track(
+          newLikedState ? 'post.like' : 'post.unlike',
+          { postId: this.post.id, source: 'feed' }, this.post.id, 'Post'
+        );
       },
       error: () => {
         // Revert on failure
@@ -150,9 +151,10 @@ export class PostCardComponent {
       next: () => {
         this.saved.emit({ postId: this.post.id, saved: newSavedState });
         this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
-        if (newSavedState) {
-          this.analytics.track('post.save', { postId: this.post.id, source: 'feed' }, this.post.id, 'Post');
-        }
+        this.analytics.track(
+          newSavedState ? 'post.save' : 'post.unsave',
+          { postId: this.post.id, source: 'feed' }, this.post.id, 'Post'
+        );
       },
       error: () => {
         // Revert on failure

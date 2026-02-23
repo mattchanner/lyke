@@ -140,9 +140,10 @@ export class PostDetailPage implements OnInit {
             : null
         );
         this.engagement.notify({ postId: currentPost.id, type: 'like', state: newLikedState });
-        if (newLikedState) {
-          this.analytics.track('post.like', { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post');
-        }
+        this.analytics.track(
+          newLikedState ? 'post.like' : 'post.unlike',
+          { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post'
+        );
       },
     });
   }
@@ -174,9 +175,10 @@ export class PostDetailPage implements OnInit {
         );
         this.engagement.notify({ postId: currentPost.id, type: 'save', state: newSavedState });
         this.toast.success(newSavedState ? 'Saved!' : 'Removed from saved');
-        if (newSavedState) {
-          this.analytics.track('post.save', { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post');
-        }
+        this.analytics.track(
+          newSavedState ? 'post.save' : 'post.unsave',
+          { postId: currentPost.id, source: 'post_detail' }, currentPost.id, 'Post'
+        );
       },
     });
   }

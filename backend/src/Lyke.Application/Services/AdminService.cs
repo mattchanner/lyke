@@ -995,89 +995,114 @@ public class AdminService : IAdminService
     {
         var endDate = request.EndDate?.Date ?? DateTime.UtcNow.Date;
         var startDate = request.StartDate?.Date ?? endDate.AddDays(-30);
+        var today = DateTime.UtcNow.Date;
 
-        var startUtc = startDate;
-        var endUtc = endDate.AddDays(1); // inclusive end
+        var startOnly = DateOnly.FromDateTime(startDate);
+        var endOnly = DateOnly.FromDateTime(endDate);
+        var todayOnly = DateOnly.FromDateTime(today);
 
-        // Load data in range
-        var users = await _dbContext.Set<User>()
-            .Where(u => u.CreatedAt >= startUtc && u.CreatedAt < endUtc)
-            .ToListAsync(cancellationToken);
+        // Query pre-aggregated snapshots for historical days (before today)
+        var historicalEnd = endOnly < todayOnly ? endOnly : todayOnly.AddDays(-1);
+        var snapshots = startOnly <= historicalEnd
+            ? await _dbContext.Set<DailyMetricSnapshot>()
+                .Where(s => s.Scope == "platform" && s.Date >= startOnly && s.Date <= historicalEnd)
+                .ToListAsync(cancellationToken)
+            : new List<DailyMetricSnapshot>();
 
-        var posts = await _dbContext.Set<Post>()
-            .Where(p => p.Status == PostStatus.Published
-                && p.PublishedAt != null
-                && p.PublishedAt >= startUtc
-                && p.PublishedAt < endUtc)
-            .Include(p => p.Creator)
-            .ToListAsync(cancellationToken);
+        var snapshotsByDate = snapshots.ToDictionary(s => s.Date);
 
-        var engagements = await _dbContext.Set<Engagement>()
-            .Where(e => e.CreatedAt >= startUtc && e.CreatedAt < endUtc)
-            .ToListAsync(cancellationToken);
+        // Query raw tables only for today (if in range)
+        AdminDailyMetrics? todayMetrics = null;
+        if (endDate >= today && startDate <= today)
+        {
+            var todayStart = today;
+            var todayEnd = today.AddDays(1);
+            var todayNewUsers = await _dbContext.Set<User>()
+                .CountAsync(u => u.CreatedAt >= todayStart && u.CreatedAt < todayEnd, cancellationToken);
+            var todayPosts = await _dbContext.Set<Post>()
+                .CountAsync(p => p.Status == PostStatus.Published && p.PublishedAt >= todayStart && p.PublishedAt < todayEnd, cancellationToken);
+            var todayViews = await _dbContext.Set<Engagement>()
+                .CountAsync(e => e.Type == EngagementType.View && e.CreatedAt >= todayStart && e.CreatedAt < todayEnd, cancellationToken);
+            var todayLikes = await _dbContext.Set<Engagement>()
+                .CountAsync(e => e.Type == EngagementType.Like && e.CreatedAt >= todayStart && e.CreatedAt < todayEnd, cancellationToken);
+            var todaySaves = await _dbContext.Set<Engagement>()
+                .CountAsync(e => e.Type == EngagementType.Save && e.CreatedAt >= todayStart && e.CreatedAt < todayEnd, cancellationToken);
+            var todayClicks = await _dbContext.Set<ClickEvent>()
+                .CountAsync(c => c.CreatedAt >= todayStart && c.CreatedAt < todayEnd, cancellationToken);
 
-        var clicks = await _dbContext.Set<ClickEvent>()
-            .Where(c => c.CreatedAt >= startUtc && c.CreatedAt < endUtc)
-            .ToListAsync(cancellationToken);
+            todayMetrics = new AdminDailyMetrics(today, todayNewUsers, todayPosts, todayViews, todayLikes, todaySaves, todayClicks);
+        }
 
-        // Summary
-        var summary = new AdminAnalyticsSummary(
-            NewUsers: users.Count,
-            PostsPublished: posts.Count,
-            Views: engagements.Count(e => e.Type == EngagementType.View),
-            Likes: engagements.Count(e => e.Type == EngagementType.Like),
-            Saves: engagements.Count(e => e.Type == EngagementType.Save),
-            Clicks: clicks.Count
-        );
-
-        // Daily metrics
+        // Build daily metrics list, filling gaps with zeros
         var totalDays = (int)(endDate - startDate).TotalDays + 1;
         var dailyMetrics = Enumerable.Range(0, totalDays).Select(offset =>
         {
             var day = startDate.AddDays(offset);
-            var nextDay = day.AddDays(1);
-            return new AdminDailyMetrics(
-                Date: day,
-                NewUsers: users.Count(u => u.CreatedAt >= day && u.CreatedAt < nextDay),
-                PostsPublished: posts.Count(p => p.PublishedAt >= day && p.PublishedAt < nextDay),
-                Views: engagements.Count(e => e.Type == EngagementType.View && e.CreatedAt >= day && e.CreatedAt < nextDay),
-                Likes: engagements.Count(e => e.Type == EngagementType.Like && e.CreatedAt >= day && e.CreatedAt < nextDay),
-                Saves: engagements.Count(e => e.Type == EngagementType.Save && e.CreatedAt >= day && e.CreatedAt < nextDay),
-                Clicks: clicks.Count(c => c.CreatedAt >= day && c.CreatedAt < nextDay)
-            );
+            var dayOnly = DateOnly.FromDateTime(day);
+
+            if (dayOnly == todayOnly && todayMetrics != null)
+                return todayMetrics;
+
+            if (snapshotsByDate.TryGetValue(dayOnly, out var snap))
+                return new AdminDailyMetrics(day, snap.NewUsers, snap.PostsPublished, (int)snap.Views, (int)snap.Likes, (int)snap.Saves, (int)snap.Clicks);
+
+            return new AdminDailyMetrics(day, 0, 0, 0, 0, 0, 0);
         }).ToList();
 
-        // Top 10 creators by total engagements in the period
-        var postsByCreator = posts
-            .Where(p => p.Creator != null)
-            .GroupBy(p => p.CreatorId)
+        // Summary: aggregate all daily metrics
+        var summary = new AdminAnalyticsSummary(
+            NewUsers: dailyMetrics.Sum(d => d.NewUsers),
+            PostsPublished: dailyMetrics.Sum(d => d.PostsPublished),
+            Views: dailyMetrics.Sum(d => d.Views),
+            Likes: dailyMetrics.Sum(d => d.Likes),
+            Saves: dailyMetrics.Sum(d => d.Saves),
+            Clicks: dailyMetrics.Sum(d => d.Clicks)
+        );
+
+        // Top 10 creators: aggregate from creator-scoped snapshots
+        var creatorSnapshots = startOnly <= historicalEnd
+            ? await _dbContext.Set<DailyMetricSnapshot>()
+                .Where(s => s.Scope.StartsWith("creator:") && s.Date >= startOnly && s.Date <= endOnly)
+                .GroupBy(s => s.ScopeEntityId)
+                .Select(g => new
+                {
+                    CreatorId = g.Key,
+                    Views = (int)g.Sum(s => s.Views),
+                    Likes = (int)g.Sum(s => s.Likes),
+                    Clicks = (int)g.Sum(s => s.Clicks),
+                })
+                .OrderByDescending(c => c.Views + c.Likes + c.Clicks)
+                .Take(10)
+                .ToListAsync(cancellationToken)
+            : [];
+
+        var creatorIds = creatorSnapshots
+            .Where(c => c.CreatorId.HasValue)
+            .Select(c => c.CreatorId!.Value)
             .ToList();
 
-        // Get all post IDs to find engagements/clicks for those posts
-        var postIds = posts.Select(p => p.Id).ToHashSet();
-        var postEngagements = engagements.Where(e => postIds.Contains(e.PostId)).ToList();
-        var postClicks = clicks.Where(c => postIds.Contains(c.PostId)).ToList();
+        var creators = creatorIds.Count > 0
+            ? await _dbContext.Set<Creator>()
+                .Where(c => creatorIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, cancellationToken)
+            : new Dictionary<Guid, Creator>();
 
-        var topCreators = postsByCreator.Select(g =>
-        {
-            var creator = g.First().Creator!;
-            var creatorPostIds = g.Select(p => p.Id).ToHashSet();
-            var views = postEngagements.Count(e => e.Type == EngagementType.View && creatorPostIds.Contains(e.PostId));
-            var likes = postEngagements.Count(e => e.Type == EngagementType.Like && creatorPostIds.Contains(e.PostId));
-            var creatorClicks = postClicks.Count(c => creatorPostIds.Contains(c.PostId));
-            return new TopCreatorAnalytics(
-                CreatorId: creator.Id,
-                DisplayName: creator.DisplayName,
-                IsVerified: creator.VerificationStatus == VerificationStatus.Approved,
-                TotalEngagements: views + likes + creatorClicks,
-                Views: views,
-                Likes: likes,
-                Clicks: creatorClicks
-            );
-        })
-        .OrderByDescending(c => c.TotalEngagements)
-        .Take(10)
-        .ToList();
+        var topCreators = creatorSnapshots
+            .Where(c => c.CreatorId.HasValue && creators.ContainsKey(c.CreatorId.Value))
+            .Select(c =>
+            {
+                var creator = creators[c.CreatorId!.Value];
+                return new TopCreatorAnalytics(
+                    CreatorId: creator.Id,
+                    DisplayName: creator.DisplayName,
+                    IsVerified: creator.VerificationStatus == VerificationStatus.Approved,
+                    TotalEngagements: c.Views + c.Likes + c.Clicks,
+                    Views: c.Views,
+                    Likes: c.Likes,
+                    Clicks: c.Clicks
+                );
+            })
+            .ToList();
 
         return new AdminAnalyticsResponse(summary, dailyMetrics, topCreators);
     }
