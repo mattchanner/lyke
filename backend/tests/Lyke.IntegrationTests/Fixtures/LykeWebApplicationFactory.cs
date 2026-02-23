@@ -42,6 +42,7 @@ public class LykeWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(backgroundWorkerDescriptor);
             }
 
+
             // Remove ALL DbContext-related registrations to avoid provider conflicts
             var descriptorsToRemove = services.Where(d =>
                 d.ServiceType == typeof(DbContextOptions<LykeDbContext>) ||

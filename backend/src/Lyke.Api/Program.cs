@@ -192,17 +192,19 @@ var app = builder.Build();
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 FileInfo entryAseemblyFile = new(Assembly.GetEntryAssembly()!.Location);
 
-// Apply pending migrations
-using (var scope = app.Services.CreateScope())
+// Apply pending migrations and seed data (skip in Testing environment)
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var db = scope.ServiceProvider.GetRequiredService<LykeDbContext>();
-    await db.Database.MigrateAsync();
-}
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<LykeDbContext>();
+        await db.Database.MigrateAsync();
+    }
 
-// Seed development data
-if (true || app.Environment.IsDevelopment())
-{
-    await DataSeeder.SeedAsync(app.Services);
+    if (app.Environment.IsDevelopment())
+    {
+        await DataSeeder.SeedAsync(app.Services);
+    }
 }
 
 // Configure pipeline
@@ -225,7 +227,10 @@ app.UseSerilogRequestLogging();
 
 app.UseCors("AllowMobileApp");
 
-app.UseRateLimiter();
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.UseRateLimiter();
+}
 
 if (!app.Environment.IsDevelopment())
 {
