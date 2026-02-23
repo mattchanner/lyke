@@ -11,7 +11,7 @@
   @if (retailer(); as r) {
     <div class="retailer-header">
       @if (r.logoUrl) {
-        <img [src]="r.logoUrl" [alt]="r.name" class="header-logo" />
+        <img [src]="r.logoUrl" [alt]="r.name" class="header-logo" loading="lazy" />
       }
       <h2>{{ r.name }}</h2>
       <span class="header-stats">

@@ -51,7 +51,7 @@
         @for (creator of results()!.creators; track creator.id) {
           <ion-item lines="full" button (click)="onCreatorTap(creator)">
             <ion-avatar slot="start">
-              <img [src]="creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="creator.displayName" />
+              <img [src]="creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="creator.displayName" loading="lazy" />
             </ion-avatar>
             <ion-label>
               <h2>
@@ -74,9 +74,9 @@
           <ion-item lines="full" [routerLink]="['/shop/product', product.id]">
             <ion-thumbnail slot="start">
               @if (product.imageUrl) {
-                <img [src]="product.imageUrl" [alt]="product.name" />
+                <img [src]="product.imageUrl" [alt]="product.name" loading="lazy" />
               } @else {
-                <img src="assets/placeholder-product.svg" alt="Product" />
+                <img src="assets/placeholder-product.svg" alt="Product" loading="lazy" />
               }
             </ion-thumbnail>
             <ion-label>

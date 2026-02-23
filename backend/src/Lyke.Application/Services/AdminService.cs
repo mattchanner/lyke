@@ -47,7 +47,7 @@ public class AdminService : IAdminService
         CancellationToken cancellationToken = default
     )
     {
-        var query = _dbContext.Set<Post>().AsQueryable();
+        var query = _dbContext.Set<Post>().AsNoTracking().AsQueryable();
 
         if (status.HasValue)
         {
@@ -64,6 +64,7 @@ public class AdminService : IAdminService
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
+            .AsSplitQuery()
             .OrderBy(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -137,9 +138,11 @@ public class AdminService : IAdminService
     {
         var post = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
         if (post == null)
@@ -270,7 +273,7 @@ public class AdminService : IAdminService
         CancellationToken cancellationToken = default
     )
     {
-        var query = _dbContext.Set<User>().AsQueryable();
+        var query = _dbContext.Set<User>().AsNoTracking().AsQueryable();
 
         if (request.UserType.HasValue)
         {
@@ -330,6 +333,7 @@ public class AdminService : IAdminService
     {
         var user = await _dbContext
             .Set<User>()
+            .AsNoTracking()
             .Include(u => u.BodyProfile)
             .Include(u => u.Creator)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
@@ -490,7 +494,7 @@ public class AdminService : IAdminService
         CancellationToken cancellationToken = default
     )
     {
-        var query = _dbContext.Set<ContentReport>().AsQueryable();
+        var query = _dbContext.Set<ContentReport>().AsNoTracking().AsQueryable();
 
         if (request.Status.HasValue)
             query = query.Where(cr => cr.Status == request.Status.Value);
@@ -648,10 +652,12 @@ public class AdminService : IAdminService
     {
         var posts = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Where(p => p.Status == PostStatus.PendingReview || p.Status == PostStatus.Flagged)
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         var postIds = posts.Select(p => p.Id).ToList();
@@ -919,65 +925,91 @@ public class AdminService : IAdminService
         var sevenDaysAgo = now.AddDays(-7);
         var thirtyDaysAgo = now.AddDays(-30);
 
-        // User stats
-        var users = await _dbContext.Set<User>().ToListAsync(cancellationToken);
+        var userSet = _dbContext.Set<User>();
+        var postSet = _dbContext.Set<Post>();
+        var reportSet = _dbContext.Set<ContentReport>();
+        var creatorSet = _dbContext.Set<Creator>();
+        var engagementSet = _dbContext.Set<Engagement>();
+        var clickSet = _dbContext.Set<ClickEvent>();
+
+        // User stats — all CountAsync, no data loaded into memory
+        var totalUsers = await userSet.CountAsync(cancellationToken);
+        var activeUsers = await userSet.CountAsync(u => u.IsActive, cancellationToken);
+        var suspendedUsers = await userSet.CountAsync(u => !u.IsActive, cancellationToken);
+        var shoppers = await userSet.CountAsync(u => u.UserType == UserType.Shopper, cancellationToken);
+        var creatorsCount = await userSet.CountAsync(u => u.UserType == UserType.Creator, cancellationToken);
+        var retailers = await userSet.CountAsync(u => u.UserType == UserType.Retailer, cancellationToken);
+        var admins = await userSet.CountAsync(u => u.UserType == UserType.Admin, cancellationToken);
+        var newUsersLast7 = await userSet.CountAsync(u => u.CreatedAt >= sevenDaysAgo, cancellationToken);
+        var newUsersLast30 = await userSet.CountAsync(u => u.CreatedAt >= thirtyDaysAgo, cancellationToken);
+
         var userStats = new UserStats(
-            TotalUsers: users.Count,
-            ActiveUsers: users.Count(u => u.IsActive),
-            SuspendedUsers: users.Count(u => !u.IsActive),
-            Shoppers: users.Count(u => u.UserType == UserType.Shopper),
-            Creators: users.Count(u => u.UserType == UserType.Creator),
-            Retailers: users.Count(u => u.UserType == UserType.Retailer),
-            Admins: users.Count(u => u.UserType == UserType.Admin),
-            NewUsersLast7Days: users.Count(u => u.CreatedAt >= sevenDaysAgo),
-            NewUsersLast30Days: users.Count(u => u.CreatedAt >= thirtyDaysAgo)
+            TotalUsers: totalUsers,
+            ActiveUsers: activeUsers,
+            SuspendedUsers: suspendedUsers,
+            Shoppers: shoppers,
+            Creators: creatorsCount,
+            Retailers: retailers,
+            Admins: admins,
+            NewUsersLast7Days: newUsersLast7,
+            NewUsersLast30Days: newUsersLast30
         );
 
         // Content stats
-        var posts = await _dbContext.Set<Post>().ToListAsync(cancellationToken);
-        var reports = await _dbContext.Set<ContentReport>().ToListAsync(cancellationToken);
+        var totalPosts = await postSet.CountAsync(cancellationToken);
+        var publishedPosts = await postSet.CountAsync(p => p.Status == PostStatus.Published, cancellationToken);
+        var pendingReviewPosts = await postSet.CountAsync(p => p.Status == PostStatus.PendingReview, cancellationToken);
+        var draftPosts = await postSet.CountAsync(p => p.Status == PostStatus.Draft, cancellationToken);
+        var rejectedPosts = await postSet.CountAsync(p => p.Status == PostStatus.Rejected, cancellationToken);
+        var flaggedPosts = await postSet.CountAsync(p => p.Status == PostStatus.Flagged, cancellationToken);
+        var removedPosts = await postSet.CountAsync(p => p.Status == PostStatus.Removed, cancellationToken);
+        var totalReports = await reportSet.CountAsync(cancellationToken);
+        var pendingReports = await reportSet.CountAsync(r => r.Status == ReportStatus.Pending, cancellationToken);
+        var postsLast7 = await postSet.CountAsync(p => p.CreatedAt >= sevenDaysAgo, cancellationToken);
+        var postsLast30 = await postSet.CountAsync(p => p.CreatedAt >= thirtyDaysAgo, cancellationToken);
+
         var contentStats = new ContentStats(
-            TotalPosts: posts.Count,
-            PublishedPosts: posts.Count(p => p.Status == PostStatus.Published),
-            PendingReviewPosts: posts.Count(p => p.Status == PostStatus.PendingReview),
-            DraftPosts: posts.Count(p => p.Status == PostStatus.Draft),
-            RejectedPosts: posts.Count(p => p.Status == PostStatus.Rejected),
-            FlaggedPosts: posts.Count(p => p.Status == PostStatus.Flagged),
-            RemovedPosts: posts.Count(p => p.Status == PostStatus.Removed),
-            TotalReports: reports.Count,
-            PendingReports: reports.Count(r => r.Status == ReportStatus.Pending),
-            PostsLast7Days: posts.Count(p => p.CreatedAt >= sevenDaysAgo),
-            PostsLast30Days: posts.Count(p => p.CreatedAt >= thirtyDaysAgo)
+            TotalPosts: totalPosts,
+            PublishedPosts: publishedPosts,
+            PendingReviewPosts: pendingReviewPosts,
+            DraftPosts: draftPosts,
+            RejectedPosts: rejectedPosts,
+            FlaggedPosts: flaggedPosts,
+            RemovedPosts: removedPosts,
+            TotalReports: totalReports,
+            PendingReports: pendingReports,
+            PostsLast7Days: postsLast7,
+            PostsLast30Days: postsLast30
         );
 
         // Verification stats
-        var creators = await _dbContext.Set<Creator>().ToListAsync(cancellationToken);
+        var pendingVerifications = await creatorSet.CountAsync(c => c.VerificationStatus == VerificationStatus.Pending, cancellationToken);
+        var approvedCreators = await creatorSet.CountAsync(c => c.VerificationStatus == VerificationStatus.Approved, cancellationToken);
+        var rejectedVerifications = await creatorSet.CountAsync(c => c.VerificationStatus == VerificationStatus.Rejected, cancellationToken);
+        var totalCreators = await creatorSet.CountAsync(cancellationToken);
+
         var verificationStats = new VerificationStats(
-            PendingVerifications: creators.Count(c =>
-                c.VerificationStatus == VerificationStatus.Pending
-            ),
-            ApprovedCreators: creators.Count(c =>
-                c.VerificationStatus == VerificationStatus.Approved
-            ),
-            RejectedVerifications: creators.Count(c =>
-                c.VerificationStatus == VerificationStatus.Rejected
-            ),
-            TotalCreators: creators.Count
+            PendingVerifications: pendingVerifications,
+            ApprovedCreators: approvedCreators,
+            RejectedVerifications: rejectedVerifications,
+            TotalCreators: totalCreators
         );
 
         // Engagement stats
-        var engagements = await _dbContext.Set<Engagement>().ToListAsync(cancellationToken);
-        var clicks = await _dbContext.Set<ClickEvent>().ToListAsync(cancellationToken);
+        var totalViews = await engagementSet.CountAsync(e => e.Type == EngagementType.View, cancellationToken);
+        var totalLikes = await engagementSet.CountAsync(e => e.Type == EngagementType.Like, cancellationToken);
+        var totalSaves = await engagementSet.CountAsync(e => e.Type == EngagementType.Save, cancellationToken);
+        var totalClicks = await clickSet.CountAsync(cancellationToken);
+        var viewsLast7 = await engagementSet.CountAsync(e => e.Type == EngagementType.View && e.CreatedAt >= sevenDaysAgo, cancellationToken);
+        var clicksLast7 = await clickSet.CountAsync(c => c.CreatedAt >= sevenDaysAgo, cancellationToken);
 
         var engagementStats = new EngagementStats(
-            TotalViews: engagements.Count(e => e.Type == EngagementType.View),
-            TotalLikes: engagements.Count(e => e.Type == EngagementType.Like),
-            TotalSaves: engagements.Count(e => e.Type == EngagementType.Save),
-            TotalClicks: clicks.Count,
-            ViewsLast7Days: engagements.Count(e =>
-                e.Type == EngagementType.View && e.CreatedAt >= sevenDaysAgo
-            ),
-            ClicksLast7Days: clicks.Count(c => c.CreatedAt >= sevenDaysAgo)
+            TotalViews: totalViews,
+            TotalLikes: totalLikes,
+            TotalSaves: totalSaves,
+            TotalClicks: totalClicks,
+            ViewsLast7Days: viewsLast7,
+            ClicksLast7Days: clicksLast7
         );
 
         return new PlatformStatsResponse(

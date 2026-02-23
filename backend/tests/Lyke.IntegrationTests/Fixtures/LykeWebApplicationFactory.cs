@@ -1,6 +1,3 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Lyke.Application.DTOs.Media;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
@@ -12,6 +9,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Lyke.IntegrationTests.Fixtures;
 

@@ -1,7 +1,7 @@
 <ion-card [routerLink]="['/product', product.id]" button>
   <div class="card-image-wrapper">
     @if (product.imageUrls.length > 0) {
-      <img [src]="product.imageUrls[0]" [alt]="product.name" class="card-image" />
+      <img [src]="product.imageUrls[0]" [alt]="product.name" class="card-image" loading="lazy" />
     } @else {
       <div class="card-image placeholder"></div>
     }

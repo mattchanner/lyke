@@ -18,7 +18,7 @@
         <div class="thumb-strip">
           @for (media of uploadedMedia(); track media.mediaId; let i = $index) {
             <div class="thumb-item">
-              <img [src]="media.thumbnailUrl" alt="" />
+              <img [src]="media.thumbnailUrl" alt="" loading="lazy" />
               <button class="thumb-remove" (click)="removeMedia(i)">
                 <ion-icon name="close-outline"></ion-icon>
               </button>
@@ -106,7 +106,7 @@
       <div class="tagged-product-card">
         <div class="product-row">
           @if (tp.product.imageUrls.length > 0) {
-            <img [src]="tp.product.imageUrls[0]" alt="" class="product-thumb" />
+            <img [src]="tp.product.imageUrls[0]" alt="" class="product-thumb" loading="lazy" />
           }
           <div class="product-info">
             <span class="product-name">{{ tp.product.name }}</span>

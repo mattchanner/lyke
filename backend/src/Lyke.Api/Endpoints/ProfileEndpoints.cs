@@ -90,21 +90,24 @@ public static class ProfileEndpoints
             .WithName("GetBodyTypes")
             .WithSummary("Get available body types")
             .Produces<ApiResponse<IReadOnlyList<BodyTypeResponse>>>(StatusCodes.Status200OK)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .CacheOutput("LookupData");
 
         group
             .MapGet("/fit-preferences", GetFitPreferencesAsync)
             .WithName("GetFitPreferences")
             .WithSummary("Get available fit preferences")
             .Produces<ApiResponse<IReadOnlyList<FitPreferenceResponse>>>(StatusCodes.Status200OK)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .CacheOutput("LookupData");
 
         group
             .MapGet("/fit-tags", GetFitTagsAsync)
             .WithName("GetFitTags")
             .WithSummary("Get available fit tags")
             .Produces<ApiResponse<IReadOnlyList<FitTagResponse>>>(StatusCodes.Status200OK)
-            .AllowAnonymous();
+            .AllowAnonymous()
+            .CacheOutput("LookupData");
 
         return app;
     }

@@ -41,6 +41,15 @@ builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddRedirectToScalarUiMiddleware();
 
+// Caching
+builder.Services.AddMemoryCache();
+builder.Services.AddOutputCache(options =>
+{
+    options.AddBasePolicy(b => b.NoCache());
+    options.AddPolicy("LookupData", b => b.Expire(TimeSpan.FromHours(1)));
+    options.AddPolicy("RetailerList", b => b.Expire(TimeSpan.FromMinutes(15)));
+});
+
 // FluentValidation auto-validation for endpoints
 builder.Services.AddFluentValidationAutoValidation();
 
@@ -226,6 +235,8 @@ app.UseExceptionHandling();
 app.UseSerilogRequestLogging();
 
 app.UseCors("AllowMobileApp");
+
+app.UseOutputCache();
 
 if (!app.Environment.IsEnvironment("Testing"))
 {

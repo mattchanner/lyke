@@ -111,7 +111,7 @@
               @for (product of searchResults(); track product.id) {
                 <ion-item button (click)="addProduct(product)">
                   @if (product.imageUrls.length > 0) {
-                    <img [src]="product.imageUrls[0]" class="product-thumb" slot="start" alt="Product" />
+                    <img [src]="product.imageUrls[0]" class="product-thumb" slot="start" alt="Product" loading="lazy" />
                   }
                   <ion-label>
                     <h3>{{ product.name }}</h3>

@@ -586,6 +586,7 @@ public class CreatorService : ICreatorService
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
         var post = await _dbContext.Set<Post>()
+            .AsNoTracking()
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
                     .ThenInclude(prod => prod.Retailer)
@@ -594,6 +595,7 @@ public class CreatorService : ICreatorService
                     .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .Include(p => p.ClickEvents)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == postId && p.CreatorId == creator.Id, cancellationToken);
 
         if (post == null)
@@ -622,6 +624,7 @@ public class CreatorService : ICreatorService
         var totalCount = await query.CountAsync(cancellationToken);
 
         var posts = await query
+            .AsNoTracking()
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
                     .ThenInclude(prod => prod.Retailer)
@@ -630,6 +633,7 @@ public class CreatorService : ICreatorService
                     .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .Include(p => p.ClickEvents)
+            .AsSplitQuery()
             .OrderByDescending(p => p.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)

@@ -24,7 +24,7 @@
             <ion-card [routerLink]="['/shop/retailers', retailer.id]" button>
               <div class="retailer-logo-wrapper">
                 @if (retailer.logoUrl) {
-                  <img [src]="retailer.logoUrl" [alt]="retailer.name" class="retailer-logo" />
+                  <img [src]="retailer.logoUrl" [alt]="retailer.name" class="retailer-logo" loading="lazy" />
                 } @else {
                   <div class="retailer-initial">{{ getInitial(retailer.name) }}</div>
                 }

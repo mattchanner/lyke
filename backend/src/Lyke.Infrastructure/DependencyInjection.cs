@@ -23,7 +23,15 @@ public static class DependencyInjection
         {
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(LykeDbContext).Assembly.FullName)
+                b =>
+                {
+                    b.MigrationsAssembly(typeof(LykeDbContext).Assembly.FullName);
+                    b.EnableRetryOnFailure(
+                        maxRetryCount: 3,
+                        maxRetryDelay: TimeSpan.FromSeconds(5),
+                        errorCodesToAdd: null);
+                    b.CommandTimeout(30);
+                }
             );
         });
 

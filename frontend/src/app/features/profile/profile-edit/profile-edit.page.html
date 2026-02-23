@@ -16,7 +16,7 @@
     <div class="form-container">
       <div class="avatar-section" (click)="fileInput.click()">
         <ion-avatar class="avatar-upload">
-          <img [src]="imagePreview() || 'assets/default-avatar.svg'" alt="Profile" />
+          <img [src]="imagePreview() || 'assets/default-avatar.svg'" alt="Profile" loading="lazy" />
         </ion-avatar>
         <div class="avatar-overlay">
           <ion-icon name="camera-outline"></ion-icon>

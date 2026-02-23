@@ -45,12 +45,94 @@ public class FeedService : IFeedService
     {
         var userBodyProfile = await _dbContext
             .Set<BodyProfile>()
+            .AsNoTracking()
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         var query = BuildFeedQuery(request);
 
-        // Get posts with creator body profiles for matching
-        var posts = await query
+        // For Recent and MostLiked, push sorting + pagination to DB
+        if (request.SortBy == FeedSortBy.Recent || request.SortBy == FeedSortBy.MostLiked)
+        {
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var orderedQuery = request.SortBy == FeedSortBy.MostLiked
+                ? query.OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like))
+                    .ThenByDescending(p => p.PublishedAt)
+                : query.OrderByDescending(p => p.PublishedAt) as IOrderedQueryable<Post>;
+
+            var posts = await orderedQuery
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Include(p => p.Creator)
+                .ThenInclude(c => c.User)
+                .ThenInclude(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.BodyType)
+                .Include(p => p.PostProducts)
+                .ThenInclude(pp => pp.Product)
+                .ThenInclude(prod => prod.Retailer)
+                .Include(p => p.PostProducts)
+                .ThenInclude(pp => pp.FitTags)
+                .ThenInclude(pft => pft.FitTag)
+                .Include(p => p.Engagements)
+                .AsSplitQuery()
+                .ToListAsync(cancellationToken);
+
+            var postIds = posts.Select(p => p.Id).ToList();
+            var userEngagements = await GetUserEngagementsAsync(userId, postIds, cancellationToken);
+
+            var feedPosts = posts
+                .Select(p => MapToFeedPostResponse(
+                    p,
+                    CalculateSimilarityScore(userBodyProfile, p.Creator.User.BodyProfile),
+                    userEngagements))
+                .ToList();
+
+            var meta = new PaginationMeta
+            {
+                Page = request.Page,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+            };
+
+            return (feedPosts, meta);
+        }
+
+        // Relevance sort: lightweight projection to score, then fetch full data for page only
+        var lightweightPosts = await query
+            .Include(p => p.Creator)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .Select(p => new
+            {
+                p.Id,
+                p.PublishedAt,
+                CreatorBodyProfile = p.Creator.User.BodyProfile,
+            })
+            .ToListAsync(cancellationToken);
+
+        var allScored = lightweightPosts
+            .Select(p => new
+            {
+                p.Id,
+                Score = CalculateSimilarityScore(userBodyProfile, p.CreatorBodyProfile) * 0.6
+                    + CalculateRecencyScore(p.PublishedAt) * 0.4,
+            })
+            .OrderByDescending(x => x.Score)
+            .ToList();
+
+        var relevanceTotalCount = allScored.Count;
+        var pagedIds = allScored
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
+
+        var pagedPostIds = pagedIds.Select(x => x.Id).ToList();
+        var scoreLookup = pagedIds.ToDictionary(x => x.Id, x => x.Score);
+
+        // Fetch full data only for the page
+        var fullPosts = await _dbContext.Set<Post>()
+            .AsNoTracking()
+            .Where(p => pagedPostIds.Contains(p.Id))
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
@@ -62,56 +144,32 @@ public class FeedService : IFeedService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
-            .OrderByDescending(p => p.PublishedAt)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
-        // Calculate similarity scores and rank (no minimum threshold —
-        // similarity is used for ranking, not filtering)
-        var allScoredPosts = posts
-            .Select(p => new
-            {
-                Post = p,
-                SimilarityScore = CalculateSimilarityScore(
-                    userBodyProfile,
-                    p.Creator.User.BodyProfile
-                ),
-                RecencyScore = CalculateRecencyScore(p.PublishedAt),
-            })
-            .OrderByDescending(x =>
-                request.SortBy switch
-                {
-                    FeedSortBy.Recent => x.RecencyScore,
-                    FeedSortBy.MostLiked => x.Post.Engagements.Count(e =>
-                        e.Type == EngagementType.Like
-                    ),
-                    _ => x.SimilarityScore * 0.6 + x.RecencyScore * 0.4, // Relevance
-                }
-            )
+        var relevanceUserEngagements = await GetUserEngagementsAsync(userId, pagedPostIds, cancellationToken);
+
+        // Maintain score ordering
+        var orderedFullPosts = pagedPostIds
+            .Select(id => fullPosts.FirstOrDefault(p => p.Id == id))
+            .Where(p => p != null)
             .ToList();
 
-        var totalCount = allScoredPosts.Count;
-
-        var scoredPosts = allScoredPosts
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        var relevanceFeedPosts = orderedFullPosts
+            .Select(p => MapToFeedPostResponse(
+                p!,
+                scoreLookup.GetValueOrDefault(p!.Id, 0),
+                relevanceUserEngagements))
             .ToList();
 
-        // Get user's engagements for these posts
-        var postIds = scoredPosts.Select(x => x.Post.Id).ToList();
-        var userEngagements = await GetUserEngagementsAsync(userId, postIds, cancellationToken);
-
-        var feedPosts = scoredPosts
-            .Select(x => MapToFeedPostResponse(x.Post, x.SimilarityScore, userEngagements))
-            .ToList();
-
-        var meta = new PaginationMeta
+        var relevanceMeta = new PaginationMeta
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount,
+            TotalCount = relevanceTotalCount,
         };
 
-        return (feedPosts, meta);
+        return (relevanceFeedPosts, relevanceMeta);
     }
 
     public async Task<(
@@ -127,7 +185,18 @@ public class FeedService : IFeedService
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var posts = await query
+        // Push sorting + pagination to DB
+        var orderedQuery = request.SortBy switch
+        {
+            FeedSortBy.MostLiked => query
+                .OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like))
+                .ThenByDescending(p => p.PublishedAt),
+            _ => query.OrderByDescending(p => p.PublishedAt) as IOrderedQueryable<Post>,
+        };
+
+        var posts = await orderedQuery
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
@@ -139,22 +208,8 @@ public class FeedService : IFeedService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
-
-        // Sort in memory based on sort option
-        var sortedPosts = request.SortBy switch
-        {
-            FeedSortBy.Recent => posts.OrderByDescending(p => p.PublishedAt).ToList(),
-            FeedSortBy.MostLiked => posts
-                .OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like))
-                .ToList(),
-            _ => posts.OrderByDescending(p => p.PublishedAt).ToList(),
-        };
-
-        posts = sortedPosts
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToList();
 
         var postIds = posts.Select(p => p.Id).ToList();
         var userEngagements = userId.HasValue
@@ -181,12 +236,11 @@ public class FeedService : IFeedService
     {
         var post = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
             .ThenInclude(bp => bp!.BodyType)
-            .Include(p => p.Creator)
-            .ThenInclude(c => c.Posts)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
             .ThenInclude(prod => prod.Retailer)
@@ -194,6 +248,7 @@ public class FeedService : IFeedService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(
                 p => p.Id == postId && p.Status == PostStatus.Published,
                 cancellationToken
@@ -203,6 +258,14 @@ public class FeedService : IFeedService
         {
             throw new NotFoundException(nameof(Post), postId);
         }
+
+        // Get creator's published post count separately to avoid no-tracking cycle
+        var creatorPublishedPostCount = await _dbContext
+            .Set<Post>()
+            .CountAsync(
+                p => p.CreatorId == post.CreatorId && p.Status == PostStatus.Published,
+                cancellationToken
+            );
 
         // Calculate similarity if user has a body profile
         double similarityScore = 0;
@@ -221,7 +284,7 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, new[] { postId }, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        return MapToPostDetailResponse(post, similarityScore, userEngagements);
+        return MapToPostDetailResponse(post, similarityScore, userEngagements, creatorPublishedPostCount);
     }
 
     public async Task<IReadOnlyList<FeedPostResponse>> GetSimilarPostsAsync(
@@ -233,11 +296,13 @@ public class FeedService : IFeedService
     {
         var post = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
         if (post == null)
@@ -251,10 +316,43 @@ public class FeedService : IFeedService
             .Distinct()
             .ToList();
 
-        // Find similar posts by creator body profile and product categories
-        var similarPosts = await _dbContext
+        // Lightweight projection for scoring — no full entity graph
+        var lightweightSimilar = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Where(p => p.Id != postId && p.Status == PostStatus.Published)
+            .Include(p => p.Creator)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile)
+            .Include(p => p.PostProducts)
+            .ThenInclude(pp => pp.Product)
+            .Select(p => new
+            {
+                p.Id,
+                CreatorBodyProfile = p.Creator.User.BodyProfile,
+                HasMatchingCategory = p.PostProducts.Any(pp => productCategories.Contains(pp.Product.Category)),
+            })
+            .ToListAsync(cancellationToken);
+
+        var topIds = lightweightSimilar
+            .Select(p => new
+            {
+                p.Id,
+                Score = CalculateSimilarityScore(creatorBodyProfile, p.CreatorBodyProfile) * 0.7
+                    + (p.HasMatchingCategory ? 0.3 : 0),
+            })
+            .OrderByDescending(x => x.Score)
+            .Take(limit)
+            .ToList();
+
+        var topPostIds = topIds.Select(x => x.Id).ToList();
+        var scoreLookup = topIds.ToDictionary(x => x.Id, x => x.Score);
+
+        // Fetch full data only for top N
+        var fullPosts = await _dbContext
+            .Set<Post>()
+            .AsNoTracking()
+            .Where(p => topPostIds.Contains(p.Id))
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
@@ -266,30 +364,19 @@ public class FeedService : IFeedService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
-        var scored = similarPosts
-            .Select(p => new
-            {
-                Post = p,
-                Score = CalculateSimilarityScore(creatorBodyProfile, p.Creator.User.BodyProfile)
-                    * 0.7
-                    + (
-                        p.PostProducts.Any(pp => productCategories.Contains(pp.Product.Category))
-                            ? 0.3
-                            : 0
-                    ),
-            })
-            .OrderByDescending(x => x.Score)
-            .Take(limit)
-            .ToList();
-
-        var postIds = scored.Select(x => x.Post.Id).ToList();
         var userEngagements = userId.HasValue
-            ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
+            ? await GetUserEngagementsAsync(userId.Value, topPostIds, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        return scored.Select(x => MapToFeedPostResponse(x.Post, x.Score, userEngagements)).ToList();
+        // Maintain score ordering
+        return topPostIds
+            .Select(id => fullPosts.FirstOrDefault(p => p.Id == id))
+            .Where(p => p != null)
+            .Select(p => MapToFeedPostResponse(p!, scoreLookup.GetValueOrDefault(p!.Id, 0), userEngagements))
+            .ToList();
     }
 
     public async Task EngageAsync(
@@ -394,19 +481,23 @@ public class FeedService : IFeedService
         CancellationToken cancellationToken = default
     )
     {
-        var savedPostIds = await _dbContext
+        var savedQuery = _dbContext
             .Set<Engagement>()
-            .Where(e => e.UserId == userId && e.Type == EngagementType.Save)
+            .AsNoTracking()
+            .Where(e => e.UserId == userId && e.Type == EngagementType.Save);
+
+        var totalCount = await savedQuery.CountAsync(cancellationToken);
+
+        var pagedPostIds = await savedQuery
             .OrderByDescending(e => e.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(e => e.PostId)
             .ToListAsync(cancellationToken);
 
-        var totalCount = savedPostIds.Count;
-
-        var pagedPostIds = savedPostIds.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
         var posts = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Where(p => pagedPostIds.Contains(p.Id) && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
             .ThenInclude(c => c.User)
@@ -419,6 +510,7 @@ public class FeedService : IFeedService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
+            .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
         // Maintain order from savedPostIds
@@ -491,7 +583,8 @@ public class FeedService : IFeedService
                 .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.FitTags)
                 .ThenInclude(pft => pft.FitTag)
-                .Include(p => p.Engagements);
+                .Include(p => p.Engagements)
+                .AsSplitQuery();
 
             var postOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
                 ? postQuery
@@ -700,7 +793,7 @@ public class FeedService : IFeedService
 
     private IQueryable<Post> BuildFeedQuery(FeedRequest request)
     {
-        var query = _dbContext.Set<Post>().Where(p => p.Status == PostStatus.Published);
+        var query = _dbContext.Set<Post>().AsNoTracking().Where(p => p.Status == PostStatus.Published);
 
         if (!string.IsNullOrEmpty(request.Category))
         {
@@ -790,6 +883,7 @@ public class FeedService : IFeedService
     {
         var engagements = await _dbContext
             .Set<Engagement>()
+            .AsNoTracking()
             .Where(e => e.UserId == userId && postIds.Contains(e.PostId))
             .ToListAsync(cancellationToken);
 
@@ -871,7 +965,8 @@ public class FeedService : IFeedService
     private PostDetailResponse MapToPostDetailResponse(
         Post post,
         double similarityScore,
-        Dictionary<Guid, HashSet<EngagementType>> userEngagements
+        Dictionary<Guid, HashSet<EngagementType>> userEngagements,
+        int? creatorPublishedPostCount = null
     )
     {
         var engagementCounts = new EngagementCountsResponse(
@@ -904,7 +999,7 @@ public class FeedService : IFeedService
             post.Creator.Bio,
             post.Creator.IsVerified,
             anonymizedProfile,
-            post.Creator.Posts.Count(p => p.Status == PostStatus.Published),
+            creatorPublishedPostCount ?? post.Creator.Posts?.Count(p => p.Status == PostStatus.Published) ?? 0,
             post.Creator.User.ProfileImageUrl
         );
 

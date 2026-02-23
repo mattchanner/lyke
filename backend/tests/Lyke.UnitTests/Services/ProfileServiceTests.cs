@@ -9,6 +9,7 @@ using Lyke.Infrastructure.Data;
 using Lyke.UnitTests.Fixtures;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -34,6 +35,7 @@ public class ProfileServiceTests : IDisposable
             _context,
             _storageServiceMock.Object,
             new Mock<IEventTrackingService>().Object,
+            new MemoryCache(new MemoryCacheOptions()),
             _loggerMock.Object);
     }
 

@@ -81,7 +81,7 @@ import { ProductResponse } from '../../../models';
               @for (product of results(); track product.id) {
                 <ion-item button (click)="select(product)">
                   @if (product.imageUrls.length > 0) {
-                    <img [src]="product.imageUrls[0]" alt="" class="product-thumb" slot="start" />
+                    <img [src]="product.imageUrls[0]" alt="" class="product-thumb" slot="start" loading="lazy" />
                   }
                   <ion-label>
                     <h3>{{ product.name }}</h3>

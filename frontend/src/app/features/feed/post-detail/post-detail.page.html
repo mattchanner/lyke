@@ -32,7 +32,7 @@
       <div class="content-section">
         <div class="creator-row">
           <ion-avatar>
-            <img [src]="post()!.creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="post()!.creator.displayName" />
+            <img [src]="post()!.creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="post()!.creator.displayName" loading="lazy" />
           </ion-avatar>
           <div class="creator-info">
             <span class="creator-name">

@@ -376,8 +376,10 @@ public class RetailerService : IRetailerService
         var totalCount = await query.CountAsync(cancellationToken);
 
         var products = await query
+            .AsNoTracking()
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.ClickEvents)
+            .AsSplitQuery()
             .OrderByDescending(p => p.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)

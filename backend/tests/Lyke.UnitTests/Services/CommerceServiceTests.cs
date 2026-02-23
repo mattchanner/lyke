@@ -8,6 +8,7 @@ using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
 using Lyke.Infrastructure.Data;
 using Lyke.UnitTests.Fixtures;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -38,6 +39,7 @@ public class CommerceServiceTests : IDisposable
             _context,
             _commerceSettings,
             new Mock<IEventTrackingService>().Object,
+            new MemoryCache(new MemoryCacheOptions()),
             _loggerMock.Object);
     }
 

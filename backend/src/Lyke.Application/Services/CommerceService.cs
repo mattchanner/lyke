@@ -12,6 +12,7 @@ using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -22,19 +23,25 @@ public class CommerceService : ICommerceService
     private readonly DbContext _dbContext;
     private readonly CommerceSettings _settings;
     private readonly IEventTrackingService _eventTracking;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<CommerceService> _logger;
     private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+
+    private const string RetailersCacheKey = "commerce:retailers";
+    private static readonly TimeSpan RetailerCacheDuration = TimeSpan.FromMinutes(15);
 
     public CommerceService(
         DbContext dbContext,
         IOptions<CommerceSettings> settings,
         IEventTrackingService eventTracking,
+        IMemoryCache cache,
         ILogger<CommerceService> logger
     )
     {
         _dbContext = dbContext;
         _settings = settings.Value;
         _eventTracking = eventTracking;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -253,8 +260,14 @@ public class CommerceService : ICommerceService
         CancellationToken cancellationToken = default
     )
     {
+        if (_cache.TryGetValue(RetailersCacheKey, out IReadOnlyList<RetailerResponse>? cached) && cached != null)
+        {
+            return cached;
+        }
+
         var retailers = await _dbContext
             .Set<Retailer>()
+            .AsNoTracking()
             .Where(r => r.IsActive)
             .Include(r => r.Products.Where(p => p.IsActive))
             .OrderBy(r => r.Name)
@@ -280,7 +293,7 @@ public class CommerceService : ICommerceService
 
         var postCountDict = postCounts.ToDictionary(x => x.RetailerId, x => x.Count);
 
-        return retailers
+        var result = retailers
             .Select(r => new RetailerResponse(
                 r.Id,
                 r.Name,
@@ -291,6 +304,9 @@ public class CommerceService : ICommerceService
                 postCountDict.GetValueOrDefault(r.Id, 0)
             ))
             .ToList();
+
+        _cache.Set(RetailersCacheKey, (IReadOnlyList<RetailerResponse>)result, RetailerCacheDuration);
+        return result;
     }
 
     public async Task<(
@@ -364,6 +380,7 @@ public class CommerceService : ICommerceService
 
         var posts = await _dbContext
             .Set<Post>()
+            .AsNoTracking()
             .Where(p =>
                 p.Status == PostStatus.Published
                 && p.PostProducts.Any(pp => pp.ProductId == productId)
@@ -379,6 +396,7 @@ public class CommerceService : ICommerceService
             .ThenInclude(pp => pp.FitTags)
             .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
+            .AsSplitQuery()
             .OrderByDescending(p => p.PublishedAt)
             .Take(limit)
             .ToListAsync(cancellationToken);
@@ -592,6 +610,7 @@ public class CommerceService : ICommerceService
     {
         var engagements = await _dbContext
             .Set<Engagement>()
+            .AsNoTracking()
             .Where(e => e.UserId == userId && postIds.Contains(e.PostId))
             .ToListAsync(cancellationToken);
 

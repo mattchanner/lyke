@@ -6,6 +6,7 @@ using Lyke.Core.Enums;
 using Lyke.Core.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace Lyke.Application.Services;
@@ -16,19 +17,26 @@ public class ProfileService : IProfileService
     private readonly DbContext _dbContext;
     private readonly IStorageService _storageService;
     private readonly IEventTrackingService _eventTracking;
+    private readonly IMemoryCache _cache;
     private readonly ILogger<ProfileService> _logger;
+
+    private const string BodyTypesCacheKey = "lookup:body-types";
+    private const string FitTagsCacheKey = "lookup:fit-tags";
+    private static readonly TimeSpan LookupCacheDuration = TimeSpan.FromHours(1);
 
     public ProfileService(
         UserManager<User> userManager,
         DbContext dbContext,
         IStorageService storageService,
         IEventTrackingService eventTracking,
+        IMemoryCache cache,
         ILogger<ProfileService> logger)
     {
         _userManager = userManager;
         _dbContext = dbContext;
         _storageService = storageService;
         _eventTracking = eventTracking;
+        _cache = cache;
         _logger = logger;
     }
 
@@ -321,9 +329,13 @@ public class ProfileService : IProfileService
 
     public async Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(CancellationToken cancellationToken = default)
     {
-        var bodyTypes = _dbContext.Set<BodyType>();
+        if (_cache.TryGetValue(BodyTypesCacheKey, out IReadOnlyList<BodyTypeResponse>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        var types = await bodyTypes
+        var types = await _dbContext.Set<BodyType>()
+            .AsNoTracking()
             .OrderBy(bt => bt.DisplayOrder)
             .Select(bt => new BodyTypeResponse(
                 bt.Id,
@@ -333,6 +345,7 @@ public class ProfileService : IProfileService
             ))
             .ToListAsync(cancellationToken);
 
+        _cache.Set(BodyTypesCacheKey, (IReadOnlyList<BodyTypeResponse>)types, LookupCacheDuration);
         return types;
     }
 
@@ -350,9 +363,13 @@ public class ProfileService : IProfileService
 
     public async Task<IReadOnlyList<FitTagResponse>> GetFitTagsAsync(CancellationToken cancellationToken = default)
     {
-        var fitTags = _dbContext.Set<FitTag>();
+        if (_cache.TryGetValue(FitTagsCacheKey, out IReadOnlyList<FitTagResponse>? cached) && cached != null)
+        {
+            return cached;
+        }
 
-        var tags = await fitTags
+        var tags = await _dbContext.Set<FitTag>()
+            .AsNoTracking()
             .Where(ft => ft.IsActive)
             .OrderBy(ft => ft.Category)
             .ThenBy(ft => ft.Name)
@@ -363,6 +380,7 @@ public class ProfileService : IProfileService
             ))
             .ToListAsync(cancellationToken);
 
+        _cache.Set(FitTagsCacheKey, (IReadOnlyList<FitTagResponse>)tags, LookupCacheDuration);
         return tags;
     }
 

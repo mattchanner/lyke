@@ -130,7 +130,7 @@
             <div class="top-post-row" [routerLink]="'/creator/posts/' + post.postId + '/edit'">
               <span class="rank">#{{ i + 1 }}</span>
               @if (post.thumbnailUrl) {
-                <img [src]="post.thumbnailUrl" class="top-post-thumb" alt="Post thumbnail" />
+                <img [src]="post.thumbnailUrl" class="top-post-thumb" alt="Post thumbnail" loading="lazy" />
               } @else {
                 <div class="top-post-thumb placeholder"></div>
               }

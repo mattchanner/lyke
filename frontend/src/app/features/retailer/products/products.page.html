@@ -60,7 +60,7 @@
         <ion-item (click)="editProduct(product)" detail button>
           <ion-thumbnail slot="start">
             @if (product.imageUrls.length > 0) {
-              <img [src]="product.imageUrls[0]" [alt]="product.name" />
+              <img [src]="product.imageUrls[0]" [alt]="product.name" loading="lazy" />
             } @else {
               <div class="placeholder"></div>
             }

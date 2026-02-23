@@ -32,7 +32,7 @@
           </div>
           <ion-thumbnail slot="start">
             @if (item.mediaUrls?.length) {
-              <img [src]="item.thumbnailUrls?.[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" />
+              <img [src]="item.thumbnailUrls?.[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" loading="lazy" />
             } @else {
               <div class="no-media">
                 <ion-icon
