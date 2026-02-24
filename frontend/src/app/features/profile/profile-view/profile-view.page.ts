@@ -30,7 +30,7 @@ import {
   heartOutline,
   peopleOutline,
 } from 'ionicons/icons';
-import { ApiService, AuthService } from '../../../core';
+import { ApiService, AuthService, AnalyticsService, ProfileStateService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
 import { SkeletonProfileComponent } from '../../../shared/components/loading-skeleton';
 
@@ -60,6 +60,8 @@ import { SkeletonProfileComponent } from '../../../shared/components/loading-ske
 })
 export class ProfileViewPage implements OnInit {
   private readonly api = inject(ApiService);
+  private readonly analytics = inject(AnalyticsService);
+  private readonly profileState = inject(ProfileStateService);
   readonly authService = inject(AuthService);
 
   readonly profile = signal<UserProfileResponse | null>(null);
@@ -87,12 +89,22 @@ export class ProfileViewPage implements OnInit {
   }
 
   loadProfile(): void {
-    this.isLoading.set(true);
+    // Use cached data immediately if available to avoid stale-data flash
+    const cachedProfile = this.profileState.profile();
+    const cachedBody = this.profileState.bodyProfile();
+    if (cachedProfile) {
+      this.profile.set(cachedProfile);
+      this.bodyProfile.set(cachedBody);
+    } else {
+      this.isLoading.set(true);
+    }
 
+    // Always refresh from API in the background
     this.api.get<UserProfileResponse>('profile', 'me').subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.profile.set(response.data);
+          this.profileState.setProfile(response.data);
           if (response.data.hasBodyProfile) {
             this.loadBodyProfile();
           }
@@ -107,9 +119,14 @@ export class ProfileViewPage implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.bodyProfile.set(response.data);
+          this.profileState.setBodyProfile(response.data);
         }
       },
     });
+  }
+
+  trackCreatorCta(): void {
+    this.analytics.track('creator_cta_clicked', { source: 'profile' });
   }
 
   logout(): void {

@@ -19,6 +19,10 @@
   }
 }
 
+.creator-cta {
+  --background: rgba(var(--ion-color-tertiary-rgb), 0.08);
+}
+
 .unverified-badge {
   display: inline-block;
   font-size: 0.7rem;

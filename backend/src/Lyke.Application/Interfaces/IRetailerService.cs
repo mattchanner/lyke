@@ -27,4 +27,7 @@ public interface IRetailerService
     // Insights
     Task<FitInsightsResponse> GetFitInsightsAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<BodyProfileInsightsResponse> GetBodyProfileInsightsAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    // Public brands listing
+    Task<(IReadOnlyList<BrandResponse> Brands, PaginationMeta Meta)> GetBrandsAsync(BrandsRequest request, CancellationToken cancellationToken = default);
 }

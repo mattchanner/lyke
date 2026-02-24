@@ -20,7 +20,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline } from 'ionicons/icons';
-import { ApiService, ToastService } from '../../../core';
+import { ApiService, ToastService, ProfileStateService } from '../../../core';
 import {
   BodyProfileResponse,
   BodyTypeResponse,
@@ -58,6 +58,7 @@ export class BodyProfileEditPage implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly profileState = inject(ProfileStateService);
 
   readonly FitPreference = FitPreference;
 
@@ -273,6 +274,28 @@ export class BodyProfileEditPage implements OnInit {
     this.api.put('profile', 'body', request).subscribe({
       next: (response) => {
         if (response.success) {
+          // Optimistically update the cached body profile from form values
+          const heightCmVal = this.getHeightCm();
+          const weightKgVal = this.getWeightKg();
+          const bodyTypeIdVal = this.selectedBodyTypeId()!;
+          const frameSizeIdVal = this.selectedFrameSizeId();
+          const bodyTypeName = this.bodyTypes().find(bt => bt.id === bodyTypeIdVal)?.name ?? orig.bodyTypeName;
+          const frameSizeName = frameSizeIdVal != null
+            ? (this.frameSizes().find(fs => fs.id === frameSizeIdVal)?.name ?? orig.frameSizeName)
+            : null;
+          this.profileState.setBodyProfile({
+            ...orig,
+            heightCm: heightCmVal,
+            weightKg: weightKgVal,
+            heightDisplay: `${heightCmVal} cm`,
+            weightDisplay: `${weightKgVal} kg`,
+            bodyTypeId: bodyTypeIdVal,
+            bodyTypeName,
+            frameSizeId: frameSizeIdVal,
+            frameSizeName,
+            fitPreferences: Array.from(this.selectedFitPreferences()),
+            updatedAt: new Date().toISOString(),
+          });
           this.toast.success('Body profile updated');
           this.router.navigate(['/profile']);
         } else {

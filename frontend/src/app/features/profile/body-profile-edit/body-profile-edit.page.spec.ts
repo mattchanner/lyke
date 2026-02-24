@@ -67,7 +67,7 @@ describe('BodyProfileEditPage', () => {
     expect(component.heightCmControl.value).toBe(170);
     expect(component.weightControl.value).toBe(65);
     expect(component.selectedBodyTypeId()).toBe(1);
-    expect(component.selectedFitPreference()).toBe(FitPreference.Regular);
+    expect(component.selectedFitPreferences().has(FitPreference.Regular)).toBe(true);
   }));
 
   it('should convert height cm to ft/in', fakeAsync(() => {
@@ -116,8 +116,8 @@ describe('BodyProfileEditPage', () => {
   it('should select fit preference', fakeAsync(() => {
     fixture.detectChanges();
     tick();
-    component.selectFitPreference(FitPreference.Fitted);
-    expect(component.selectedFitPreference()).toBe(FitPreference.Fitted);
+    component.toggleFitPreference(FitPreference.Fitted);
+    expect(component.selectedFitPreferences().has(FitPreference.Fitted)).toBe(true);
   }));
 
   it('should validate isFormValid with cm units', fakeAsync(() => {

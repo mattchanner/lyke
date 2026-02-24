@@ -73,9 +73,12 @@
           <ion-label>Admin Dashboard</ion-label>
         </ion-item>
       } @else {
-        <ion-item routerLink="/creator/register" detail>
-          <ion-icon name="star-outline" slot="start"></ion-icon>
-          <ion-label>Become a Creator</ion-label>
+        <ion-item routerLink="/creator/register" detail class="creator-cta" (click)="trackCreatorCta()">
+          <ion-icon name="star-outline" slot="start" color="tertiary"></ion-icon>
+          <ion-label>
+            Become a Creator
+            <p>Share outfits &amp; earn</p>
+          </ion-label>
         </ion-item>
       }
 

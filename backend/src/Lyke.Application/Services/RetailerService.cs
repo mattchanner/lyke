@@ -1055,6 +1055,50 @@ public class RetailerService : IRetailerService
 
     #endregion
 
+    #region Public Brands Listing
+
+    public async Task<(IReadOnlyList<BrandResponse> Brands, PaginationMeta Meta)> GetBrandsAsync(
+        BrandsRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = _dbContext
+            .Set<Retailer>()
+            .Where(r => r.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(request.Search))
+        {
+            var search = request.Search.Trim().ToLower();
+            query = query.Where(r => r.Name.ToLower().Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var brands = await query
+            .OrderBy(r => r.Name)
+            .Skip((request.Page - 1) * request.PageSize)
+            .Take(request.PageSize)
+            .Select(r => new BrandResponse(
+                r.Id,
+                r.Name,
+                r.LogoUrl,
+                null,
+                r.Products.Count(p => p.IsActive)
+            ))
+            .ToListAsync(cancellationToken);
+
+        var meta = new PaginationMeta
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = totalCount,
+        };
+
+        return (brands, meta);
+    }
+
+    #endregion
+
     #region Private Methods
 
     private async Task<Retailer> GetRetailerByUserIdAsync(

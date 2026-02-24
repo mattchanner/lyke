@@ -93,6 +93,23 @@
 
 <app-verification-banner></app-verification-banner>
 
+@if (showCreatorPromo() && auth.isShopper()) {
+  <div class="creator-promo">
+    <div class="promo-content">
+      <strong>Love sharing outfits?</strong>
+      <p>Become a Creator and earn from your style.</p>
+    </div>
+    <div class="promo-actions">
+      <ion-button size="small" (click)="onCreatorCtaClick('feed_card')">
+        Get Started
+      </ion-button>
+      <ion-button fill="clear" size="small" (click)="dismissCreatorPromo()">
+        Dismiss
+      </ion-button>
+    </div>
+  </div>
+}
+
 <app-feed-filter-modal
   [isOpen]="isFilterOpen()"
   [currentFilters]="currentFilters()"

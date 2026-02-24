@@ -17,7 +17,7 @@ import {
   IonText,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ApiService, AuthService, ToastService } from '../../../core';
+import { ApiService, AuthService, ToastService, ProfileStateService } from '../../../core';
 import {
   UserProfileResponse,
   UpdateProfileRequest,
@@ -53,6 +53,7 @@ export class ProfileEditPage implements OnInit {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly modalCtrl = inject(ModalController);
+  private readonly profileState = inject(ProfileStateService);
 
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
@@ -98,6 +99,7 @@ export class ProfileEditPage implements OnInit {
     this.api.put<UserProfileResponse>('profile', '', request).subscribe({
       next: (response) => {
         if (response.success) {
+          this.profileState.updateProfile({ email: request.email });
           this.toast.success('Profile updated');
           this.router.navigate(['/profile']);
         } else {
@@ -143,6 +145,7 @@ export class ProfileEditPage implements OnInit {
         if (response.success && response.data) {
           this.imagePreview.set(response.data.profileImageUrl);
           this.auth.setProfileImageUrl(response.data.profileImageUrl);
+          this.profileState.updateProfile({ profileImageUrl: response.data.profileImageUrl });
           this.toast.success('Profile image updated');
         } else {
           this.toast.error(response.error?.message || 'Failed to upload image');

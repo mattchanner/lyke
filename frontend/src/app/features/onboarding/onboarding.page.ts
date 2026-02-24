@@ -22,10 +22,18 @@ import {
   IonProgressBar,
   IonAccordionGroup,
   IonAccordion,
+  IonAvatar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { arrowForwardOutline, checkmarkOutline, helpCircleOutline } from 'ionicons/icons';
-import { ApiService, ToastService, AnalyticsService } from '../../core';
+import {
+  arrowForwardOutline,
+  checkmarkOutline,
+  helpCircleOutline,
+  cameraOutline,
+  imageOutline,
+  personAddOutline,
+} from 'ionicons/icons';
+import { ApiService, ToastService, AnalyticsService, AuthService } from '../../core';
 import {
   BodyTypeResponse,
   FrameSizeResponse,
@@ -58,6 +66,7 @@ import {
     IonProgressBar,
     IonAccordionGroup,
     IonAccordion,
+    IonAvatar,
   ],
   templateUrl: './onboarding.page.html',
   styleUrls: ['./onboarding.page.scss'],
@@ -66,14 +75,17 @@ export class OnboardingPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
   private readonly analytics = inject(AnalyticsService);
+  private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
   readonly FitPreference = FitPreference;
 
   readonly currentStep = signal(1);
-  readonly totalSteps = 5;
+  readonly totalSteps = 6;
   readonly isLoading = signal(false);
+  readonly photoPreview = signal<string | null>(null);
+  readonly isUploading = signal(false);
 
   readonly heightUnit = signal<'cm' | 'ft'>('cm');
   readonly weightUnit = signal<'kg' | 'lbs'>('kg');
@@ -104,7 +116,7 @@ export class OnboardingPage implements OnInit {
   ]);
 
   constructor() {
-    addIcons({ arrowForwardOutline, checkmarkOutline, helpCircleOutline });
+    addIcons({ arrowForwardOutline, checkmarkOutline, helpCircleOutline, cameraOutline, imageOutline, personAddOutline });
   }
 
   ngOnInit(): void {
@@ -190,6 +202,8 @@ export class OnboardingPage implements OnInit {
         return this.selectedBodyTypeId() !== null;
       case 4:
         return this.selectedFrameSizeId() !== null;
+      case 5:
+        return this.selectedFitPreferences().size > 0;
       default:
         return true;
     }
@@ -231,7 +245,7 @@ export class OnboardingPage implements OnInit {
   }
 
   onSubmit(): void {
-    if (!this.canSubmit()) return;
+    if (this.selectedFitPreferences().size === 0) return;
 
     this.isLoading.set(true);
 
@@ -252,7 +266,7 @@ export class OnboardingPage implements OnInit {
             fitPreferences: Array.from(this.selectedFitPreferences()).join(','),
           });
           this.toast.success('Profile complete!');
-          this.router.navigate(['/feed']);
+          this.currentStep.set(6);
         }
       },
       error: () => {
@@ -262,5 +276,45 @@ export class OnboardingPage implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('Image must be 5MB or smaller');
+      input.value = '';
+      return;
+    }
+    // Preview
+    const reader = new FileReader();
+    reader.onload = () => this.photoPreview.set(reader.result as string);
+    reader.readAsDataURL(file);
+    // Upload
+    this.isUploading.set(true);
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    this.api.uploadFile<any>('profile', 'me/image', formData).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.auth.setProfileImageUrl(response.data.profileImageUrl);
+          this.toast.success('Photo uploaded!');
+        }
+      },
+      error: () => {
+        this.toast.error('Failed to upload photo');
+        this.isUploading.set(false);
+      },
+      complete: () => this.isUploading.set(false),
+    });
+  }
+
+  skipPhoto(): void {
+    this.router.navigate(['/feed']);
+  }
+
+  finishOnboarding(): void {
+    this.router.navigate(['/feed']);
   }
 }

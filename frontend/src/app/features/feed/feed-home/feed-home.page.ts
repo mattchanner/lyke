@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -31,7 +31,7 @@ import {
   filterOutline,
   closeCircle,
 } from 'ionicons/icons';
-import { ApiService, AuthService, PostEngagementService, AnalyticsService } from '../../../core';
+import { ApiService, AuthService, PostEngagementService, AnalyticsService, StorageService } from '../../../core';
 import { FeedPostResponse, FeedSortBy } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 import { SkeletonPostCardComponent } from '../../../shared/components/loading-skeleton';
@@ -75,6 +75,8 @@ export class FeedHomePage implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly engagementService = inject(PostEngagementService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly storage = inject(StorageService);
   readonly auth = inject(AuthService);
 
   readonly FeedSortBy = FeedSortBy;
@@ -84,6 +86,7 @@ export class FeedHomePage implements OnInit {
   readonly sortBy = signal(FeedSortBy.Relevance);
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
+  readonly showCreatorPromo = signal(false);
 
   // Filter state
   readonly isFilterOpen = signal(false);
@@ -120,6 +123,10 @@ export class FeedHomePage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.storage.get('creator_promo_dismissed').then(val => {
+      if (!val) this.showCreatorPromo.set(true);
+    });
+
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => {
@@ -269,5 +276,16 @@ export class FeedHomePage implements OnInit {
   removeFitTag(tagId: number): void {
     this.filterFitTagIds.update(ids => ids.filter(id => id !== tagId));
     this.loadFeed(true);
+  }
+
+  dismissCreatorPromo(): void {
+    this.showCreatorPromo.set(false);
+    this.storage.set('creator_promo_dismissed', 'true');
+    this.analytics.track('creator_cta_dismissed');
+  }
+
+  onCreatorCtaClick(source: string): void {
+    this.analytics.track('creator_cta_clicked', { source });
+    this.router.navigate(['/creator/register']);
   }
 }

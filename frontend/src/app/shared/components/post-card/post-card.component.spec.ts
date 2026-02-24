@@ -48,6 +48,7 @@ describe('PostCardComponent', () => {
     similarityScore: 0.9,
     isLiked: false,
     isSaved: false,
+    isFollowing: false,
     publishedAt: '2024-01-01T00:00:00Z',
   };
 

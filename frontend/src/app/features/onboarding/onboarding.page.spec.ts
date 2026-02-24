@@ -115,14 +115,14 @@ describe('OnboardingPage', () => {
 
   it('should select fit preference', () => {
     fixture.detectChanges();
-    component.selectFitPreference(FitPreference.Fitted);
-    expect(component.selectedFitPreference()).toBe(FitPreference.Fitted);
+    component.toggleFitPreference(FitPreference.Fitted);
+    expect(component.selectedFitPreferences().has(FitPreference.Fitted)).toBe(true);
   });
 
   it('should require fit preference to submit', () => {
     fixture.detectChanges();
     expect(component.canSubmit()).toBe(false);
-    component.selectFitPreference(FitPreference.Regular);
+    component.toggleFitPreference(FitPreference.Regular);
     expect(component.canSubmit()).toBe(true);
   });
 
@@ -134,7 +134,7 @@ describe('OnboardingPage', () => {
     component.heightCmControl.setValue(170);
     component.weightControl.setValue(65);
     component.selectBodyType(1);
-    component.selectFitPreference(FitPreference.Regular);
+    component.toggleFitPreference(FitPreference.Regular);
 
     component.onSubmit();
     tick();

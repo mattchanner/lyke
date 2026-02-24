@@ -268,6 +268,7 @@ app.MapFollowEndpoints();
 app.MapMediaEndpoints();
 app.MapAdminEndpoints();
 app.MapRetailerEndpoints();
+app.MapBrandEndpoints();
 app.MapPrivacyEndpoints();
 app.MapAnalyticsEndpoints();
 

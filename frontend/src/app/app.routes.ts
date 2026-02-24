@@ -177,6 +177,16 @@ export const routes: Routes = [
     ],
   },
 
+  // Brands
+  {
+    path: 'brands',
+    canActivate: [authGuard, onboardingGuard],
+    loadComponent: () =>
+      import('./features/commerce/brands/brands.page').then(
+        (m) => m.BrandsPage
+      ),
+  },
+
   // Commerce
   {
     path: 'product/:id',

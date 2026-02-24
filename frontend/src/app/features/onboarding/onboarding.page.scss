@@ -92,3 +92,13 @@ ion-item { --background: var(--ion-color-light); --border-radius: 12px; margin-b
   padding: 1.5rem 0;
   ion-button { --border-radius: 24px; flex: 1; }
 }
+
+.photo-upload-area { text-align: center; padding: 2rem 0; }
+.photo-preview { width: 120px; height: 120px; margin: 0 auto 1.5rem; }
+.photo-placeholder {
+  width: 120px; height: 120px; margin: 0 auto 1.5rem;
+  border-radius: 50%; border: 2px dashed var(--ion-color-medium);
+  display: flex; align-items: center; justify-content: center;
+  ion-icon { font-size: 2.5rem; color: var(--ion-color-medium); }
+}
+.photo-buttons { margin-bottom: 1rem; }

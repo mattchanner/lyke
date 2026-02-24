@@ -490,3 +490,4 @@ etc/api/Client/package.json
 etc/api/Client/package-lock.json
 /backend/src/Lyke.Api/obj
 .claude/settings.local.json
+errors/

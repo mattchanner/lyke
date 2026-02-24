@@ -1,3 +1,12 @@
+// Brands (public listing)
+export interface BrandResponse {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  description: string | null;
+  productCount: number;
+}
+
 // Retailer profile
 export interface RetailerProfileResponse {
   id: string;

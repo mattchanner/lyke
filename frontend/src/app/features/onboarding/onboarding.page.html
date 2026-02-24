@@ -216,36 +216,80 @@
           </div>
         </div>
       }
+
+      @case (6) {
+        <div class="step-content photo-step">
+          <h2>Add a profile photo</h2>
+          <p>Help others recognize you — this is optional.</p>
+
+          <div class="photo-upload-area">
+            @if (photoPreview()) {
+              <ion-avatar class="photo-preview">
+                <img [src]="photoPreview()" alt="Preview" />
+              </ion-avatar>
+            } @else {
+              <div class="photo-placeholder">
+                <ion-icon name="person-add-outline"></ion-icon>
+              </div>
+            }
+
+            <input type="file" accept="image/*" #fileInput hidden (change)="onFileSelected($event)" />
+
+            <div class="photo-buttons">
+              <ion-button fill="outline" (click)="fileInput.click()" [disabled]="isUploading()">
+                <ion-icon name="image-outline" slot="start"></ion-icon>
+                Choose Photo
+              </ion-button>
+            </div>
+
+            @if (isUploading()) {
+              <ion-spinner name="crescent"></ion-spinner>
+            }
+          </div>
+        </div>
+      }
     }
 
-    <div class="navigation-buttons">
-      @if (currentStep() > 1) {
-        <ion-button fill="outline" (click)="previousStep()">
-          Back
+    @if (currentStep() === 6) {
+      <div class="navigation-buttons">
+        <ion-button fill="clear" (click)="skipPhoto()">
+          Skip for now
         </ion-button>
-      }
-
-      @if (currentStep() < 5) {
-        <ion-button
-          [disabled]="!canProceed()"
-          (click)="nextStep()"
-        >
-          Next
+        <ion-button (click)="finishOnboarding()" [disabled]="isUploading()">
+          {{ photoPreview() ? 'Finish' : 'Continue' }}
           <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
         </ion-button>
-      } @else {
-        <ion-button
-          [disabled]="!canSubmit() || isLoading()"
-          (click)="onSubmit()"
-        >
-          @if (isLoading()) {
-            <ion-spinner name="crescent"></ion-spinner>
-          } @else {
-            Complete
-            <ion-icon name="checkmark-outline" slot="end"></ion-icon>
-          }
-        </ion-button>
-      }
-    </div>
+      </div>
+    } @else {
+      <div class="navigation-buttons">
+        @if (currentStep() > 1) {
+          <ion-button fill="outline" (click)="previousStep()">
+            Back
+          </ion-button>
+        }
+
+        @if (currentStep() < 5) {
+          <ion-button
+            [disabled]="!canProceed()"
+            (click)="nextStep()"
+          >
+            Next
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-button>
+        } @else {
+          <ion-button
+            [disabled]="!canProceed() || isLoading()"
+            (click)="onSubmit()"
+          >
+            @if (isLoading()) {
+              <ion-spinner name="crescent"></ion-spinner>
+            } @else {
+              Complete
+              <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+            }
+          </ion-button>
+        }
+      </div>
+    }
   </div>
 </ion-content>
