@@ -23,7 +23,7 @@ import {
   bookmark,
   shareSocialOutline,
   checkmarkCircle,
-  ellipsisVertical,
+  ellipsisVerticalOutline,
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
@@ -89,7 +89,7 @@ export class PostDetailPage implements OnInit {
       bookmark,
       shareSocialOutline,
       checkmarkCircle,
-      ellipsisVertical,
+      ellipsisVerticalOutline,
       flagOutline,
     });
   }

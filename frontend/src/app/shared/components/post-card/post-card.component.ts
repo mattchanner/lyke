@@ -24,7 +24,7 @@ import {
   shareSocialOutline,
   checkmarkCircle,
   eyeOutline,
-  ellipsisVertical,
+  ellipsisVerticalOutline,
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
@@ -79,7 +79,7 @@ export class PostCardComponent {
       shareSocialOutline,
       checkmarkCircle,
       eyeOutline,
-      ellipsisVertical,
+      ellipsisVerticalOutline,
       flagOutline,
     });
   }
