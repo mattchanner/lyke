@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ForgotPasswordPage } from './forgot-password.page';
 import { AuthService, ToastService } from '../../../core';
 
@@ -62,11 +62,14 @@ describe('ForgotPasswordPage', () => {
   }));
 
   it('should set isLoading during submit', fakeAsync(() => {
-    authService.forgotPassword.and.returnValue(of(undefined));
+    const subject = new Subject<void>();
+    authService.forgotPassword.and.returnValue(subject.asObservable());
     component.form.controls.email.setValue('test@test.com');
 
     component.onSubmit();
     expect(component.isLoading()).toBe(true);
+    subject.next(undefined);
+    subject.complete();
     tick();
     expect(component.isLoading()).toBe(false);
   }));

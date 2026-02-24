@@ -24,6 +24,7 @@ describe('PostCreatePage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
 
     await TestBed.configureTestingModule({
       imports: [PostCreatePage],

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { LoginPage } from './login.page';
 import { AuthService, ToastService, SocialAuthService } from '../../../core';
 import { UserType } from '../../../models';
@@ -25,6 +25,7 @@ describe('LoginPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning', 'info']);
 
     await TestBed.configureTestingModule({
@@ -93,7 +94,7 @@ describe('LoginPage', () => {
   }));
 
   it('should navigate to /creator for Creator userType', fakeAsync(() => {
-    (authService.userType as any) = signal(UserType.Creator);
+    (authService.userType as any).set(UserType.Creator);
     authService.login.and.returnValue(of({ accessToken: 'token', refreshToken: 'ref', accessTokenExpiry: '', userId: '1', email: 'test@test.com', userType: UserType.Creator }));
 
     component.form.setValue({ email: 'test@test.com', password: 'password123' });
@@ -104,7 +105,7 @@ describe('LoginPage', () => {
   }));
 
   it('should navigate to /admin for Admin userType', fakeAsync(() => {
-    (authService.userType as any) = signal(UserType.Admin);
+    (authService.userType as any).set(UserType.Admin);
     authService.login.and.returnValue(of({ accessToken: 'token', refreshToken: 'ref', accessTokenExpiry: '', userId: '1', email: 'test@test.com', userType: UserType.Admin }));
 
     component.form.setValue({ email: 'test@test.com', password: 'password123' });
@@ -115,11 +116,14 @@ describe('LoginPage', () => {
   }));
 
   it('should set isLoading during submit', fakeAsync(() => {
-    authService.login.and.returnValue(of({ accessToken: 'token', refreshToken: 'ref', accessTokenExpiry: '', userId: '1', email: 'test@test.com', userType: UserType.Shopper }));
+    const subject = new Subject<any>();
+    authService.login.and.returnValue(subject.asObservable());
     component.form.setValue({ email: 'test@test.com', password: 'password123' });
 
     component.onSubmit();
     expect(component.isLoading()).toBe(true);
+    subject.next({ accessToken: 'token', refreshToken: 'ref', accessTokenExpiry: '', userId: '1', email: 'test@test.com', userType: UserType.Shopper });
+    subject.complete();
     tick();
     expect(component.isLoading()).toBe(false);
   }));

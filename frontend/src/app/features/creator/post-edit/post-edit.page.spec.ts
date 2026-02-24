@@ -29,6 +29,7 @@ describe('PostEditPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
 
     creatorService.getPost.and.returnValue(of(mockPost as any));
 

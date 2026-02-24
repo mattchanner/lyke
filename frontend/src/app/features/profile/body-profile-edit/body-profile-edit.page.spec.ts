@@ -28,6 +28,7 @@ describe('BodyProfileEditPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
 
     apiService.get.and.callFake(((resource: string, endpoint: string) => {
       if (endpoint === 'body-types') return of({ success: true, data: [{ id: 1, name: 'Athletic' }, { id: 2, name: 'Slim' }] });

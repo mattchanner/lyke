@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ExplorePage } from './explore.page';
 import { ApiService, AnalyticsService } from '../../../core';
 import { SearchType } from '../../../models';
@@ -29,6 +29,7 @@ describe('ExplorePage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
 
     await TestBed.configureTestingModule({
       imports: [ExplorePage],
@@ -98,10 +99,13 @@ describe('ExplorePage', () => {
   });
 
   it('should set isLoading during search', fakeAsync(() => {
-    apiService.get.and.returnValue(of(mockSearchResponse));
+    const subject = new Subject<any>();
+    apiService.get.and.returnValue(subject.asObservable());
     component.searchQuery = 'test';
     component.onSearch();
     expect(component.isLoading()).toBe(true);
+    subject.next(mockSearchResponse);
+    subject.complete();
     tick();
     expect(component.isLoading()).toBe(false);
   }));

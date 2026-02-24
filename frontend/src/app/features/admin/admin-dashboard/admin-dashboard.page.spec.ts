@@ -36,7 +36,7 @@ describe('AdminDashboardPage', () => {
         { provide: AdminService, useValue: adminService },
         { provide: ToastService, useValue: jasmine.createSpyObj('ToastService', ['success', 'error']) },
         { provide: AuthService, useValue: authService },
-        { provide: Router, useValue: { navigate: jasmine.createSpy(), createUrlTree: jasmine.createSpy().and.returnValue({}), serializeUrl: jasmine.createSpy().and.returnValue('') } },
+        { provide: Router, useValue: { navigate: jasmine.createSpy(), createUrlTree: jasmine.createSpy().and.returnValue({}), serializeUrl: jasmine.createSpy().and.returnValue(''), events: of(null) } },
         { provide: ActivatedRoute, useValue: { queryParams: of({}), snapshot: { params: {}, queryParams: {} } } },
       ],
     }).compileComponents();

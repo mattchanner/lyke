@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ProfileEditPage } from './profile-edit.page';
 import { ApiService, AuthService, ToastService } from '../../../core';
 import { ModalController } from '@ionic/angular/standalone';
@@ -24,6 +24,7 @@ describe('ProfileEditPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
     modalCtrl = jasmine.createSpyObj('ModalController', ['create']);
 
     apiService.get.and.returnValue(of({
@@ -118,10 +119,13 @@ describe('ProfileEditPage', () => {
   it('should set isSaving during submit', fakeAsync(() => {
     fixture.detectChanges();
     tick();
-    apiService.put.and.returnValue(of({ success: true, data: {} }));
+    const subject = new Subject<any>();
+    apiService.put.and.returnValue(subject.asObservable());
     component.form.controls.email.setValue('new@test.com');
     component.onSubmit();
     expect(component.isSaving()).toBe(true);
+    subject.next({ success: true, data: {} });
+    subject.complete();
     tick();
     expect(component.isSaving()).toBe(false);
   }));

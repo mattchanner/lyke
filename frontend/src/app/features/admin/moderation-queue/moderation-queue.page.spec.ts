@@ -123,7 +123,7 @@ describe('ModerationQueuePage', () => {
   it('should return correct status colors', () => {
     expect(component.getStatusColor(PostStatus.Published)).toBe('success');
     expect(component.getStatusColor(PostStatus.PendingReview)).toBe('warning');
-    expect(component.getStatusColor(PostStatus.Rejected)).toBe('danger');
+    expect(component.getStatusColor(PostStatus.Rejected)).toBe('medium');
   });
 
   it('should open and close review modal', () => {

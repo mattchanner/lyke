@@ -21,7 +21,7 @@ describe('FeedHomePage', () => {
         mediaUrls: ['url1'], thumbnailUrls: ['thumb1'],
         creator: { id: 'c1', displayName: 'Creator', isVerified: false, bodyProfile: null, profileImageUrl: null },
         products: [], engagements: { views: 10, likes: 5, saves: 2, shares: 1 },
-        similarityScore: 0.8, isLiked: false, isSaved: false, publishedAt: '2024-01-01',
+        similarityScore: 0.8, isLiked: false, isSaved: false, isFollowing: false, publishedAt: '2024-01-01',
       },
     ],
     meta: { page: 1, pageSize: 20, totalCount: 1, hasNextPage: false },
@@ -36,6 +36,7 @@ describe('FeedHomePage', () => {
 
     const authService = {
       isAuthenticated: signal(true),
+      isEmailVerified: signal(true),
       profileImageUrl: signal(null),
       userType: signal(UserType.Shopper),
       userId: signal('user-1'),
@@ -226,7 +227,7 @@ describe('FeedHomePage', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: ApiService, useValue: apiService },
-        { provide: AuthService, useValue: { isAuthenticated: signal(true), profileImageUrl: signal(null), userType: signal(UserType.Shopper), userId: signal('user-1') } },
+        { provide: AuthService, useValue: { isAuthenticated: signal(true), isEmailVerified: signal(true), profileImageUrl: signal(null), userType: signal(UserType.Shopper), userId: signal('user-1') } },
         { provide: PostEngagementService, useValue: engagementService },
         { provide: AnalyticsService, useValue: analyticsService },
         { provide: ActivatedRoute, useValue: { queryParams: of({ creatorId: 'c1', creatorName: 'Creator1' }) } },

@@ -23,6 +23,7 @@ describe('RegisterPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning', 'info']);
 
     await TestBed.configureTestingModule({

@@ -29,6 +29,7 @@ describe('UserManagementPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
     const toast = jasmine.createSpyObj('ToastService', ['success', 'error']);
     alertCtrl = jasmine.createSpyObj('AlertController', ['create']);
     alertCtrl.create.and.returnValue(Promise.resolve({ present: () => Promise.resolve() } as any));

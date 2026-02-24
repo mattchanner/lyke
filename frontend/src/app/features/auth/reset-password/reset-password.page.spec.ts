@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { ResetPasswordPage } from './reset-password.page';
 import { AuthService, ToastService } from '../../../core';
 
@@ -26,6 +26,7 @@ describe('ResetPasswordPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
     toastService = jasmine.createSpyObj('ToastService', ['success', 'error', 'warning', 'info']);
 
     await TestBed.configureTestingModule({
@@ -96,11 +97,14 @@ describe('ResetPasswordPage', () => {
 
   it('should set isLoading during submit', fakeAsync(() => {
     createComponent();
-    authService.resetPassword.and.returnValue(of(undefined));
+    const subject = new Subject<void>();
+    authService.resetPassword.and.returnValue(subject.asObservable());
     component.form.setValue({ newPassword: 'newpass123', confirmPassword: 'newpass123' });
 
     component.onSubmit();
     expect(component.isLoading()).toBe(true);
+    subject.next(undefined);
+    subject.complete();
     tick();
     expect(component.isLoading()).toBe(false);
   }));

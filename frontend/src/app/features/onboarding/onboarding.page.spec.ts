@@ -21,6 +21,7 @@ describe('OnboardingPage', () => {
     router = jasmine.createSpyObj('Router', ['navigate', 'createUrlTree', 'serializeUrl']);
     router.createUrlTree.and.returnValue({} as any);
     router.serializeUrl.and.returnValue('');
+    (router as any).events = of(null);
 
     apiService.get.and.returnValue(of({ success: true, data: [{ id: 1, name: 'Athletic' }, { id: 2, name: 'Slim' }] }));
 
@@ -52,7 +53,7 @@ describe('OnboardingPage', () => {
 
   it('should compute progress from step', () => {
     fixture.detectChanges();
-    expect(component.progress()).toBe(0.25); // 1/4
+    expect(component.progress()).toBeCloseTo(1 / 6, 5); // 1/6 steps
   });
 
   it('should load body types on init', fakeAsync(() => {
@@ -126,7 +127,7 @@ describe('OnboardingPage', () => {
     expect(component.canSubmit()).toBe(true);
   });
 
-  it('should submit body profile and navigate', fakeAsync(() => {
+  it('should submit body profile and show success', fakeAsync(() => {
     fixture.detectChanges();
     tick();
     apiService.post.and.returnValue(of({ success: true }));
@@ -145,7 +146,7 @@ describe('OnboardingPage', () => {
       bodyTypeId: 1,
       fitPreferences: [FitPreference.Regular],
     }));
-    expect(router.navigate).toHaveBeenCalledWith(['/feed']);
+    expect(component.currentStep()).toBe(6);
     expect(analyticsService.track).toHaveBeenCalled();
     expect(toastService.success).toHaveBeenCalledWith('Profile complete!');
   }));

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { DashboardPage } from './dashboard.page';
 import { AuthService, CreatorService } from '../../../core';
@@ -15,10 +15,10 @@ describe('DashboardPage', () => {
     creatorService = jasmine.createSpyObj('CreatorService', [
       'getProfile', 'getAnalytics', 'getEarnings', 'getPosts',
     ]);
-    creatorService.getProfile.and.returnValue(of({ id: 'c1', displayName: 'Creator', bio: null, isVerified: false, socialLinks: {}, totalPosts: 5, totalViews: 100, totalLikes: 50 } as any));
-    creatorService.getAnalytics.and.returnValue(of({ totalViews: 100, totalLikes: 50, totalSaves: 20, totalClicks: 10, totalEarnings: 99.99, dailyMetrics: [] } as any));
-    creatorService.getEarnings.and.returnValue(of({ totalEarnings: 99.99, pendingEarnings: 20, paidEarnings: 79.99 } as any));
-    creatorService.getPosts.and.returnValue(of({ success: true, data: [{ id: 'p1', title: 'Post', status: PostStatus.Published }] } as any));
+    creatorService.getProfile.and.returnValue(of({ id: 'c1', displayName: 'Creator', bio: null, isVerified: false, verificationStatus: 'Unverified', socialLinks: {}, totalPosts: 5, publishedPosts: 3, draftPosts: 1, pendingReviewPosts: 1, createdAt: '2024-01-01' } as any));
+    creatorService.getAnalytics.and.returnValue(of({ summary: { totalViews: 100, totalLikes: 50, totalSaves: 20, totalShares: 5, totalClicks: 10, totalEarnings: 99.99, currency: 'USD' }, topPosts: [], dailyMetrics: [] } as any));
+    creatorService.getEarnings.and.returnValue(of({ totalEarnings: 99.99, pendingEarnings: 20, confirmedEarnings: 60, paidEarnings: 19.99, currency: 'USD', minPayoutThreshold: 100, eligibleForPayout: false } as any));
+    creatorService.getPosts.and.returnValue(of({ success: true, data: [{ id: 'p1', title: 'Post', status: PostStatus.Published, mediaUrls: ['url1'], thumbnailUrls: ['thumb1'], engagements: { views: 10, likes: 5, saves: 2, shares: 1, clicks: 3 }, createdAt: '2024-01-01', updatedAt: null, description: null, mediaType: 'Image', moderationNotes: null, publishedAt: '2024-01-01', products: [] }] } as any));
 
     const authService = {
       isAuthenticated: signal(true),
@@ -32,6 +32,7 @@ describe('DashboardPage', () => {
       providers: [
         { provide: CreatorService, useValue: creatorService },
         { provide: AuthService, useValue: authService },
+        { provide: Router, useValue: { navigate: jasmine.createSpy(), createUrlTree: jasmine.createSpy().and.returnValue({}), serializeUrl: jasmine.createSpy().and.returnValue(''), events: of(null) } },
         { provide: ActivatedRoute, useValue: { queryParams: of({}), snapshot: { params: {}, queryParams: {} } } },
       ],
     }).compileComponents();
