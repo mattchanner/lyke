@@ -78,6 +78,10 @@ ion-item { --background: var(--ion-color-light); --border-radius: 12px; margin-b
   margin: 0 auto 0.5rem;
   opacity: 0.6;
   .body-type-card.selected & { opacity: 1; }
+
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
 }
 
 .fit-check {
