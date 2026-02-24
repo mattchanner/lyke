@@ -18,3 +18,15 @@
     font-size: 0.9rem;
   }
 }
+
+.unverified-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--ion-color-warning-shade);
+  background: var(--ion-color-warning-tint, #fff3cd);
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}

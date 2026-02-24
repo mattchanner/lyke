@@ -66,6 +66,15 @@ public interface IFeedService
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Get user's liked posts
+    /// </summary>
+    Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetLikedPostsAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Search posts, products, and creators
     /// </summary>
     Task<SearchResponse> SearchAsync(

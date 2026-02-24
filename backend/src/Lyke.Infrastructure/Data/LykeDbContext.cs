@@ -15,6 +15,8 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
     public DbSet<BodyProfile> BodyProfiles => Set<BodyProfile>();
     public DbSet<BodyType> BodyTypes => Set<BodyType>();
+    public DbSet<FrameSize> FrameSizes => Set<FrameSize>();
+    public DbSet<BodyProfileFitPreference> BodyProfileFitPreferences => Set<BodyProfileFitPreference>();
     public DbSet<Creator> Creators => Set<Creator>();
     public DbSet<Retailer> Retailers => Set<Retailer>();
     public DbSet<Product> Products => Set<Product>();
@@ -31,6 +33,7 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<ContentReport> ContentReports => Set<ContentReport>();
     public DbSet<AnalyticsEvent> AnalyticsEvents => Set<AnalyticsEvent>();
     public DbSet<DailyMetricSnapshot> DailyMetricSnapshots => Set<DailyMetricSnapshot>();
+    public DbSet<UserFollow> UserFollows => Set<UserFollow>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

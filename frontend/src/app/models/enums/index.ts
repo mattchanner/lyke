@@ -93,6 +93,7 @@ export enum FeedSortBy {
   Relevance = "Relevance",
   Recent = "Recent",
   MostLiked = "MostLiked",
+  Following = "Following",
 }
 
 export enum SearchType {

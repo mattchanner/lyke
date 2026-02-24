@@ -13,6 +13,23 @@
           <h2>What's your height?</h2>
           <p>This helps us show you outfits from people with similar builds.</p>
 
+          <ion-accordion-group class="help-accordion">
+            <ion-accordion value="height-help">
+              <ion-item slot="header">
+                <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+                <ion-label>How to measure your height</ion-label>
+              </ion-item>
+              <div slot="content" class="help-content">
+                <ul>
+                  <li>Stand barefoot on a flat surface against a wall</li>
+                  <li>Keep your heels, back, and head touching the wall</li>
+                  <li>Look straight ahead and place a flat object (like a book) on top of your head</li>
+                  <li>Mark where the bottom of the object meets the wall, then measure from the floor to the mark</li>
+                </ul>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+
           <div class="unit-toggle">
             <ion-segment [value]="heightUnit()" (ionChange)="onHeightUnitChange($event)">
               <ion-segment-button value="cm">
@@ -67,6 +84,23 @@
           <h2>What's your weight?</h2>
           <p>This is kept private and only used to find similar body profiles.</p>
 
+          <ion-accordion-group class="help-accordion">
+            <ion-accordion value="weight-help">
+              <ion-item slot="header">
+                <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+                <ion-label>How to measure your weight</ion-label>
+              </ion-item>
+              <div slot="content" class="help-content">
+                <ul>
+                  <li>Weigh yourself in the morning before eating or drinking</li>
+                  <li>Wear light clothing or none at all</li>
+                  <li>Place the scale on a hard, flat surface (not carpet)</li>
+                  <li>Stand still with your weight evenly distributed on both feet</li>
+                </ul>
+              </div>
+            </ion-accordion>
+          </ion-accordion-group>
+
           <div class="unit-toggle">
             <ion-segment [value]="weightUnit()" (ionChange)="onWeightUnitChange($event)">
               <ion-segment-button value="kg">
@@ -93,8 +127,8 @@
 
       @case (3) {
         <div class="step-content">
-          <h2>What's your body type?</h2>
-          <p>Select the option that best describes your shape.</p>
+          <h2>What's your body shape?</h2>
+          <p>Select the shape that best describes your proportions.</p>
 
           <div class="body-type-grid">
             @for (bodyType of bodyTypes(); track bodyType.id) {
@@ -103,6 +137,11 @@
                 [class.selected]="selectedBodyTypeId() === bodyType.id"
                 (click)="selectBodyType(bodyType.id)"
               >
+                <img
+                  [src]="bodyShapeIcon(bodyType.name)"
+                  [alt]="bodyType.name"
+                  class="body-shape-icon"
+                />
                 <span class="body-type-name">{{ bodyType.name }}</span>
                 @if (bodyType.description) {
                   <span class="body-type-desc">{{ bodyType.description }}</span>
@@ -115,33 +154,64 @@
 
       @case (4) {
         <div class="step-content">
+          <h2>What's your frame size?</h2>
+          <p>This captures your overall build and stature.</p>
+
+          <div class="frame-size-grid">
+            @for (frameSize of frameSizes(); track frameSize.id) {
+              <div
+                class="frame-size-card"
+                [class.selected]="selectedFrameSizeId() === frameSize.id"
+                (click)="selectFrameSize(frameSize.id)"
+              >
+                <span class="frame-size-name">{{ frameSize.name }}</span>
+                @if (frameSize.description) {
+                  <span class="frame-size-desc">{{ frameSize.description }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @case (5) {
+        <div class="step-content">
           <h2>How do you like your clothes to fit?</h2>
-          <p>This helps us recommend the right sizes for you.</p>
+          <p>Select all that apply — you can pick more than one.</p>
 
           <div class="fit-preference-grid">
             <div
               class="fit-card"
-              [class.selected]="selectedFitPreference() === FitPreference.Fitted"
-              (click)="selectFitPreference(FitPreference.Fitted)"
+              [class.selected]="isFitPreferenceSelected(FitPreference.Fitted)"
+              (click)="toggleFitPreference(FitPreference.Fitted)"
             >
               <span class="fit-name">Fitted</span>
-              <span class="fit-desc">Close to the body</span>
+              <span class="fit-desc">Clothes follow your body contour, like a tailored shirt</span>
+              @if (isFitPreferenceSelected(FitPreference.Fitted)) {
+                <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+              }
             </div>
             <div
               class="fit-card"
-              [class.selected]="selectedFitPreference() === FitPreference.Regular"
-              (click)="selectFitPreference(FitPreference.Regular)"
+              [class.selected]="isFitPreferenceSelected(FitPreference.Regular)"
+              (click)="toggleFitPreference(FitPreference.Regular)"
             >
               <span class="fit-name">Regular</span>
-              <span class="fit-desc">Standard fit</span>
+              <span class="fit-desc">Standard cut with a comfortable amount of ease</span>
+              @if (isFitPreferenceSelected(FitPreference.Regular)) {
+                <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+              }
             </div>
             <div
               class="fit-card"
-              [class.selected]="selectedFitPreference() === FitPreference.Relaxed"
-              (click)="selectFitPreference(FitPreference.Relaxed)"
+              [class.selected]="isFitPreferenceSelected(FitPreference.Relaxed)"
+              (click)="toggleFitPreference(FitPreference.Relaxed)"
             >
               <span class="fit-name">Relaxed</span>
-              <span class="fit-desc">Loose and comfortable</span>
+              <span class="fit-desc">Oversized or loose fits with extra room throughout</span>
+              @if (isFitPreferenceSelected(FitPreference.Relaxed)) {
+                <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+              }
             </div>
           </div>
         </div>
@@ -155,7 +225,7 @@
         </ion-button>
       }
 
-      @if (currentStep() < 4) {
+      @if (currentStep() < 5) {
         <ion-button
           [disabled]="!canProceed()"
           (click)="nextStep()"

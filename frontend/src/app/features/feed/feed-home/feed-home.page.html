@@ -43,6 +43,12 @@
       >
         <ion-label>Popular</ion-label>
       </ion-chip>
+      <ion-chip
+        [color]="sortBy() === FeedSortBy.Following ? 'primary' : 'medium'"
+        (click)="setSortBy(FeedSortBy.Following)"
+      >
+        <ion-label>Following</ion-label>
+      </ion-chip>
 
       <ion-button fill="clear" size="small" (click)="openFilter()" class="filter-button">
         <ion-icon name="filter-outline" slot="icon-only"></ion-icon>
@@ -59,31 +65,33 @@
         @if (filterCategory()) {
           <ion-chip color="primary" (click)="removeCategory()">
             <ion-label>{{ filterCategory() }}</ion-label>
-            <ion-icon name="close-circle"></ion-icon>
+            <ion-icon name="close-circle-outline"></ion-icon>
           </ion-chip>
         }
         @if (filterRetailerId()) {
           <ion-chip color="primary" (click)="removeRetailer()">
             <ion-label>Retailer</ion-label>
-            <ion-icon name="close-circle"></ion-icon>
+            <ion-icon name="close-circle-outline"></ion-icon>
           </ion-chip>
         }
         @if (filterCreatorId()) {
           <ion-chip color="primary" (click)="removeCreator()">
             <ion-label>{{ filterCreatorName() || 'Creator' }}</ion-label>
-            <ion-icon name="close-circle"></ion-icon>
+            <ion-icon name="close-circle-outline"></ion-icon>
           </ion-chip>
         }
         @for (tagId of filterFitTagIds(); track tagId) {
           <ion-chip color="primary" (click)="removeFitTag(tagId)">
             <ion-label>Fit Tag</ion-label>
-            <ion-icon name="close-circle"></ion-icon>
+            <ion-icon name="close-circle-outline"></ion-icon>
           </ion-chip>
         }
       </div>
     </ion-toolbar>
   }
 </ion-header>
+
+<app-verification-banner></app-verification-banner>
 
 <app-feed-filter-modal
   [isOpen]="isFilterOpen()"
@@ -105,11 +113,8 @@
     </div>
   } @else if (!isLoading() && posts().length === 0) {
     <div class="empty-state">
-      <h3>No posts yet</h3>
-      <!-- <p>Complete your body profile to see personalized outfit recommendations!</p>
-      <ion-button routerLink="/profile/body-profile">
-        Update Body Profile
-      </ion-button> -->
+      <h3>Nothing here yet</h3>
+      <p>New outfit posts from people with a similar build will appear here.</p>
     </div>
   } @else {
     <div class="feed-grid">

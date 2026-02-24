@@ -61,6 +61,14 @@ ion-card-content {
       color: var(--ion-color-medium);
     }
   }
+
+  .follow-btn {
+    margin-left: auto;
+    --padding-start: 8px;
+    --padding-end: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
 }
 
 .post-title {

@@ -389,6 +389,14 @@ public class CommerceService : ICommerceService
             .ThenInclude(c => c.User)
             .ThenInclude(u => u.BodyProfile)
             .ThenInclude(bp => bp!.BodyType)
+            .Include(p => p.Creator)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile!)
+            .ThenInclude(bp => bp.FrameSize)
+            .Include(p => p.Creator)
+            .ThenInclude(c => c.User)
+            .ThenInclude(u => u.BodyProfile!)
+            .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.PostProducts)
             .ThenInclude(pp => pp.Product)
             .ThenInclude(prod => prod.Retailer)
@@ -644,7 +652,8 @@ public class CommerceService : ICommerceService
                 GetHeightRange(creatorBodyProfile.HeightCm),
                 GetWeightRange(creatorBodyProfile.WeightKg),
                 creatorBodyProfile.BodyType.Name,
-                creatorBodyProfile.FitPreference
+                creatorBodyProfile.FrameSize?.Name,
+                creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
 
@@ -684,7 +693,8 @@ public class CommerceService : ICommerceService
             0,
             userPostEngagements.Contains(EngagementType.Like),
             userPostEngagements.Contains(EngagementType.Save),
-            post.PublishedAt ?? post.CreatedAt
+            post.PublishedAt ?? post.CreatedAt,
+            false
         );
     }
 

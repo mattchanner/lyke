@@ -38,19 +38,41 @@
 
 // ── LYKE Brand Overrides ──
 
+// Typography hierarchy per brand guidelines
+h1 {
+  font-size: 2rem; // 32px
+  font-weight: 600;
+  color: var(--ion-color-primary);
+  letter-spacing: -0.01em;
+}
+
+h2 {
+  font-size: 1.5rem; // 24px
+  font-weight: 500;
+  color: var(--ion-text-color);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.25rem; // 20px
+  font-weight: 500;
+  color: var(--ion-text-color);
+  letter-spacing: -0.01em;
+}
+
 // Buttons: rounded with confident weight
 ion-button {
-  --border-radius: 12px;
+  --border-radius: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
   text-transform: none;
 }
 
-// Cards: flat with subtle border, no shadow
+// Cards: soft shadow, no border (per brand guidelines)
 ion-card {
-  --border-radius: 16px;
-  box-shadow: none;
-  border: 1px solid var(--ion-color-light);
+  --border-radius: 18px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border: none;
 }
 
 // Chips: pill-shaped
@@ -66,15 +88,9 @@ ion-toolbar {
 
   ion-title {
     font-weight: 700;
-    letter-spacing: -0.025em;
+    letter-spacing: -0.01em;
     font-size: 1.15rem;
   }
-}
-
-// Headings: tighter tracking for editorial feel
-h1, h2, h3 {
-  letter-spacing: -0.025em;
-  font-weight: 700;
 }
 
 // Segment buttons: rounded, primary indicator
@@ -102,6 +118,16 @@ ion-badge {
 // Input items: softer radius
 ion-item {
   --border-radius: 12px;
+}
+
+// ── Accent button (Mustard CTA) ──
+.ion-color-accent {
+  --ion-color-base: var(--ion-color-tertiary);
+  --ion-color-base-rgb: var(--ion-color-tertiary-rgb);
+  --ion-color-contrast: var(--ion-color-tertiary-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-tertiary-contrast-rgb);
+  --ion-color-shade: var(--ion-color-tertiary-shade);
+  --ion-color-tint: var(--ion-color-tertiary-tint);
 }
 
 // Bottom safe area for Android gesture navigation.

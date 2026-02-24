@@ -6,5 +6,6 @@ public record CreateBodyProfileRequest(
     int HeightCm,
     decimal WeightKg,
     int BodyTypeId,
-    FitPreference? FitPreference = null
+    int? FrameSizeId = null,
+    List<FitPreference>? FitPreferences = null
 );

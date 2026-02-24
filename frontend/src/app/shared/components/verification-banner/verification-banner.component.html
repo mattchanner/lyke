@@ -1,0 +1,16 @@
+@if (!auth.isEmailVerified() && !dismissed()) {
+  <div class="verification-banner">
+    <div class="banner-content">
+      <ion-icon name="mail-outline"></ion-icon>
+      <span>Please verify your email address.</span>
+    </div>
+    <div class="banner-actions">
+      <ion-button fill="clear" size="small" (click)="resend()" [disabled]="cooldown()">
+        {{ cooldown() ? 'Sent' : 'Resend' }}
+      </ion-button>
+      <ion-button fill="clear" size="small" (click)="dismiss()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </div>
+}

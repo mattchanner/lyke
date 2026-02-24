@@ -29,7 +29,8 @@ public record BodyProfileExportData(
     int HeightCm,
     decimal WeightKg,
     string BodyTypeName,
-    string? FitPreference,
+    string? FrameSizeName,
+    string FitPreferences,
     DateTime CreatedAt
 );
 

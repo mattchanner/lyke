@@ -22,9 +22,14 @@ public class UpdateBodyProfileRequestValidator : AbstractValidator<UpdateBodyPro
             .When(x => x.BodyTypeId.HasValue)
             .WithMessage("Invalid body type");
 
-        RuleFor(x => x.FitPreference)
+        RuleFor(x => x.FrameSizeId)
+            .GreaterThan(0)
+            .When(x => x.FrameSizeId.HasValue)
+            .WithMessage("Invalid frame size");
+
+        RuleForEach(x => x.FitPreferences)
             .IsInEnum()
-            .When(x => x.FitPreference.HasValue)
+            .When(x => x.FitPreferences != null)
             .WithMessage("Invalid fit preference");
     }
 }

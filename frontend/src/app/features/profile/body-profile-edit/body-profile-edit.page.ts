@@ -14,13 +14,17 @@ import {
   IonSpinner,
   IonText,
   IonLabel,
+  IonIcon,
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { checkmarkOutline } from 'ionicons/icons';
 import { ApiService, ToastService } from '../../../core';
 import {
   BodyProfileResponse,
   BodyTypeResponse,
+  FrameSizeResponse,
   UpdateBodyProfileRequest,
   FitPreference,
 } from '../../../models';
@@ -42,6 +46,7 @@ import {
     IonSpinner,
     IonText,
     IonLabel,
+    IonIcon,
     IonSegment,
     IonSegmentButton,
   ],
@@ -61,8 +66,10 @@ export class BodyProfileEditPage implements OnInit {
   readonly heightUnit = signal<'cm' | 'ft'>('cm');
   readonly weightUnit = signal<'kg' | 'lbs'>('kg');
   readonly bodyTypes = signal<BodyTypeResponse[]>([]);
+  readonly frameSizes = signal<FrameSizeResponse[]>([]);
   readonly selectedBodyTypeId = signal<number | null>(null);
-  readonly selectedFitPreference = signal<FitPreference | null>(null);
+  readonly selectedFrameSizeId = signal<number | null>(null);
+  readonly selectedFitPreferences = signal<Set<FitPreference>>(new Set());
 
   readonly heightCmControl = this.fb.control<number | null>(null, [
     Validators.required,
@@ -84,9 +91,14 @@ export class BodyProfileEditPage implements OnInit {
 
   private originalProfile: BodyProfileResponse | null = null;
 
+  constructor() {
+    addIcons({ checkmarkOutline });
+  }
+
   ngOnInit(): void {
     this.isLoading.set(true);
     this.loadBodyTypes();
+    this.loadFrameSizes();
     this.loadProfile();
   }
 
@@ -95,6 +107,16 @@ export class BodyProfileEditPage implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.bodyTypes.set(response.data);
+        }
+      },
+    });
+  }
+
+  loadFrameSizes(): void {
+    this.api.get<FrameSizeResponse[]>('lookup', 'frame-sizes').subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.frameSizes.set(response.data);
         }
       },
     });
@@ -116,7 +138,8 @@ export class BodyProfileEditPage implements OnInit {
     this.heightCmControl.setValue(profile.heightCm);
     this.weightControl.setValue(profile.weightKg);
     this.selectedBodyTypeId.set(profile.bodyTypeId);
-    this.selectedFitPreference.set(profile.fitPreference);
+    this.selectedFrameSizeId.set(profile.frameSizeId);
+    this.selectedFitPreferences.set(new Set(profile.fitPreferences));
   }
 
   onHeightUnitChange(event: CustomEvent): void {
@@ -145,8 +168,24 @@ export class BodyProfileEditPage implements OnInit {
     this.selectedBodyTypeId.set(id);
   }
 
-  selectFitPreference(preference: FitPreference): void {
-    this.selectedFitPreference.set(preference);
+  selectFrameSize(id: number): void {
+    this.selectedFrameSizeId.set(id);
+  }
+
+  toggleFitPreference(preference: FitPreference): void {
+    this.selectedFitPreferences.update((current) => {
+      const next = new Set(current);
+      if (next.has(preference)) {
+        next.delete(preference);
+      } else {
+        next.add(preference);
+      }
+      return next;
+    });
+  }
+
+  isFitPreferenceSelected(preference: FitPreference): boolean {
+    return this.selectedFitPreferences().has(preference);
   }
 
   getHeightCm(): number {
@@ -180,12 +219,27 @@ export class BodyProfileEditPage implements OnInit {
 
   get hasChanges(): boolean {
     if (!this.originalProfile) return false;
+
+    const fitPrefsChanged = !this.areSetsEqual(
+      this.selectedFitPreferences(),
+      new Set(this.originalProfile.fitPreferences),
+    );
+
     return (
       this.getHeightCm() !== this.originalProfile.heightCm ||
       this.getWeightKg() !== this.originalProfile.weightKg ||
       this.selectedBodyTypeId() !== this.originalProfile.bodyTypeId ||
-      this.selectedFitPreference() !== this.originalProfile.fitPreference
+      this.selectedFrameSizeId() !== this.originalProfile.frameSizeId ||
+      fitPrefsChanged
     );
+  }
+
+  private areSetsEqual(a: Set<FitPreference>, b: Set<FitPreference>): boolean {
+    if (a.size !== b.size) return false;
+    for (const item of a) {
+      if (!b.has(item)) return false;
+    }
+    return true;
   }
 
   onSubmit(): void {
@@ -205,8 +259,16 @@ export class BodyProfileEditPage implements OnInit {
     const bodyTypeId = this.selectedBodyTypeId()!;
     if (bodyTypeId !== orig.bodyTypeId) request.bodyTypeId = bodyTypeId;
 
-    const fitPref = this.selectedFitPreference();
-    if (fitPref !== orig.fitPreference) request.fitPreference = fitPref;
+    const frameSizeId = this.selectedFrameSizeId();
+    if (frameSizeId !== orig.frameSizeId) request.frameSizeId = frameSizeId;
+
+    const fitPrefsChanged = !this.areSetsEqual(
+      this.selectedFitPreferences(),
+      new Set(orig.fitPreferences),
+    );
+    if (fitPrefsChanged) {
+      request.fitPreferences = Array.from(this.selectedFitPreferences());
+    }
 
     this.api.put('profile', 'body', request).subscribe({
       next: (response) => {

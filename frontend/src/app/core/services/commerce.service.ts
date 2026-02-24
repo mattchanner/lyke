@@ -181,7 +181,7 @@ export class CommerceService implements OnDestroy {
         await Browser.open({
           url,
           presentationStyle: 'popover',
-          toolbarColor: '#c25b3f',
+          toolbarColor: '#0E3A3B',
         });
       } catch {
         this.isBrowsing.set(false);

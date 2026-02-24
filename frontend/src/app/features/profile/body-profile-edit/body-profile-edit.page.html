@@ -93,9 +93,9 @@
         </ion-item>
       </section>
 
-      <!-- Body Type Section -->
+      <!-- Body Shape Section -->
       <section class="form-section">
-        <h3>Body Type</h3>
+        <h3>Body Shape</h3>
 
         <div class="body-type-grid">
           @for (bodyType of bodyTypes(); track bodyType.id) {
@@ -113,34 +113,64 @@
         </div>
       </section>
 
-      <!-- Fit Preference Section -->
+      <!-- Frame Size Section -->
       <section class="form-section">
-        <h3>Fit Preference</h3>
+        <h3>Frame Size</h3>
+
+        <div class="frame-size-grid">
+          @for (frameSize of frameSizes(); track frameSize.id) {
+            <div
+              class="frame-size-card"
+              [class.selected]="selectedFrameSizeId() === frameSize.id"
+              (click)="selectFrameSize(frameSize.id)"
+            >
+              <span class="frame-size-name">{{ frameSize.name }}</span>
+              @if (frameSize.description) {
+                <span class="frame-size-desc">{{ frameSize.description }}</span>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Fit Preferences Section -->
+      <section class="form-section">
+        <h3>Fit Preferences</h3>
+        <p class="section-hint">Select all that apply</p>
 
         <div class="fit-preference-grid">
           <div
             class="fit-card"
-            [class.selected]="selectedFitPreference() === FitPreference.Fitted"
-            (click)="selectFitPreference(FitPreference.Fitted)"
+            [class.selected]="isFitPreferenceSelected(FitPreference.Fitted)"
+            (click)="toggleFitPreference(FitPreference.Fitted)"
           >
             <span class="fit-name">Fitted</span>
             <span class="fit-desc">Close to the body</span>
+            @if (isFitPreferenceSelected(FitPreference.Fitted)) {
+              <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+            }
           </div>
           <div
             class="fit-card"
-            [class.selected]="selectedFitPreference() === FitPreference.Regular"
-            (click)="selectFitPreference(FitPreference.Regular)"
+            [class.selected]="isFitPreferenceSelected(FitPreference.Regular)"
+            (click)="toggleFitPreference(FitPreference.Regular)"
           >
             <span class="fit-name">Regular</span>
             <span class="fit-desc">Standard fit</span>
+            @if (isFitPreferenceSelected(FitPreference.Regular)) {
+              <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+            }
           </div>
           <div
             class="fit-card"
-            [class.selected]="selectedFitPreference() === FitPreference.Relaxed"
-            (click)="selectFitPreference(FitPreference.Relaxed)"
+            [class.selected]="isFitPreferenceSelected(FitPreference.Relaxed)"
+            (click)="toggleFitPreference(FitPreference.Relaxed)"
           >
             <span class="fit-name">Relaxed</span>
             <span class="fit-desc">Loose and comfortable</span>
+            @if (isFitPreferenceSelected(FitPreference.Relaxed)) {
+              <ion-icon name="checkmark-outline" class="fit-check"></ion-icon>
+            }
           </div>
         </div>
       </section>

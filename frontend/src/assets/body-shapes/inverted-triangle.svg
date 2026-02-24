@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Head -->
+  <circle cx="40" cy="14" r="8" />
+  <!-- Neck -->
+  <line x1="40" y1="22" x2="40" y2="28" />
+  <!-- Body: wide shoulders, narrow hips -->
+  <path d="M20,32 C20,32 22,40 24,48 C26,56 30,60 32,66 C34,72 34,78 34,82 L32,100" />
+  <path d="M60,32 C60,32 58,40 56,48 C54,56 50,60 48,66 C46,72 46,78 46,82 L48,100" />
+  <!-- Shoulders -->
+  <line x1="20" y1="32" x2="60" y2="32" />
+  <!-- Feet -->
+  <line x1="32" y1="100" x2="28" y2="112" />
+  <line x1="48" y1="100" x2="52" y2="112" />
+</svg>

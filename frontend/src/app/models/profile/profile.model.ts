@@ -9,6 +9,7 @@ export interface UserProfileResponse {
   profileCompleteness: number;
   createdAt: string;
   profileImageUrl: string | null;
+  isEmailVerified: boolean;
 }
 
 export interface BodyProfileResponse {
@@ -19,7 +20,10 @@ export interface BodyProfileResponse {
   weightDisplay: string;
   bodyTypeId: number;
   bodyTypeName: string;
-  fitPreference: FitPreference | null;
+  frameSizeId: number | null;
+  frameSizeName: string | null;
+  fitPreferences: FitPreference[];
+  needsProfileUpdate: boolean;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -28,10 +32,18 @@ export interface AnonymizedBodyProfileResponse {
   heightRange: string;
   weightRange: string;
   bodyTypeName: string;
-  fitPreference: FitPreference | null;
+  frameSizeName: string | null;
+  fitPreferences: FitPreference[];
 }
 
 export interface BodyTypeResponse {
+  id: number;
+  name: string;
+  description: string | null;
+  displayOrder: number;
+}
+
+export interface FrameSizeResponse {
   id: number;
   name: string;
   description: string | null;
@@ -53,12 +65,14 @@ export interface CreateBodyProfileRequest {
   heightCm: number;
   weightKg: number;
   bodyTypeId: number;
-  fitPreference?: FitPreference | null;
+  frameSizeId?: number | null;
+  fitPreferences?: FitPreference[];
 }
 
 export interface UpdateBodyProfileRequest {
   heightCm?: number;
   weightKg?: number;
   bodyTypeId?: number;
-  fitPreference?: FitPreference | null;
+  frameSizeId?: number | null;
+  fitPreferences?: FitPreference[];
 }

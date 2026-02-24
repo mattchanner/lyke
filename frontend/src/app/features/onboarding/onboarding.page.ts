@@ -20,12 +20,15 @@ import {
   IonSegment,
   IonSegmentButton,
   IonProgressBar,
+  IonAccordionGroup,
+  IonAccordion,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { arrowForwardOutline, checkmarkOutline } from 'ionicons/icons';
+import { arrowForwardOutline, checkmarkOutline, helpCircleOutline } from 'ionicons/icons';
 import { ApiService, ToastService, AnalyticsService } from '../../core';
 import {
   BodyTypeResponse,
+  FrameSizeResponse,
   CreateBodyProfileRequest,
   FitPreference,
 } from '../../models';
@@ -53,6 +56,8 @@ import {
     IonSegment,
     IonSegmentButton,
     IonProgressBar,
+    IonAccordionGroup,
+    IonAccordion,
   ],
   templateUrl: './onboarding.page.html',
   styleUrls: ['./onboarding.page.scss'],
@@ -67,15 +72,17 @@ export class OnboardingPage implements OnInit {
   readonly FitPreference = FitPreference;
 
   readonly currentStep = signal(1);
-  readonly totalSteps = 4;
+  readonly totalSteps = 5;
   readonly isLoading = signal(false);
 
   readonly heightUnit = signal<'cm' | 'ft'>('cm');
   readonly weightUnit = signal<'kg' | 'lbs'>('kg');
 
   readonly bodyTypes = signal<BodyTypeResponse[]>([]);
+  readonly frameSizes = signal<FrameSizeResponse[]>([]);
   readonly selectedBodyTypeId = signal<number | null>(null);
-  readonly selectedFitPreference = signal<FitPreference | null>(null);
+  readonly selectedFrameSizeId = signal<number | null>(null);
+  readonly selectedFitPreferences = signal<Set<FitPreference>>(new Set());
 
   // Form controls
   readonly heightCmControl = this.fb.control<number | null>(null, [
@@ -97,11 +104,12 @@ export class OnboardingPage implements OnInit {
   ]);
 
   constructor() {
-    addIcons({ arrowForwardOutline, checkmarkOutline });
+    addIcons({ arrowForwardOutline, checkmarkOutline, helpCircleOutline });
   }
 
   ngOnInit(): void {
     this.loadBodyTypes();
+    this.loadFrameSizes();
   }
 
   progress(): number {
@@ -113,6 +121,16 @@ export class OnboardingPage implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.bodyTypes.set(response.data);
+        }
+      },
+    });
+  }
+
+  loadFrameSizes(): void {
+    this.api.get<FrameSizeResponse[]>('lookup', 'frame-sizes').subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.frameSizes.set(response.data);
         }
       },
     });
@@ -130,8 +148,29 @@ export class OnboardingPage implements OnInit {
     this.selectedBodyTypeId.set(id);
   }
 
-  selectFitPreference(preference: FitPreference): void {
-    this.selectedFitPreference.set(preference);
+  selectFrameSize(id: number): void {
+    this.selectedFrameSizeId.set(id);
+  }
+
+  toggleFitPreference(preference: FitPreference): void {
+    this.selectedFitPreferences.update((current) => {
+      const next = new Set(current);
+      if (next.has(preference)) {
+        next.delete(preference);
+      } else {
+        next.add(preference);
+      }
+      return next;
+    });
+  }
+
+  isFitPreferenceSelected(preference: FitPreference): boolean {
+    return this.selectedFitPreferences().has(preference);
+  }
+
+  bodyShapeIcon(name: string): string {
+    const slug = name.toLowerCase().replace(/\s+/g, '-');
+    return `assets/body-shapes/${slug}.svg`;
   }
 
   canProceed(): boolean {
@@ -149,13 +188,15 @@ export class OnboardingPage implements OnInit {
         return this.weightControl.valid;
       case 3:
         return this.selectedBodyTypeId() !== null;
+      case 4:
+        return this.selectedFrameSizeId() !== null;
       default:
         return true;
     }
   }
 
   canSubmit(): boolean {
-    return this.selectedFitPreference() !== null;
+    return this.selectedFitPreferences().size > 0;
   }
 
   nextStep(): void {
@@ -198,7 +239,8 @@ export class OnboardingPage implements OnInit {
       heightCm: this.getHeightCm(),
       weightKg: this.getWeightKg(),
       bodyTypeId: this.selectedBodyTypeId()!,
-      fitPreference: this.selectedFitPreference(),
+      frameSizeId: this.selectedFrameSizeId(),
+      fitPreferences: Array.from(this.selectedFitPreferences()),
     };
 
     this.api.post('profile', 'body', request).subscribe({
@@ -206,7 +248,8 @@ export class OnboardingPage implements OnInit {
         if (response.success) {
           this.analytics.track('profile.complete', {
             bodyTypeId: String(this.selectedBodyTypeId()),
-            fitPreference: this.selectedFitPreference() ?? '',
+            frameSizeId: String(this.selectedFrameSizeId()),
+            fitPreferences: Array.from(this.selectedFitPreferences()).join(','),
           });
           this.toast.success('Profile complete!');
           this.router.navigate(['/feed']);

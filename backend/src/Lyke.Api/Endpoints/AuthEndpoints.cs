@@ -77,6 +77,14 @@ public static class AuthEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized)
             .RequireAuthorization();
 
+        group
+            .MapPost("/resend-verification", ResendVerificationAsync)
+            .WithName("ResendVerification")
+            .WithSummary("Resend email verification link")
+            .Produces<ApiResponse>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status400BadRequest)
+            .RequireAuthorization();
+
         return app;
     }
 
@@ -148,6 +156,24 @@ public static class AuthEndpoints
     {
         var result = await authService.SocialLoginAsync(request, cancellationToken);
         return Results.Ok(ApiResponse<AuthResponse>.Ok(result));
+    }
+
+    private static async Task<IResult> ResendVerificationAsync(
+        ClaimsPrincipal user,
+        IAuthService authService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userIdClaim =
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
+
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        await authService.ResendVerificationEmailAsync(userId, cancellationToken);
+        return Results.Ok(ApiResponse.Ok());
     }
 
     private static async Task<IResult> DeleteAccountAsync(

@@ -9,5 +9,6 @@ public record UserProfileResponse(
     bool HasBodyProfile,
     int ProfileCompleteness,
     DateTime CreatedAt,
-    string? ProfileImageUrl
+    string? ProfileImageUrl,
+    bool IsEmailVerified
 );

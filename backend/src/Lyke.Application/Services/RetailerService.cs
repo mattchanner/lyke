@@ -979,6 +979,8 @@ public class RetailerService : IRetailerService
             .Set<BodyProfile>()
             .Where(bp => engagedUserIds.Contains(bp.UserId))
             .Include(bp => bp.BodyType)
+            .Include(bp => bp.FrameSize)
+            .Include(bp => bp.FitPreferences)
             .ToListAsync(cancellationToken);
 
         var totalEngagedUsers = bodyProfiles.Count;
@@ -1026,10 +1028,10 @@ public class RetailerService : IRetailerService
             .OrderByDescending(b => b.Count)
             .ToList();
 
-        // Fit preferences with k-anonymity
+        // Fit preferences with k-anonymity (users can have multiple fit preferences)
         var fitPreferences = bodyProfiles
-            .Where(bp => bp.FitPreference.HasValue)
-            .GroupBy(bp => bp.FitPreference!.Value.ToString())
+            .SelectMany(bp => bp.FitPreferences)
+            .GroupBy(fp => fp.FitPreference.ToString())
             .Where(g => g.Count() >= minGroupSize)
             .Select(g => new InsightBand(
                 Label: g.Key,

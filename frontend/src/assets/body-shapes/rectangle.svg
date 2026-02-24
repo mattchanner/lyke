@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Head -->
+  <circle cx="40" cy="14" r="8" />
+  <!-- Neck -->
+  <line x1="40" y1="22" x2="40" y2="28" />
+  <!-- Body: even proportions, minimal waist definition -->
+  <path d="M26,32 C26,32 25,38 25,46 C25,54 26,58 26,64 C26,70 25,76 25,82 L26,100" />
+  <path d="M54,32 C54,32 55,38 55,46 C55,54 54,58 54,64 C54,70 55,76 55,82 L54,100" />
+  <!-- Shoulders -->
+  <line x1="26" y1="32" x2="54" y2="32" />
+  <!-- Feet -->
+  <line x1="26" y1="100" x2="22" y2="112" />
+  <line x1="54" y1="100" x2="58" y2="112" />
+</svg>

@@ -27,6 +27,17 @@ export interface CreatorDetailResponse {
   profileImageUrl: string | null;
 }
 
+export interface PublicCreatorProfileResponse {
+  id: string;
+  displayName: string;
+  bio: string | null;
+  isVerified: boolean;
+  bodyProfile: AnonymizedBodyProfileResponse | null;
+  profileImageUrl: string | null;
+  publishedPosts: number;
+  createdAt: string;
+}
+
 // Product summaries
 export interface PostProductSummaryResponse {
   id: string;
@@ -86,6 +97,7 @@ export interface FeedPostResponse {
   similarityScore: number;
   isLiked: boolean;
   isSaved: boolean;
+  isFollowing: boolean;
   publishedAt: string;
 }
 

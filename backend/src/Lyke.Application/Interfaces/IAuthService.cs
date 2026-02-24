@@ -13,4 +13,5 @@ public interface IAuthService
     Task DeleteAccountAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<AuthResponse> SocialLoginAsync(SocialLoginRequest request, CancellationToken cancellationToken = default);
     Task VerifyEmailAsync(string email, string token, CancellationToken cancellationToken = default);
+    Task ResendVerificationEmailAsync(Guid userId, CancellationToken cancellationToken = default);
 }

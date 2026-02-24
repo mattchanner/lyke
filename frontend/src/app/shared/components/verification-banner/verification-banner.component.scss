@@ -1,0 +1,23 @@
+.verification-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--ion-color-warning-tint, #fff3cd);
+  border-bottom: 1px solid var(--ion-color-warning, #ffc107);
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+
+  ion-icon { font-size: 1.1rem; color: var(--ion-color-warning-shade); }
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  ion-button { --color: var(--ion-color-primary); font-size: 0.875rem; }
+}

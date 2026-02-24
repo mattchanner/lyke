@@ -44,7 +44,7 @@ public class ProfileServiceTests : IDisposable
         _context.Dispose();
     }
 
-    
+
     [Fact]
     public async Task GetBodyProfileAsync_WithExistingProfile_ReturnsProfile()
     {
@@ -85,7 +85,7 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, FitPreference.Regular);
+        var request = new CreateBodyProfileRequest(175, 70m, 1, null, new List<FitPreference> { FitPreference.Regular });
 
         // Act
         var result = await _sut.CreateBodyProfileAsync(userId, request);
@@ -95,7 +95,7 @@ public class ProfileServiceTests : IDisposable
         result.HeightCm.Should().Be(175);
         result.WeightKg.Should().Be(70m);
         result.BodyTypeId.Should().Be(1);
-        result.FitPreference.Should().Be(FitPreference.Regular);
+        result.FitPreferences.Should().Contain(FitPreference.Regular);
 
         var savedProfile = await _context.BodyProfiles.FirstOrDefaultAsync(bp => bp.UserId == userId);
         savedProfile.Should().NotBeNull();
@@ -112,7 +112,7 @@ public class ProfileServiceTests : IDisposable
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, FitPreference.Regular);
+        var request = new CreateBodyProfileRequest(175, 70m, 1, null, new List<FitPreference> { FitPreference.Regular });
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
@@ -129,7 +129,7 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 999, FitPreference.Regular); // Invalid body type
+        var request = new CreateBodyProfileRequest(175, 70m, 999, null, new List<FitPreference> { FitPreference.Regular }); // Invalid body type
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
@@ -150,7 +150,7 @@ public class ProfileServiceTests : IDisposable
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new UpdateBodyProfileRequest(180, 75m, null, FitPreference.Fitted);
+        var request = new UpdateBodyProfileRequest(180, 75m, null, null, new List<FitPreference> { FitPreference.Fitted });
 
         // Act
         var result = await _sut.UpdateBodyProfileAsync(userId, request);
@@ -159,7 +159,7 @@ public class ProfileServiceTests : IDisposable
         result.Should().NotBeNull();
         result.HeightCm.Should().Be(180);
         result.WeightKg.Should().Be(75m);
-        result.FitPreference.Should().Be(FitPreference.Fitted);
+        result.FitPreferences.Should().Contain(FitPreference.Fitted);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class ProfileServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new UpdateBodyProfileRequest(180, 75m, null, FitPreference.Fitted);
+        var request = new UpdateBodyProfileRequest(180, 75m, null, null, new List<FitPreference> { FitPreference.Fitted });
 
         // Act
         var act = () => _sut.UpdateBodyProfileAsync(userId, request);
@@ -255,6 +255,6 @@ public class ProfileServiceTests : IDisposable
         result.Should().NotBeNull();
         result!.HeightRange.Should().Contain("175-179cm"); // Range check
         result.WeightRange.Should().Contain("70-74kg"); // Range check
-        result.BodyTypeName.Should().Be("Petite");
+        result.BodyTypeName.Should().Be("Hourglass"); // ID 1 is now Hourglass
     }
 }

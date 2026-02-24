@@ -16,7 +16,8 @@ public record FeedPostResponse(
     double SimilarityScore,
     bool IsLiked,
     bool IsSaved,
-    DateTime PublishedAt
+    DateTime PublishedAt,
+    bool IsFollowing
 );
 
 public record CreatorSummaryResponse(

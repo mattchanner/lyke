@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -66,6 +66,7 @@ export class PostDetailPage implements OnInit {
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
   private readonly engagement = inject(PostEngagementService);
+  private readonly router = inject(Router);
 
   readonly post = signal<PostDetailResponse | null>(null);
   readonly isLoading = signal(false);
@@ -112,6 +113,13 @@ export class PostDetailPage implements OnInit {
       },
       complete: () => this.isLoading.set(false),
     });
+  }
+
+  navigateToCreator(): void {
+    const currentPost = this.post();
+    if (currentPost) {
+      this.router.navigate(['/profile/creator', currentPost.creator.id]);
+    }
   }
 
   toggleLike(): void {

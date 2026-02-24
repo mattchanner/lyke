@@ -72,6 +72,13 @@ public static class FeedEndpoints
             .RequireAuthorization();
 
         group
+            .MapGet("/liked", GetLikedPostsAsync)
+            .WithName("GetLikedPosts")
+            .WithSummary("Get user's liked posts")
+            .Produces<ApiResponse<IReadOnlyList<FeedPostResponse>>>(StatusCodes.Status200OK)
+            .RequireAuthorization();
+
+        group
             .MapPost("/{id:guid}/report", ReportPostAsync)
             .WithName("ReportPost")
             .WithSummary("Report a post for content violation")
@@ -228,6 +235,28 @@ public static class FeedEndpoints
             return Results.Unauthorized();
 
         var (posts, meta) = await feedService.GetSavedPostsAsync(
+            userId.Value,
+            page ?? 1,
+            pageSize ?? 20,
+            cancellationToken
+        );
+
+        return Results.Ok(ApiResponse<IReadOnlyList<FeedPostResponse>>.Ok(posts, meta));
+    }
+
+    private static async Task<IResult> GetLikedPostsAsync(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        ClaimsPrincipal user,
+        IFeedService feedService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var (posts, meta) = await feedService.GetLikedPostsAsync(
             userId.Value,
             page ?? 1,
             pageSize ?? 20,

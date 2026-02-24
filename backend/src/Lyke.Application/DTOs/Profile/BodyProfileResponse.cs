@@ -10,7 +10,10 @@ public record BodyProfileResponse(
     string WeightDisplay,
     int BodyTypeId,
     string BodyTypeName,
-    FitPreference? FitPreference,
+    int? FrameSizeId,
+    string? FrameSizeName,
+    List<FitPreference> FitPreferences,
+    bool NeedsProfileUpdate,
     DateTime CreatedAt,
     DateTime? UpdatedAt
 );
@@ -19,5 +22,6 @@ public record AnonymizedBodyProfileResponse(
     string HeightRange,
     string WeightRange,
     string BodyTypeName,
-    FitPreference? FitPreference
+    string? FrameSizeName,
+    List<FitPreference> FitPreferences
 );

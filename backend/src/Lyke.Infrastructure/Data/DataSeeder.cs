@@ -191,7 +191,8 @@ public static class DataSeeder
 
     private static async Task SeedBodyProfilesAsync(LykeDbContext context)
     {
-        // All non-admin users get a body profile (5 shoppers + 4 creators = 9)
+        // New body type IDs: 1=Hourglass, 2=Pear, 3=Apple, 4=Rectangle, 5=Inverted Triangle
+        // Frame size IDs: 1=Petite, 2=Average, 3=Tall, 4=Plus
         var profiles = new BodyProfile[]
         {
             new()
@@ -200,8 +201,8 @@ public static class DataSeeder
                 UserId = Shopper1Id,
                 HeightCm = 165,
                 WeightKg = 58m,
-                BodyTypeId = 4, // Hourglass
-                FitPreference = FitPreference.Regular,
+                BodyTypeId = 1, // Hourglass
+                FrameSizeId = 2, // Average
             },
             new()
             {
@@ -209,8 +210,8 @@ public static class DataSeeder
                 UserId = Shopper2Id,
                 HeightCm = 170,
                 WeightKg = 63m,
-                BodyTypeId = 3, // Athletic
-                FitPreference = FitPreference.Relaxed,
+                BodyTypeId = 5, // Inverted Triangle (was Athletic)
+                FrameSizeId = 2, // Average
             },
             new()
             {
@@ -218,8 +219,8 @@ public static class DataSeeder
                 UserId = Shopper3Id,
                 HeightCm = 155,
                 WeightKg = 50m,
-                BodyTypeId = 1, // Petite
-                FitPreference = FitPreference.Fitted,
+                BodyTypeId = 4, // Rectangle (was Petite — shape now separate)
+                FrameSizeId = 1, // Petite
             },
             new()
             {
@@ -227,8 +228,8 @@ public static class DataSeeder
                 UserId = Shopper4Id,
                 HeightCm = 175,
                 WeightKg = 72m,
-                BodyTypeId = 5, // Pear
-                FitPreference = FitPreference.Regular,
+                BodyTypeId = 2, // Pear
+                FrameSizeId = 3, // Tall
             },
             new()
             {
@@ -236,8 +237,8 @@ public static class DataSeeder
                 UserId = Shopper5Id,
                 HeightCm = 160,
                 WeightKg = 55m,
-                BodyTypeId = 2, // Slim
-                FitPreference = FitPreference.Fitted,
+                BodyTypeId = 4, // Rectangle (was Slim — shape now separate)
+                FrameSizeId = 2, // Average
             },
             new()
             {
@@ -245,8 +246,8 @@ public static class DataSeeder
                 UserId = CreatorUser1Id,
                 HeightCm = 168,
                 WeightKg = 60m,
-                BodyTypeId = 4, // Hourglass
-                FitPreference = FitPreference.Regular,
+                BodyTypeId = 1, // Hourglass
+                FrameSizeId = 2, // Average
             },
             new()
             {
@@ -254,8 +255,8 @@ public static class DataSeeder
                 UserId = CreatorUser2Id,
                 HeightCm = 172,
                 WeightKg = 65m,
-                BodyTypeId = 3, // Athletic
-                FitPreference = FitPreference.Relaxed,
+                BodyTypeId = 5, // Inverted Triangle (was Athletic)
+                FrameSizeId = 3, // Tall
             },
             new()
             {
@@ -263,8 +264,8 @@ public static class DataSeeder
                 UserId = CreatorUser3Id,
                 HeightCm = 158,
                 WeightKg = 52m,
-                BodyTypeId = 1, // Petite
-                FitPreference = FitPreference.Fitted,
+                BodyTypeId = 1, // Hourglass (was Petite — shape now separate)
+                FrameSizeId = 1, // Petite
             },
             new()
             {
@@ -272,12 +273,31 @@ public static class DataSeeder
                 UserId = CreatorUser4Id,
                 HeightCm = 163,
                 WeightKg = 57m,
-                BodyTypeId = 7, // Rectangle
-                FitPreference = FitPreference.Regular,
+                BodyTypeId = 4, // Rectangle
+                FrameSizeId = 2, // Average
             },
         };
 
         context.BodyProfiles.AddRange(profiles);
+        await context.SaveChangesAsync();
+
+        // Seed fit preferences (multi-select)
+        var fitPreferences = new BodyProfileFitPreference[]
+        {
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000060"), FitPreference = FitPreference.Regular },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000061"), FitPreference = FitPreference.Relaxed },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000062"), FitPreference = FitPreference.Fitted },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"), FitPreference = FitPreference.Regular },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"), FitPreference = FitPreference.Relaxed },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"), FitPreference = FitPreference.Fitted },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"), FitPreference = FitPreference.Regular },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000065"), FitPreference = FitPreference.Regular },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000066"), FitPreference = FitPreference.Relaxed },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000067"), FitPreference = FitPreference.Fitted },
+            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000068"), FitPreference = FitPreference.Regular },
+        };
+
+        context.BodyProfileFitPreferences.AddRange(fitPreferences);
         await context.SaveChangesAsync();
     }
 

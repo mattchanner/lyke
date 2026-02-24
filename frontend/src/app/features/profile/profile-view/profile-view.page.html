@@ -20,7 +20,12 @@
       <ion-avatar>
         <img [src]="profile()!.profileImageUrl || 'assets/default-avatar.svg'" alt="Profile" loading="lazy" />
       </ion-avatar>
-      <h2>{{ profile()!.email }}</h2>
+      <h2>
+        {{ profile()!.email }}
+        @if (!profile()!.isEmailVerified) {
+          <span class="unverified-badge">unverified</span>
+        }
+      </h2>
       <p>Member since {{ profile()!.createdAt | date:'mediumDate' }}</p>
     </div>
 
@@ -41,6 +46,16 @@
           </ion-label>
         </ion-item>
       }
+
+      <ion-item routerLink="/feed/liked" detail>
+        <ion-icon name="heart-outline" slot="start"></ion-icon>
+        <ion-label>Liked Posts</ion-label>
+      </ion-item>
+
+      <ion-item routerLink="/profile/following" detail>
+        <ion-icon name="people-outline" slot="start"></ion-icon>
+        <ion-label>Following</ion-label>
+      </ion-item>
 
       @if (authService.isCreator()) {
         <ion-item routerLink="/creator" detail>

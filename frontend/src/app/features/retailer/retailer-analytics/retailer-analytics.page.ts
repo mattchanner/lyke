@@ -67,7 +67,7 @@ type DateRange = '7d' | '30d' | '90d';
 type ChartMetric = 'views' | 'clicks' | 'conversions' | 'revenue';
 
 const METRIC_COLORS: Record<ChartMetric, { line: string; fill: string }> = {
-  views: { line: '#c25b3f', fill: 'rgba(194, 91, 63, 0.15)' },
+  views: { line: '#0E3A3B', fill: 'rgba(14, 58, 59, 0.15)' },
   clicks: { line: '#d4a843', fill: 'rgba(212, 168, 67, 0.15)' },
   conversions: { line: '#7b68ae', fill: 'rgba(123, 104, 174, 0.15)' },
   revenue: { line: '#5b8c5a', fill: 'rgba(91, 140, 90, 0.15)' },

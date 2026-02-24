@@ -14,7 +14,7 @@
   </div>
 
   <ion-card-content>
-    <div class="creator-row" (click)="$event.stopPropagation(); $event.preventDefault()">
+    <div class="creator-row" (click)="navigateToCreator($event)">
       <ion-avatar>
         <img
           [src]="post.creator.profileImageUrl || 'assets/default-avatar.svg'"
@@ -25,7 +25,7 @@
         <span class="creator-name">
           {{ post.creator.displayName }}
           @if (post.creator.isVerified) {
-            <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+            <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
           }
         </span>
         @if (post.creator.bodyProfile) {
@@ -35,6 +35,14 @@
           </span>
         }
       </div>
+      <ion-button
+        fill="clear"
+        size="small"
+        class="follow-btn"
+        (click)="toggleFollow($event)"
+      >
+        {{ followService.isFollowing(post.creator.id) ? 'Following' : 'Follow' }}
+      </ion-button>
     </div>
 
     @if (post.title) {
@@ -87,7 +95,7 @@
           <ion-icon name="share-social-outline" color="medium" slot="icon-only"></ion-icon>
         </ion-button>
         <ion-button fill="clear" size="small" (click)="reportPost($event)">
-          <ion-icon name="ellipsis-vertical" color="medium" slot="icon-only"></ion-icon>
+          <ion-icon name="ellipsis-vertical-outline" color="medium" slot="icon-only"></ion-icon>
         </ion-button>
       </div>
     </div>

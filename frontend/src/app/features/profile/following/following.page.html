@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Following</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (creators().length === 0) {
+    <div class="empty-state">
+      <h3>Not following anyone</h3>
+      <p>Creators you follow will appear here.</p>
+    </div>
+  } @else {
+    <ion-list>
+      @for (creator of creators(); track creator.creatorId) {
+        <ion-item [routerLink]="['/profile/creator', creator.creatorId]" detail>
+          <ion-avatar slot="start">
+            <img [src]="creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="creator.displayName" />
+          </ion-avatar>
+          <ion-label>
+            <h2>
+              {{ creator.displayName }}
+              @if (creator.isVerified) {
+                <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+              }
+            </h2>
+          </ion-label>
+          <ion-button fill="outline" size="small" slot="end" (click)="unfollow(creator.creatorId); $event.stopPropagation()">
+            Unfollow
+          </ion-button>
+        </ion-item>
+      }
+    </ion-list>
+  }
+</ion-content>

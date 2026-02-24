@@ -137,6 +137,9 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int?>("FrameSizeId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("HeightCm")
                         .HasColumnType("integer");
 
@@ -152,13 +155,29 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FrameSizeId");
+
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.HasIndex("BodyTypeId", "HeightCm", "WeightKg")
-                        .HasDatabaseName("IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg");
+                    b.HasIndex("BodyTypeId", "FrameSizeId", "HeightCm", "WeightKg")
+                        .HasDatabaseName("IX_BodyProfiles_BodyType_FrameSize_Height_Weight");
 
                     b.ToTable("BodyProfiles");
+                });
+
+            modelBuilder.Entity("Lyke.Core.Entities.BodyProfileFitPreference", b =>
+                {
+                    b.Property<Guid>("BodyProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FitPreference")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("BodyProfileId", "FitPreference");
+
+                    b.ToTable("BodyProfileFitPreferences");
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.BodyType", b =>
@@ -189,58 +208,37 @@ namespace Lyke.Infrastructure.Data.Migrations
                         new
                         {
                             Id = 1,
-                            Description = "Shorter stature with proportional frame",
-                            DisplayOrder = 1,
-                            Name = "Petite"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Lean build with narrow shoulders and hips",
-                            DisplayOrder = 2,
-                            Name = "Slim"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Muscular build with broader shoulders",
-                            DisplayOrder = 3,
-                            Name = "Athletic"
-                        },
-                        new
-                        {
-                            Id = 4,
                             Description = "Balanced bust and hips with defined waist",
-                            DisplayOrder = 4,
+                            DisplayOrder = 1,
                             Name = "Hourglass"
                         },
                         new
                         {
-                            Id = 5,
+                            Id = 2,
                             Description = "Hips wider than shoulders",
-                            DisplayOrder = 5,
+                            DisplayOrder = 2,
                             Name = "Pear"
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 3,
                             Description = "Fuller midsection with slimmer legs",
-                            DisplayOrder = 6,
+                            DisplayOrder = 3,
                             Name = "Apple"
                         },
                         new
                         {
-                            Id = 7,
-                            Description = "Balanced proportions throughout",
-                            DisplayOrder = 7,
+                            Id = 4,
+                            Description = "Balanced proportions, less waist definition",
+                            DisplayOrder = 4,
                             Name = "Rectangle"
                         },
                         new
                         {
-                            Id = 8,
-                            Description = "Fuller figure across all areas",
-                            DisplayOrder = 8,
-                            Name = "Plus Size"
+                            Id = 5,
+                            Description = "Shoulders wider than hips",
+                            DisplayOrder = 5,
+                            Name = "Inverted Triangle"
                         });
                 });
 
@@ -673,6 +671,61 @@ namespace Lyke.Infrastructure.Data.Migrations
                             Category = "Material",
                             IsActive = true,
                             Name = "Not stretchy"
+                        });
+                });
+
+            modelBuilder.Entity("Lyke.Core.Entities.FrameSize", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FrameSizes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Shorter stature with a smaller overall frame",
+                            DisplayOrder = 1,
+                            Name = "Petite"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Medium height and proportional build",
+                            DisplayOrder = 2,
+                            Name = "Average"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Taller stature with a longer frame",
+                            DisplayOrder = 3,
+                            Name = "Tall"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Fuller figure across all areas",
+                            DisplayOrder = 4,
+                            Name = "Plus"
                         });
                 });
 
@@ -1122,6 +1175,33 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Lyke.Core.Entities.UserFollow", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW()");
+
+                    b.Property<Guid>("FollowedUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FollowerUserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FollowedUserId");
+
+                    b.HasIndex("FollowerUserId", "FollowedUserId")
+                        .IsUnique();
+
+                    b.ToTable("UserFollows");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1260,6 +1340,11 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Lyke.Core.Entities.FrameSize", "FrameSize")
+                        .WithMany("BodyProfiles")
+                        .HasForeignKey("FrameSizeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Lyke.Core.Entities.User", "User")
                         .WithOne("BodyProfile")
                         .HasForeignKey("Lyke.Core.Entities.BodyProfile", "UserId")
@@ -1268,7 +1353,20 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.Navigation("BodyType");
 
+                    b.Navigation("FrameSize");
+
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lyke.Core.Entities.BodyProfileFitPreference", b =>
+                {
+                    b.HasOne("Lyke.Core.Entities.BodyProfile", "BodyProfile")
+                        .WithMany("FitPreferences")
+                        .HasForeignKey("BodyProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BodyProfile");
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.ClickEvent", b =>
@@ -1486,6 +1584,25 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.Navigation("Retailer");
                 });
 
+            modelBuilder.Entity("Lyke.Core.Entities.UserFollow", b =>
+                {
+                    b.HasOne("Lyke.Core.Entities.User", "Followed")
+                        .WithMany("Followers")
+                        .HasForeignKey("FollowedUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lyke.Core.Entities.User", "Follower")
+                        .WithMany("Following")
+                        .HasForeignKey("FollowerUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Followed");
+
+                    b.Navigation("Follower");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -1537,6 +1654,11 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lyke.Core.Entities.BodyProfile", b =>
+                {
+                    b.Navigation("FitPreferences");
+                });
+
             modelBuilder.Entity("Lyke.Core.Entities.BodyType", b =>
                 {
                     b.Navigation("BodyProfiles");
@@ -1557,6 +1679,11 @@ namespace Lyke.Infrastructure.Data.Migrations
             modelBuilder.Entity("Lyke.Core.Entities.FitTag", b =>
                 {
                     b.Navigation("PostFitTags");
+                });
+
+            modelBuilder.Entity("Lyke.Core.Entities.FrameSize", b =>
+                {
+                    b.Navigation("BodyProfiles");
                 });
 
             modelBuilder.Entity("Lyke.Core.Entities.Post", b =>
@@ -1596,6 +1723,10 @@ namespace Lyke.Infrastructure.Data.Migrations
                     b.Navigation("Creator");
 
                     b.Navigation("Engagements");
+
+                    b.Navigation("Followers");
+
+                    b.Navigation("Following");
 
                     b.Navigation("Retailer");
                 });

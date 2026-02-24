@@ -429,6 +429,25 @@ public class AuthService : IAuthService
         _logger.LogInformation("Email verified for {Email}", email);
     }
 
+    public async Task ResendVerificationEmailAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null || !user.IsActive)
+        {
+            throw new NotFoundException(nameof(User), userId);
+        }
+
+        if (user.EmailConfirmed)
+        {
+            throw new ValidationException("Email", "Email is already verified");
+        }
+
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        await _emailService.SendEmailVerificationAsync(user.Email!, token, cancellationToken);
+
+        _logger.LogInformation("Verification email resent for {Email}", user.Email);
+    }
+
     private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
     {
         var accessToken = GenerateAccessToken(user);

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, inject, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   IonCard,
   IonCardContent,
@@ -28,7 +28,7 @@ import {
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
-import { ApiService, ToastService, AnalyticsService } from '../../../core';
+import { ApiService, ToastService, AnalyticsService, FollowService } from '../../../core';
 import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { MediaCarouselComponent, MediaItem } from '../media-carousel';
@@ -61,6 +61,8 @@ export class PostCardComponent {
   private readonly analytics = inject(AnalyticsService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
+  private readonly router = inject(Router);
+  readonly followService = inject(FollowService);
 
   @Input({ required: true }) post!: FeedPostResponse;
   @Output() liked = new EventEmitter<{ postId: string; liked: boolean }>();
@@ -98,6 +100,22 @@ export class PostCardComponent {
       return (count / 1000).toFixed(1) + 'K';
     }
     return count.toString();
+  }
+
+  toggleFollow(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (this.followService.isFollowing(this.post.creator.id)) {
+      this.followService.unfollow(this.post.creator.id);
+    } else {
+      this.followService.follow(this.post.creator.id);
+    }
+  }
+
+  navigateToCreator(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.router.navigate(['/profile/creator', this.post.creator.id]);
   }
 
   toggleLike(event: Event): void {

@@ -9,6 +9,7 @@ public interface ICreatorService
     // Registration & Profile
     Task<CreatorProfileResponse> RegisterAsCreatorAsync(Guid userId, RegisterCreatorRequest request, CancellationToken cancellationToken = default);
     Task<CreatorProfileResponse> GetCreatorProfileAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<PublicCreatorProfileResponse> GetPublicCreatorProfileAsync(Guid creatorId, CancellationToken cancellationToken = default);
     Task<CreatorProfileResponse> UpdateCreatorProfileAsync(Guid userId, UpdateCreatorProfileRequest request, CancellationToken cancellationToken = default);
 
     // Verification (Creator)

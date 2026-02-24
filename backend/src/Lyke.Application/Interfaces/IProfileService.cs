@@ -23,6 +23,7 @@ public interface IProfileService
 
     // Lookups
     Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<DTOs.Feed.FitTagResponse>> GetFitTagsAsync(CancellationToken cancellationToken = default);
 }

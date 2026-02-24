@@ -27,7 +27,8 @@ export interface BodyProfileExportData {
   heightCm: number;
   weightKg: number;
   bodyTypeName: string;
-  fitPreference: string | null;
+  frameSizeName: string | null;
+  fitPreferences: string;
   createdAt: string;
 }
 

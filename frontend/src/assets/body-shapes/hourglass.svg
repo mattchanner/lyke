@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Head -->
+  <circle cx="40" cy="14" r="8" />
+  <!-- Neck -->
+  <line x1="40" y1="22" x2="40" y2="28" />
+  <!-- Body: balanced bust & hips, defined waist -->
+  <path d="M24,32 C24,32 22,34 22,40 C22,46 30,52 30,56 C30,60 22,66 22,76 C22,82 24,86 24,86 L24,100" />
+  <path d="M56,32 C56,32 58,34 58,40 C58,46 50,52 50,56 C50,60 58,66 58,76 C58,82 56,86 56,86 L56,100" />
+  <!-- Shoulders -->
+  <line x1="24" y1="32" x2="56" y2="32" />
+  <!-- Feet -->
+  <line x1="24" y1="100" x2="20" y2="112" />
+  <line x1="56" y1="100" x2="60" y2="112" />
+</svg>

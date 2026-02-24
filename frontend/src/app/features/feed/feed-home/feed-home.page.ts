@@ -36,6 +36,7 @@ import { FeedPostResponse, FeedSortBy } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card/post-card.component';
 import { SkeletonPostCardComponent } from '../../../shared/components/loading-skeleton';
 import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter-modal/feed-filter-modal.component';
+import { VerificationBannerComponent } from '../../../shared/components/verification-banner/verification-banner.component';
 
 @Component({
   selector: 'app-feed-home',
@@ -63,6 +64,7 @@ import { FeedFilterModalComponent, FeedFilters } from '../components/feed-filter
     PostCardComponent,
     SkeletonPostCardComponent,
     FeedFilterModalComponent,
+    VerificationBannerComponent,
   ],
   templateUrl: './feed-home.page.html',
   styleUrls: ['./feed-home.page.scss'],

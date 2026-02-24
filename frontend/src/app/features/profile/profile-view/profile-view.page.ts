@@ -27,6 +27,8 @@ import {
   starOutline,
   storefrontOutline,
   shieldOutline,
+  heartOutline,
+  peopleOutline,
 } from 'ionicons/icons';
 import { ApiService, AuthService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
@@ -75,6 +77,8 @@ export class ProfileViewPage implements OnInit {
       starOutline,
       storefrontOutline,
       shieldOutline,
+      heartOutline,
+      peopleOutline,
     });
   }
 

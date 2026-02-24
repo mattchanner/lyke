@@ -26,7 +26,12 @@ public class BodyProfileConfiguration : IEntityTypeConfiguration<BodyProfile>
             .HasForeignKey(bp => bp.BodyTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(bp => new { bp.BodyTypeId, bp.HeightCm, bp.WeightKg })
-            .HasDatabaseName("IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg");
+        builder.HasOne(bp => bp.FrameSize)
+            .WithMany(fs => fs.BodyProfiles)
+            .HasForeignKey(bp => bp.FrameSizeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(bp => new { bp.BodyTypeId, bp.FrameSizeId, bp.HeightCm, bp.WeightKg })
+            .HasDatabaseName("IX_BodyProfiles_BodyType_FrameSize_Height_Weight");
     }
 }

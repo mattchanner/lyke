@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/feed"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ creator()?.displayName || 'Creator' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (creator(); as c) {
+    <div class="creator-header">
+      <ion-avatar class="creator-avatar">
+        <img [src]="c.profileImageUrl || 'assets/default-avatar.svg'" [alt]="c.displayName" />
+      </ion-avatar>
+
+      <h2 class="creator-name">
+        {{ c.displayName }}
+        @if (c.isVerified) {
+          <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+        }
+      </h2>
+
+      @if (c.bio) {
+        <p class="creator-bio">{{ c.bio }}</p>
+      }
+
+      <div class="creator-stats">
+        @if (c.bodyProfile) {
+          <ion-chip>
+            <ion-label>{{ c.bodyProfile.heightRange }}</ion-label>
+          </ion-chip>
+          <ion-chip>
+            <ion-label>{{ c.bodyProfile.bodyTypeName }}</ion-label>
+          </ion-chip>
+          @if (c.bodyProfile.frameSizeName) {
+            <ion-chip>
+              <ion-label>{{ c.bodyProfile.frameSizeName }}</ion-label>
+            </ion-chip>
+          }
+        }
+      </div>
+
+      <p class="post-count">{{ c.publishedPosts }} {{ c.publishedPosts === 1 ? 'post' : 'posts' }}</p>
+
+      <ion-button
+        [fill]="followService.isFollowing(c.id) ? 'outline' : 'solid'"
+        (click)="toggleFollow()"
+        class="follow-button"
+      >
+        {{ followService.isFollowing(c.id) ? 'Following' : 'Follow' }}
+      </ion-button>
+    </div>
+
+    @if (isLoadingPosts()) {
+      <div class="loading-container">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    } @else if (posts().length === 0) {
+      <div class="empty-state">
+        <p>No posts yet.</p>
+      </div>
+    } @else {
+      <div class="posts-grid">
+        @for (post of posts(); track post.id) {
+          <app-post-card [post]="post"></app-post-card>
+        }
+      </div>
+    }
+  }
+</ion-content>

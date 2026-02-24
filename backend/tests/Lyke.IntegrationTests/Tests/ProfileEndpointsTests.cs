@@ -125,8 +125,8 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var request = new CreateBodyProfileRequest(
             HeightCm: 170,
             WeightKg: 65.5m,
-            BodyTypeId: 1, // Petite (seeded in test data)
-            FitPreference: FitPreference.Regular
+            BodyTypeId: 1, // Hourglass (seeded in test data)
+            FitPreferences: new List<FitPreference> { FitPreference.Regular }
         );
 
         // Act
@@ -162,8 +162,8 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var createRequest = new CreateBodyProfileRequest(
             HeightCm: 175,
             WeightKg: 70m,
-            BodyTypeId: 2, // Athletic
-            FitPreference: FitPreference.Relaxed
+            BodyTypeId: 2, // Pear
+            FitPreferences: new List<FitPreference> { FitPreference.Relaxed }
         );
         await _client.PostAsJsonAsync("/api/profile/v1/body", createRequest);
 
@@ -227,8 +227,8 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var updateRequest = new UpdateBodyProfileRequest(
             HeightCm: 166,
             WeightKg: 62m,
-            BodyTypeId: 3, // Curvy
-            FitPreference: FitPreference.Fitted
+            BodyTypeId: 3, // Apple
+            FitPreferences: new List<FitPreference> { FitPreference.Fitted }
         );
 
         // Act

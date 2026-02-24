@@ -15,10 +15,10 @@
   <link rel="icon" type="image/svg+xml" href="assets/icon/favicon.svg" />
   <link rel="icon" type="image/png" href="assets/icon/favicon.png" />
 
-  <!-- Plus Jakarta Sans — modern geometric humanist sans-serif -->
+  <!-- Inter — clean, modern, highly readable -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- add to homescreen for ios -->
   <meta name="mobile-web-app-capable" content="yes" />
@@ -32,8 +32,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #f5f0ea;
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F2EE;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       gap: 2rem;
       z-index: 9999;
     }
@@ -48,7 +48,7 @@
       font-size: 1.75rem;
       font-weight: 700;
       letter-spacing: 0.25em;
-      color: #1d1d1f;
+      color: #2A2D32;
       animation: splashFadeUp 0.6s 0.15s ease-out both;
     }
 
@@ -56,7 +56,7 @@
       width: 48px;
       height: 3px;
       border-radius: 2px;
-      background: #ebe5dc;
+      background: #E3E0DA;
       overflow: hidden;
       animation: splashFadeUp 0.6s 0.3s ease-out both;
     }
@@ -67,7 +67,7 @@
       width: 50%;
       height: 100%;
       border-radius: 2px;
-      background: #c25b3f;
+      background: #0E3A3B;
       animation: splashSlide 1.2s 0.5s ease-in-out infinite;
     }
 
@@ -84,14 +84,14 @@
 
     @media (prefers-color-scheme: dark) {
       .lyke-splash { background: #121214; }
-      .lyke-splash-wordmark { color: #e8e6e1; }
+      .lyke-splash-wordmark { color: #E3E0DA; }
       .lyke-splash-loader { background: #2a2a2e; }
-      .lyke-splash-loader::after { background: #d4785e; }
+      .lyke-splash-loader::after { background: #3A8B8D; }
       .lyke-splash-icon .icon-bg { fill: #1e1e22; }
-      .lyke-splash-icon .icon-hook { stroke: #bb6a53; }
-      .lyke-splash-icon .icon-hook-dot { fill: #bb6a53; }
-      .lyke-splash-icon .icon-heart { fill: #d4785e; }
-      .lyke-splash-icon .icon-highlight { fill: #d8866e; }
+      .lyke-splash-icon .icon-hook { stroke: #337A7C; }
+      .lyke-splash-icon .icon-hook-dot { fill: #337A7C; }
+      .lyke-splash-icon .icon-heart { fill: #3A8B8D; }
+      .lyke-splash-icon .icon-highlight { fill: #4E9698; }
     }
   </style>
 </head>
@@ -100,11 +100,11 @@
   <app-root>
     <div class="lyke-splash">
       <svg class="lyke-splash-icon" viewBox="20 18 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect class="icon-bg" x="20" y="18" width="68" height="68" rx="14" fill="#f5f0ea"/>
-        <path class="icon-hook" d="M46,36 Q46,28 54,28 Q62,28 62,36" stroke="#ab5037" stroke-width="3" stroke-linecap="round"/>
-        <circle class="icon-hook-dot" cx="54" cy="25" r="3" fill="#ab5037"/>
-        <path class="icon-heart" d="M54,78 C54,78 30,62 30,46 C30,38 36,33 43,33 C48,33 52,36 54,40 C56,36 60,33 65,33 C72,33 78,38 78,46 C78,62 54,78 54,78 Z" fill="#c25b3f"/>
-        <path class="icon-highlight" d="M43,36 C39,36 34,40 34,46 C34,50 38,56 43,60 C40,54 37,48 37,44 C37,40 39,37 43,36 Z" fill="#c86b52"/>
+        <rect class="icon-bg" x="20" y="18" width="68" height="68" rx="14" fill="#F4F2EE"/>
+        <path class="icon-hook" d="M46,36 Q46,28 54,28 Q62,28 62,36" stroke="#0C3334" stroke-width="3" stroke-linecap="round"/>
+        <circle class="icon-hook-dot" cx="54" cy="25" r="3" fill="#0C3334"/>
+        <path class="icon-heart" d="M54,78 C54,78 30,62 30,46 C30,38 36,33 43,33 C48,33 52,36 54,40 C56,36 60,33 65,33 C72,33 78,38 78,46 C78,62 54,78 54,78 Z" fill="#0E3A3B"/>
+        <path class="icon-highlight" d="M43,36 C39,36 34,40 34,46 C34,50 38,56 43,60 C40,54 37,48 37,44 C37,40 39,37 43,36 Z" fill="#264E4F"/>
       </svg>
       <div class="lyke-splash-wordmark">LYKE</div>
       <div class="lyke-splash-loader"></div>

@@ -9,7 +9,7 @@
         <ion-icon name="share-social-outline" slot="icon-only"></ion-icon>
       </ion-button>
       <ion-button (click)="reportPost()">
-        <ion-icon name="ellipsis-vertical" slot="icon-only"></ion-icon>
+        <ion-icon name="ellipsis-vertical-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -30,7 +30,7 @@
       </div>
 
       <div class="content-section">
-        <div class="creator-row">
+        <div class="creator-row" (click)="navigateToCreator()">
           <ion-avatar>
             <img [src]="post()!.creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="post()!.creator.displayName" loading="lazy" />
           </ion-avatar>
@@ -38,7 +38,7 @@
             <span class="creator-name">
               {{ post()!.creator.displayName }}
               @if (post()!.creator.isVerified) {
-                <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+                <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
               }
             </span>
             @if (post()!.creator.bodyProfile; as bp) {

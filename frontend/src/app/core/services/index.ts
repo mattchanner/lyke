@@ -11,3 +11,4 @@ export { AppInsightsService, AppInsightsErrorHandler } from './app-insights.serv
 export { PostEngagementService, type EngagementChange } from './post-engagement.service';
 export { AnalyticsService } from './analytics.service';
 export { WebVitalsService } from './web-vitals.service';
+export { FollowService } from './follow.service';

@@ -32,6 +32,7 @@ interface AuthState {
   email: string | null;
   userType: UserType | null;
   profileImageUrl: string | null;
+  isEmailVerified: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
@@ -41,6 +42,7 @@ const INITIAL_STATE: AuthState = {
   email: null,
   userType: null,
   profileImageUrl: null,
+  isEmailVerified: true,
   isAuthenticated: false,
   isLoading: true,
 };
@@ -66,6 +68,7 @@ export class AuthService {
   readonly isLoading = computed(() => this.state().isLoading);
 
   readonly profileImageUrl = computed(() => this.state().profileImageUrl);
+  readonly isEmailVerified = computed(() => this.state().isEmailVerified);
   readonly isCreator = computed(() => this.state().userType === UserType.Creator);
   readonly isRetailer = computed(() => this.state().userType === UserType.Retailer);
   readonly isAdmin = computed(() => this.state().userType === UserType.Admin);
@@ -90,6 +93,7 @@ export class AuthService {
               email: decoded.email,
               userType: decoded.user_type as UserType,
               profileImageUrl: null,
+              isEmailVerified: true,
               isAuthenticated: true,
               isLoading: false,
             });
@@ -117,6 +121,7 @@ export class AuthService {
           this.state.update((s) => ({
             ...s,
             profileImageUrl: response.data!.profileImageUrl,
+            isEmailVerified: response.data!.isEmailVerified,
           }));
         }
       },
@@ -236,6 +241,16 @@ export class AuthService {
     );
   }
 
+  resendVerification(): Observable<void> {
+    return this.api.post<void>('auth', 'resend-verification', {}).pipe(
+      map((response) => {
+        if (!response.success) {
+          throw new Error(response.error?.message || 'Failed to resend verification');
+        }
+      })
+    );
+  }
+
   async logout(): Promise<void> {
     this.appInsights.clearAuthenticatedUser();
     await this.storage.clearAuthData();
@@ -257,6 +272,7 @@ export class AuthService {
       email: auth.email,
       userType: auth.userType,
       profileImageUrl: null,
+      isEmailVerified: true,
       isAuthenticated: true,
       isLoading: false,
     });

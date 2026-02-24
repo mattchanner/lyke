@@ -94,6 +94,14 @@ public static class ProfileEndpoints
             .CacheOutput("LookupData");
 
         group
+            .MapGet("/frame-sizes", GetFrameSizesAsync)
+            .WithName("GetFrameSizes")
+            .WithSummary("Get available frame sizes")
+            .Produces<ApiResponse<IReadOnlyList<FrameSizeResponse>>>(StatusCodes.Status200OK)
+            .AllowAnonymous()
+            .CacheOutput("LookupData");
+
+        group
             .MapGet("/fit-preferences", GetFitPreferencesAsync)
             .WithName("GetFitPreferences")
             .WithSummary("Get available fit preferences")
@@ -223,6 +231,15 @@ public static class ProfileEndpoints
     {
         var result = await profileService.GetBodyTypesAsync(cancellationToken);
         return Results.Ok(ApiResponse<IReadOnlyList<BodyTypeResponse>>.Ok(result));
+    }
+
+    private static async Task<IResult> GetFrameSizesAsync(
+        IProfileService profileService,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await profileService.GetFrameSizesAsync(cancellationToken);
+        return Results.Ok(ApiResponse<IReadOnlyList<FrameSizeResponse>>.Ok(result));
     }
 
     private static async Task<IResult> GetFitPreferencesAsync(

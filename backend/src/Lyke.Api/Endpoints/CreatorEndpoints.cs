@@ -13,6 +13,15 @@ public static class CreatorEndpoints
         var group = app.MapGroup("/api/creators/v1")
             .WithTags("Creators");
 
+        // Public creator profile (any authenticated user)
+        group
+            .MapGet("/{creatorId:guid}/public", GetPublicCreatorProfileAsync)
+            .WithName("GetPublicCreatorProfile")
+            .WithSummary("Get a creator's public profile")
+            .Produces<ApiResponse<PublicCreatorProfileResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .RequireAuthorization();
+
         // Registration & Profile
         // Note: Registration allows any authenticated user (Shopper becoming Creator)
         group
@@ -150,6 +159,16 @@ public static class CreatorEndpoints
             .Produces<ApiResponse>(StatusCodes.Status404NotFound);
 
         return app;
+    }
+
+    private static async Task<IResult> GetPublicCreatorProfileAsync(
+        Guid creatorId,
+        ICreatorService creatorService,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await creatorService.GetPublicCreatorProfileAsync(creatorId, cancellationToken);
+        return Results.Ok(ApiResponse<PublicCreatorProfileResponse>.Ok(result));
     }
 
     private static async Task<IResult> RegisterAsCreatorAsync(

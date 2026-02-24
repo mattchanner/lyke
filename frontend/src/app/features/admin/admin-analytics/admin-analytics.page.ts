@@ -72,7 +72,7 @@ type ChartMetric = 'newUsers' | 'postsPublished' | 'views' | 'likes' | 'clicks';
 const METRIC_COLORS: Record<ChartMetric, { line: string; fill: string }> = {
   newUsers: { line: '#5b8c5a', fill: 'rgba(91, 140, 90, 0.15)' },
   postsPublished: { line: '#7b61a6', fill: 'rgba(123, 97, 166, 0.15)' },
-  views: { line: '#c25b3f', fill: 'rgba(194, 91, 63, 0.15)' },
+  views: { line: '#0E3A3B', fill: 'rgba(14, 58, 59, 0.15)' },
   likes: { line: '#c94c4c', fill: 'rgba(201, 76, 76, 0.15)' },
   clicks: { line: '#d4a843', fill: 'rgba(212, 168, 67, 0.15)' },
 };

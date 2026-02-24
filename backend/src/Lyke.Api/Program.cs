@@ -264,6 +264,7 @@ app.MapPostEndpoints();
 app.MapSearchEndpoints();
 app.MapCommerceEndpoints();
 app.MapCreatorEndpoints();
+app.MapFollowEndpoints();
 app.MapMediaEndpoints();
 app.MapAdminEndpoints();
 app.MapRetailerEndpoints();

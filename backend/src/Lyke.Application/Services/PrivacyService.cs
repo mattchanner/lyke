@@ -57,6 +57,8 @@ public class PrivacyService : IPrivacyService
         // Body profile
         var bodyProfile = await _dbContext.Set<BodyProfile>()
             .Include(bp => bp.BodyType)
+            .Include(bp => bp.FrameSize)
+            .Include(bp => bp.FitPreferences)
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         BodyProfileExportData? bodyProfileData = bodyProfile != null
@@ -64,7 +66,8 @@ public class PrivacyService : IPrivacyService
                 HeightCm: bodyProfile.HeightCm,
                 WeightKg: bodyProfile.WeightKg,
                 BodyTypeName: bodyProfile.BodyType.Name,
-                FitPreference: bodyProfile.FitPreference?.ToString(),
+                FrameSizeName: bodyProfile.FrameSize?.Name,
+                FitPreferences: string.Join(", ", bodyProfile.FitPreferences.Select(fp => fp.FitPreference.ToString())),
                 CreatedAt: bodyProfile.CreatedAt)
             : null;
 

@@ -21,6 +21,7 @@ public class ProfileService : IProfileService
     private readonly ILogger<ProfileService> _logger;
 
     private const string BodyTypesCacheKey = "lookup:body-types";
+    private const string FrameSizesCacheKey = "lookup:frame-sizes";
     private const string FitTagsCacheKey = "lookup:fit-tags";
     private static readonly TimeSpan LookupCacheDuration = TimeSpan.FromHours(1);
 
@@ -44,6 +45,7 @@ public class ProfileService : IProfileService
     {
         var user = await _userManager.Users
             .Include(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -60,7 +62,8 @@ public class ProfileService : IProfileService
             HasBodyProfile: user.BodyProfile != null,
             ProfileCompleteness: completeness,
             CreatedAt: user.CreatedAt,
-            ProfileImageUrl: user.ProfileImageUrl
+            ProfileImageUrl: user.ProfileImageUrl,
+            IsEmailVerified: user.EmailConfirmed
         );
     }
 
@@ -68,6 +71,7 @@ public class ProfileService : IProfileService
     {
         var user = await _userManager.Users
             .Include(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -100,6 +104,7 @@ public class ProfileService : IProfileService
     {
         var user = await _userManager.Users
             .Include(u => u.BodyProfile)
+            .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -147,7 +152,8 @@ public class ProfileService : IProfileService
             HasBodyProfile: user.BodyProfile != null,
             ProfileCompleteness: completeness,
             CreatedAt: user.CreatedAt,
-            ProfileImageUrl: user.ProfileImageUrl
+            ProfileImageUrl: user.ProfileImageUrl,
+            IsEmailVerified: user.EmailConfirmed
         );
     }
 
@@ -186,6 +192,8 @@ public class ProfileService : IProfileService
 
         var profile = await bodyProfiles
             .Include(bp => bp.BodyType)
+            .Include(bp => bp.FrameSize)
+            .Include(bp => bp.FitPreferences)
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         if (profile == null)
@@ -215,6 +223,17 @@ public class ProfileService : IProfileService
             throw new ValidationException("BodyTypeId", "Invalid body type");
         }
 
+        // Validate frame size if provided
+        FrameSize? frameSize = null;
+        if (request.FrameSizeId.HasValue)
+        {
+            frameSize = await _dbContext.Set<FrameSize>().FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
+            if (frameSize == null)
+            {
+                throw new ValidationException("FrameSizeId", "Invalid frame size");
+            }
+        }
+
         var profile = new BodyProfile
         {
             Id = Guid.NewGuid(),
@@ -222,11 +241,24 @@ public class ProfileService : IProfileService
             HeightCm = request.HeightCm,
             WeightKg = request.WeightKg,
             BodyTypeId = request.BodyTypeId,
-            FitPreference = request.FitPreference
+            FrameSizeId = request.FrameSizeId,
         };
 
         await bodyProfiles.AddAsync(profile, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        // Add fit preferences
+        if (request.FitPreferences != null && request.FitPreferences.Count > 0)
+        {
+            var fitPrefs = request.FitPreferences.Distinct().Select(fp => new BodyProfileFitPreference
+            {
+                BodyProfileId = profile.Id,
+                FitPreference = fp,
+            }).ToList();
+            _dbContext.Set<BodyProfileFitPreference>().AddRange(fitPrefs);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            profile.FitPreferences = fitPrefs;
+        }
 
         _logger.LogInformation("Body profile created for user {UserId}", userId);
 
@@ -237,8 +269,9 @@ public class ProfileService : IProfileService
             nameof(BodyProfile),
             cancellationToken: cancellationToken);
 
-        // Reload with body type
+        // Set navigation properties for response mapping
         profile.BodyType = bodyType;
+        profile.FrameSize = frameSize;
         return MapToBodyProfileResponse(profile);
     }
 
@@ -249,6 +282,8 @@ public class ProfileService : IProfileService
 
         var profile = await bodyProfiles
             .Include(bp => bp.BodyType)
+            .Include(bp => bp.FrameSize)
+            .Include(bp => bp.FitPreferences)
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         if (profile == null)
@@ -277,9 +312,31 @@ public class ProfileService : IProfileService
             profile.BodyType = bodyType;
         }
 
-        if (request.FitPreference.HasValue)
+        if (request.FrameSizeId.HasValue)
         {
-            profile.FitPreference = request.FitPreference.Value;
+            var frameSize = await _dbContext.Set<FrameSize>().FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
+            if (frameSize == null)
+            {
+                throw new ValidationException("FrameSizeId", "Invalid frame size");
+            }
+            profile.FrameSizeId = request.FrameSizeId.Value;
+            profile.FrameSize = frameSize;
+        }
+
+        if (request.FitPreferences != null)
+        {
+            // Replace all fit preferences
+            var existingPrefs = _dbContext.Set<BodyProfileFitPreference>()
+                .Where(bpfp => bpfp.BodyProfileId == profile.Id);
+            _dbContext.Set<BodyProfileFitPreference>().RemoveRange(existingPrefs);
+
+            var newPrefs = request.FitPreferences.Distinct().Select(fp => new BodyProfileFitPreference
+            {
+                BodyProfileId = profile.Id,
+                FitPreference = fp,
+            }).ToList();
+            _dbContext.Set<BodyProfileFitPreference>().AddRange(newPrefs);
+            profile.FitPreferences = newPrefs;
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -312,6 +369,8 @@ public class ProfileService : IProfileService
 
         var profile = await bodyProfiles
             .Include(bp => bp.BodyType)
+            .Include(bp => bp.FrameSize)
+            .Include(bp => bp.FitPreferences)
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
         if (profile == null)
@@ -323,7 +382,8 @@ public class ProfileService : IProfileService
             HeightRange: GetHeightRange(profile.HeightCm),
             WeightRange: GetWeightRange(profile.WeightKg),
             BodyTypeName: profile.BodyType.Name,
-            FitPreference: profile.FitPreference
+            FrameSizeName: profile.FrameSize?.Name,
+            FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList()
         );
     }
 
@@ -347,6 +407,28 @@ public class ProfileService : IProfileService
 
         _cache.Set(BodyTypesCacheKey, (IReadOnlyList<BodyTypeResponse>)types, LookupCacheDuration);
         return types;
+    }
+
+    public async Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(CancellationToken cancellationToken = default)
+    {
+        if (_cache.TryGetValue(FrameSizesCacheKey, out IReadOnlyList<FrameSizeResponse>? cached) && cached != null)
+        {
+            return cached;
+        }
+
+        var sizes = await _dbContext.Set<FrameSize>()
+            .AsNoTracking()
+            .OrderBy(fs => fs.DisplayOrder)
+            .Select(fs => new FrameSizeResponse(
+                fs.Id,
+                fs.Name,
+                fs.Description,
+                fs.DisplayOrder
+            ))
+            .ToListAsync(cancellationToken);
+
+        _cache.Set(FrameSizesCacheKey, (IReadOnlyList<FrameSizeResponse>)sizes, LookupCacheDuration);
+        return sizes;
     }
 
     public Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(CancellationToken cancellationToken = default)
@@ -394,7 +476,10 @@ public class ProfileService : IProfileService
             WeightDisplay: FormatWeight(profile.WeightKg),
             BodyTypeId: profile.BodyTypeId,
             BodyTypeName: profile.BodyType.Name,
-            FitPreference: profile.FitPreference,
+            FrameSizeId: profile.FrameSizeId,
+            FrameSizeName: profile.FrameSize?.Name,
+            FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList(),
+            NeedsProfileUpdate: profile.FrameSizeId == null,
             CreatedAt: profile.CreatedAt,
             UpdatedAt: profile.UpdatedAt
         );
@@ -413,8 +498,8 @@ public class ProfileService : IProfileService
         {
             score++;
 
-            // Has fit preference
-            if (user.BodyProfile.FitPreference.HasValue) score++;
+            // Has fit preferences
+            if (user.BodyProfile.FitPreferences.Count > 0) score++;
         }
 
         // Account is active

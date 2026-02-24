@@ -91,6 +91,11 @@ export const routes: Routes = [
           import('./features/feed/saved/saved.page').then((m) => m.SavedPage),
       },
       {
+        path: 'liked',
+        loadComponent: () =>
+          import('./features/feed/liked/liked.page').then((m) => m.LikedPage),
+      },
+      {
         path: 'post/:id',
         loadComponent: () =>
           import('./features/feed/post-detail/post-detail.page').then(
@@ -125,6 +130,20 @@ export const routes: Routes = [
           import(
             './features/profile/body-profile-edit/body-profile-edit.page'
           ).then((m) => m.BodyProfileEditPage),
+      },
+      {
+        path: 'creator/:id',
+        loadComponent: () =>
+          import(
+            './features/profile/creator-profile/creator-profile.page'
+          ).then((m) => m.CreatorProfilePage),
+      },
+      {
+        path: 'following',
+        loadComponent: () =>
+          import(
+            './features/profile/following/following.page'
+          ).then((m) => m.FollowingPage),
       },
     ],
   },
