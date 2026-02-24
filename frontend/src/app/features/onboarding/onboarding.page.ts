@@ -311,6 +311,7 @@ export class OnboardingPage implements OnInit {
   }
 
   skipPhoto(): void {
+    localStorage.setItem('photoSkippedAt', new Date().toISOString());
     this.router.navigate(['/feed']);
   }
 

@@ -29,6 +29,8 @@ import {
   shieldOutline,
   heartOutline,
   peopleOutline,
+  cameraOutline,
+  closeOutline,
 } from 'ionicons/icons';
 import { ApiService, AuthService, AnalyticsService, ProfileStateService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
@@ -67,6 +69,17 @@ export class ProfileViewPage implements OnInit {
   readonly profile = signal<UserProfileResponse | null>(null);
   readonly bodyProfile = signal<BodyProfileResponse | null>(null);
   readonly isLoading = signal(false);
+  readonly photoNudgeDismissed = signal(false);
+
+  get showPhotoNudge(): boolean {
+    const p = this.profile();
+    return (
+      !!p &&
+      !p.profileImageUrl &&
+      !this.photoNudgeDismissed() &&
+      localStorage.getItem('photoSkippedAt') !== null
+    );
+  }
 
   constructor() {
     addIcons({
@@ -81,6 +94,8 @@ export class ProfileViewPage implements OnInit {
       shieldOutline,
       heartOutline,
       peopleOutline,
+      cameraOutline,
+      closeOutline,
     });
   }
 
@@ -123,6 +138,11 @@ export class ProfileViewPage implements OnInit {
         }
       },
     });
+  }
+
+  dismissPhotoNudge(): void {
+    this.photoNudgeDismissed.set(true);
+    localStorage.removeItem('photoSkippedAt');
   }
 
   trackCreatorCta(): void {

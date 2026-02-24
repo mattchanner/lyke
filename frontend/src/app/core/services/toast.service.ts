@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { checkmarkCircle, alertCircle, informationCircle, warning, close } from 'ionicons/icons';
 
 export type ToastPosition = 'top' | 'bottom' | 'middle';
 export type ToastColor =
@@ -26,6 +28,10 @@ export interface ToastOptions {
 })
 export class ToastService {
   private readonly toastController = inject(ToastController);
+
+  constructor() {
+    addIcons({ checkmarkCircle, alertCircle, informationCircle, warning, close });
+  }
 
   async show(options: ToastOptions): Promise<void> {
     const toast = await this.toastController.create({

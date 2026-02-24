@@ -29,6 +29,17 @@
       <p>Member since {{ profile()!.createdAt | date:'mediumDate' }}</p>
     </div>
 
+    @if (showPhotoNudge) {
+      <div class="photo-nudge">
+        <ion-icon name="camera-outline"></ion-icon>
+        <span>Add a profile photo to personalize your account</span>
+        <ion-button fill="clear" size="small" routerLink="/profile/edit">Add</ion-button>
+        <ion-button fill="clear" size="small" class="nudge-dismiss" (click)="dismissPhotoNudge()">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    }
+
     <ion-list>
       <ion-item routerLink="/profile/edit" detail>
         <ion-icon name="person-outline" slot="start"></ion-icon>

@@ -19,6 +19,31 @@
   }
 }
 
+.photo-nudge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  font-size: 0.875rem;
+
+  > ion-icon:first-child {
+    font-size: 1.25rem;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+  }
+
+  > span { flex: 1; }
+
+  .nudge-dismiss {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    color: var(--ion-color-medium);
+  }
+}
+
 .creator-cta {
   --background: rgba(var(--ion-color-tertiary-rgb), 0.08);
 }
