@@ -32,6 +32,7 @@ import {
   cameraOutline,
   closeOutline,
 } from 'ionicons/icons';
+import { ViewWillEnter } from '@ionic/angular';
 import { ApiService, AuthService, AnalyticsService, ProfileStateService } from '../../../core';
 import { UserProfileResponse, BodyProfileResponse } from '../../../models';
 import { SkeletonProfileComponent } from '../../../shared/components/loading-skeleton';
@@ -60,7 +61,7 @@ import { SkeletonProfileComponent } from '../../../shared/components/loading-ske
   templateUrl: './profile-view.page.html',
   styleUrls: ['./profile-view.page.scss'],
 })
-export class ProfileViewPage implements OnInit {
+export class ProfileViewPage implements OnInit, ViewWillEnter {
   private readonly api = inject(ApiService);
   private readonly analytics = inject(AnalyticsService);
   private readonly profileState = inject(ProfileStateService);
@@ -101,6 +102,15 @@ export class ProfileViewPage implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+  }
+
+  ionViewWillEnter(): void {
+    // Re-read state on every navigation into this page (ngOnInit is skipped
+    // when Ionic's nav stack pops back to a cached view).
+    const latest = this.profileState.profile();
+    if (latest) this.profile.set(latest);
+    const latestBody = this.profileState.bodyProfile();
+    if (latestBody) this.bodyProfile.set(latestBody);
   }
 
   loadProfile(): void {
