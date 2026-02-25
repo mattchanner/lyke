@@ -21,6 +21,14 @@ public class BodyProfileConfiguration : IEntityTypeConfiguration<BodyProfile>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        builder.Property(bp => bp.Stature)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        builder.Property(bp => bp.Build)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
         builder.HasOne(bp => bp.BodyType)
             .WithMany(bt => bt.BodyProfiles)
             .HasForeignKey(bp => bp.BodyTypeId)

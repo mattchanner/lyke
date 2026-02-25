@@ -1,5 +1,6 @@
 using Lyke.Application.DTOs.Feed;
 using Lyke.Application.DTOs.Profile;
+using Lyke.Application.Helpers;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -242,6 +243,8 @@ public class ProfileService : IProfileService
             WeightKg = request.WeightKg,
             BodyTypeId = request.BodyTypeId,
             FrameSizeId = request.FrameSizeId,
+            Stature = request.Stature,
+            Build = request.Build,
         };
 
         await bodyProfiles.AddAsync(profile, cancellationToken);
@@ -323,6 +326,16 @@ public class ProfileService : IProfileService
             profile.FrameSize = frameSize;
         }
 
+        if (request.Stature.HasValue)
+        {
+            profile.Stature = request.Stature.Value;
+        }
+
+        if (request.Build.HasValue)
+        {
+            profile.Build = request.Build.Value;
+        }
+
         if (request.FitPreferences != null)
         {
             // Replace all fit preferences
@@ -379,10 +392,13 @@ public class ProfileService : IProfileService
         }
 
         return new AnonymizedBodyProfileResponse(
-            HeightRange: GetHeightRange(profile.HeightCm),
-            WeightRange: GetWeightRange(profile.WeightKg),
+            HeightRange: BodyProfileHelper.GetHeightRange(profile.HeightCm),
+            WeightRange: BodyProfileHelper.GetWeightRange(profile.WeightKg),
             BodyTypeName: profile.BodyType.Name,
             FrameSizeName: profile.FrameSize?.Name,
+            Stature: profile.Stature,
+            Build: profile.Build,
+            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(profile.Stature, profile.Build, profile.BodyType.Name),
             FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList()
         );
     }
@@ -478,8 +494,11 @@ public class ProfileService : IProfileService
             BodyTypeName: profile.BodyType.Name,
             FrameSizeId: profile.FrameSizeId,
             FrameSizeName: profile.FrameSize?.Name,
+            Stature: profile.Stature,
+            Build: profile.Build,
+            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(profile.Stature, profile.Build, profile.BodyType.Name),
             FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList(),
-            NeedsProfileUpdate: profile.FrameSizeId == null,
+            NeedsProfileUpdate: profile.FrameSizeId == null && profile.Stature == null,
             CreatedAt: profile.CreatedAt,
             UpdatedAt: profile.UpdatedAt
         );
@@ -525,40 +544,5 @@ public class ProfileService : IProfileService
     {
         var lbs = weightKg * 2.20462m;
         return $"{weightKg:F1}kg ({lbs:F0}lbs)";
-    }
-
-    private static string GetHeightRange(int heightCm)
-    {
-        return heightCm switch
-        {
-            < 155 => "Under 155cm (5'1\")",
-            < 160 => "155-159cm (5'1\"-5'2\")",
-            < 165 => "160-164cm (5'3\"-5'4\")",
-            < 170 => "165-169cm (5'5\"-5'6\")",
-            < 175 => "170-174cm (5'7\"-5'8\")",
-            < 180 => "175-179cm (5'9\"-5'10\")",
-            < 185 => "180-184cm (5'11\"-6'0\")",
-            < 190 => "185-189cm (6'1\"-6'2\")",
-            _ => "190cm+ (6'3\"+)"
-        };
-    }
-
-    private static string GetWeightRange(decimal weightKg)
-    {
-        return weightKg switch
-        {
-            < 50 => "Under 50kg (110lbs)",
-            < 55 => "50-54kg (110-121lbs)",
-            < 60 => "55-59kg (121-130lbs)",
-            < 65 => "60-64kg (132-143lbs)",
-            < 70 => "65-69kg (143-152lbs)",
-            < 75 => "70-74kg (154-163lbs)",
-            < 80 => "75-79kg (165-174lbs)",
-            < 85 => "80-84kg (176-185lbs)",
-            < 90 => "85-89kg (187-196lbs)",
-            < 95 => "90-94kg (198-207lbs)",
-            < 100 => "95-99kg (209-218lbs)",
-            _ => "100kg+ (220lbs+)"
-        };
     }
 }

@@ -6,6 +6,7 @@ using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Commerce;
 using Lyke.Application.DTOs.Feed;
 using Lyke.Application.DTOs.Profile;
+using Lyke.Application.Helpers;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -649,10 +650,13 @@ public class CommerceService : ICommerceService
         if (creatorBodyProfile != null)
         {
             anonymizedProfile = new AnonymizedBodyProfileResponse(
-                GetHeightRange(creatorBodyProfile.HeightCm),
-                GetWeightRange(creatorBodyProfile.WeightKg),
+                BodyProfileHelper.GetHeightRange(creatorBodyProfile.HeightCm),
+                BodyProfileHelper.GetWeightRange(creatorBodyProfile.WeightKg),
                 creatorBodyProfile.BodyType.Name,
                 creatorBodyProfile.FrameSize?.Name,
+                creatorBodyProfile.Stature,
+                creatorBodyProfile.Build,
+                BodyProfileHelper.FormatBodyTypeLabel(creatorBodyProfile.Stature, creatorBodyProfile.Build, creatorBodyProfile.BodyType.Name),
                 creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }

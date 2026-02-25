@@ -271,6 +271,7 @@ app.MapRetailerEndpoints();
 app.MapBrandEndpoints();
 app.MapPrivacyEndpoints();
 app.MapAnalyticsEndpoints();
+app.MapQuizEndpoints();
 
 await app.RunAsync();
 

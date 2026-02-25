@@ -4,6 +4,7 @@ using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Creator;
 using Lyke.Application.DTOs.Feed;
 using Lyke.Application.DTOs.Profile;
+using Lyke.Application.Helpers;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
@@ -179,10 +180,13 @@ public class CreatorService : ICreatorService
         if (bp?.BodyType != null)
         {
             bodyProfile = new AnonymizedBodyProfileResponse(
-                HeightRange: GetHeightRange(bp.HeightCm),
-                WeightRange: GetWeightRange(bp.WeightKg),
+                HeightRange: BodyProfileHelper.GetHeightRange(bp.HeightCm),
+                WeightRange: BodyProfileHelper.GetWeightRange(bp.WeightKg),
                 BodyTypeName: bp.BodyType.Name,
                 FrameSizeName: bp.FrameSize?.Name,
+                Stature: bp.Stature,
+                Build: bp.Build,
+                BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(bp.Stature, bp.Build, bp.BodyType.Name),
                 FitPreferences: bp.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }

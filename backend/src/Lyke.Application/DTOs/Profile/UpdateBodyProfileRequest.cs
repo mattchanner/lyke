@@ -7,5 +7,7 @@ public record UpdateBodyProfileRequest(
     decimal? WeightKg = null,
     int? BodyTypeId = null,
     int? FrameSizeId = null,
+    Stature? Stature = null,
+    Build? Build = null,
     List<FitPreference>? FitPreferences = null
 );

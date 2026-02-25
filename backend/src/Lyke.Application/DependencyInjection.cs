@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IEventTrackingService, EventTrackingService>();
         services.AddScoped<IFollowService, FollowService>();
+        services.AddScoped<IQuizService, QuizService>();
         services.AddHttpClient<ISocialTokenValidator, SocialTokenValidator>();
 
         return services;

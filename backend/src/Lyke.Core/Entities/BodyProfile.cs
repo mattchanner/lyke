@@ -9,6 +9,8 @@ public class BodyProfile : BaseEntity
     public decimal WeightKg { get; set; }
     public int BodyTypeId { get; set; }
     public int? FrameSizeId { get; set; }
+    public Stature? Stature { get; set; }
+    public Build? Build { get; set; }
     public FitPreference? FitPreference { get; set; }
 
     // Navigation properties

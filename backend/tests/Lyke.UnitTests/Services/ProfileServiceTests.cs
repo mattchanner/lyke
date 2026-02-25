@@ -85,7 +85,7 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, null, new List<FitPreference> { FitPreference.Regular });
+        var request = new CreateBodyProfileRequest(175, 70m, 1, null, null, null, new List<FitPreference> { FitPreference.Regular });
 
         // Act
         var result = await _sut.CreateBodyProfileAsync(userId, request);
@@ -112,7 +112,7 @@ public class ProfileServiceTests : IDisposable
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, null, new List<FitPreference> { FitPreference.Regular });
+        var request = new CreateBodyProfileRequest(175, 70m, 1, null, null, null, new List<FitPreference> { FitPreference.Regular });
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
@@ -129,7 +129,7 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 999, null, new List<FitPreference> { FitPreference.Regular }); // Invalid body type
+        var request = new CreateBodyProfileRequest(175, 70m, 999, null, null, null, new List<FitPreference> { FitPreference.Regular }); // Invalid body type
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
@@ -150,7 +150,7 @@ public class ProfileServiceTests : IDisposable
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new UpdateBodyProfileRequest(180, 75m, null, null, new List<FitPreference> { FitPreference.Fitted });
+        var request = new UpdateBodyProfileRequest(180, 75m, null, null, null, null, new List<FitPreference> { FitPreference.Fitted });
 
         // Act
         var result = await _sut.UpdateBodyProfileAsync(userId, request);
@@ -167,7 +167,7 @@ public class ProfileServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new UpdateBodyProfileRequest(180, 75m, null, null, new List<FitPreference> { FitPreference.Fitted });
+        var request = new UpdateBodyProfileRequest(180, 75m, null, null, null, null, new List<FitPreference> { FitPreference.Fitted });
 
         // Act
         var act = () => _sut.UpdateBodyProfileAsync(userId, request);
