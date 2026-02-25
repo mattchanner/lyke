@@ -26,6 +26,8 @@ export interface BodyProfileResponse {
   needsProfileUpdate: boolean;
   createdAt: string;
   updatedAt: string | null;
+  stature?: string;
+  build?: string;
 }
 
 export interface AnonymizedBodyProfileResponse {
@@ -67,6 +69,8 @@ export interface CreateBodyProfileRequest {
   bodyTypeId: number;
   frameSizeId?: number | null;
   fitPreferences?: FitPreference[];
+  stature?: string;
+  build?: string;
 }
 
 export interface UpdateBodyProfileRequest {
@@ -75,4 +79,6 @@ export interface UpdateBodyProfileRequest {
   bodyTypeId?: number;
   frameSizeId?: number | null;
   fitPreferences?: FitPreference[];
+  stature?: string;
+  build?: string;
 }

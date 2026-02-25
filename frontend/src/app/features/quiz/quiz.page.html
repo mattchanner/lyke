@@ -1,0 +1,141 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>
+      @if (currentScreen() === 0) {
+        Body Type Quiz
+      } @else if (currentScreen() <= 6) {
+        Question {{ currentScreen() }} of 6
+      } @else {
+        Your Result
+      }
+    </ion-title>
+  </ion-toolbar>
+  @if (currentScreen() >= 1 && currentScreen() <= 6) {
+    <ion-progress-bar [value]="progressValue"></ion-progress-bar>
+  }
+</ion-header>
+
+<ion-content class="ion-padding">
+  @switch (currentScreen()) {
+
+    @case (0) {
+      <!-- Intro screen -->
+      <div class="quiz-screen intro-screen">
+        <div class="intro-content">
+          <div class="intro-icon">
+            <img src="assets/body-shapes/hourglass.svg" alt="Body types" class="intro-illustration" />
+          </div>
+          <h1>Find Your Body Type</h1>
+          <p class="intro-description">
+            Answer 6 quick questions about your proportions and we'll identify your body shape,
+            stature, and build — no measurements needed.
+          </p>
+          <p class="intro-note">
+            Results are used to match you with creators who have similar body profiles.
+          </p>
+        </div>
+        <div class="intro-actions">
+          <ion-button expand="block" (click)="start()">
+            Start Quiz
+          </ion-button>
+          @if (isEmbedded) {
+            <ion-button expand="block" fill="clear" (click)="dismiss()">
+              Skip for now
+            </ion-button>
+          }
+        </div>
+      </div>
+    }
+
+    @case (7) {
+      <!-- Results screen -->
+      @if (result(); as r) {
+        <div class="quiz-screen results-screen">
+          <div class="results-content">
+            <div class="result-illustration">
+              <img
+                [src]="bodyShapeIcon(r.bodyTypeName)"
+                [alt]="r.bodyTypeName"
+                class="result-body-shape"
+              />
+            </div>
+            <div class="result-label">{{ r.resultLabel }}</div>
+            <p class="result-description">{{ r.resultDescription }}</p>
+
+            <div class="result-tags">
+              <span class="result-tag">{{ r.bodyTypeName }}</span>
+              <span class="result-tag">{{ r.stature }}</span>
+              <span class="result-tag">{{ r.build }}</span>
+            </div>
+          </div>
+
+          <div class="results-actions">
+            @if (isEmbedded) {
+              <ion-button expand="block" (click)="applyResult()">
+                <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+                Apply to Profile
+              </ion-button>
+              <ion-button expand="block" fill="outline" (click)="dismiss()">
+                Cancel
+              </ion-button>
+            } @else {
+              <ion-button expand="block" (click)="shareResult()">
+                <ion-icon name="share-outline" slot="start"></ion-icon>
+                Share Result
+              </ion-button>
+              <ion-button expand="block" fill="outline" (click)="joinLyke()">
+                Join LYKE to see creators like you
+              </ion-button>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @default {
+      <!-- Question screens (1-6) -->
+      @if (currentQuestion; as q) {
+        <div class="quiz-screen question-screen">
+          <div class="question-content">
+            <h2 class="question-prompt">{{ q.prompt }}</h2>
+
+            <div class="answers-list">
+              @for (answer of q.answers; track $index) {
+                <div
+                  class="answer-card"
+                  [class.selected]="isAnswerSelected($index)"
+                  (click)="selectAnswer($index)"
+                  role="button"
+                  [attr.aria-pressed]="isAnswerSelected($index)"
+                >
+                  <span class="answer-text">{{ answer }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="question-nav">
+            <ion-button
+              expand="block"
+              [disabled]="!canAdvance || isLoading()"
+              (click)="next()"
+            >
+              @if (isLoading() && currentScreen() === 6) {
+                <ion-spinner name="crescent"></ion-spinner>
+              } @else if (currentScreen() === 6) {
+                See My Results
+              } @else {
+                Next
+              }
+            </ion-button>
+          </div>
+        </div>
+      }
+    }
+  }
+</ion-content>

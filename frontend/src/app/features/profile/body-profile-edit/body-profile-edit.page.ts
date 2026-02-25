@@ -17,6 +17,7 @@ import {
   IonIcon,
   IonSegment,
   IonSegmentButton,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline } from 'ionicons/icons';
@@ -28,6 +29,8 @@ import {
   UpdateBodyProfileRequest,
   FitPreference,
 } from '../../../models';
+import { QuizResponse } from '../../../models/quiz/quiz.model';
+import { QuizPage } from '../../quiz/quiz.page';
 
 @Component({
   selector: 'app-body-profile-edit',
@@ -59,6 +62,7 @@ export class BodyProfileEditPage implements OnInit {
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
   private readonly profileState = inject(ProfileStateService);
+  private readonly modalCtrl = inject(ModalController);
 
   readonly FitPreference = FitPreference;
 
@@ -241,6 +245,19 @@ export class BodyProfileEditPage implements OnInit {
       if (!b.has(item)) return false;
     }
     return true;
+  }
+
+  async openQuiz(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: QuizPage,
+      componentProps: { isEmbedded: true },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<QuizResponse>();
+    if (role === 'apply' && data) {
+      this.selectedBodyTypeId.set(data.bodyTypeId);
+      this.toast.success(`Body type set to ${data.resultLabel}. You can still change it below.`);
+    }
   }
 
   onSubmit(): void {

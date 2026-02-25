@@ -13,3 +13,4 @@ export { AnalyticsService } from './analytics.service';
 export { WebVitalsService } from './web-vitals.service';
 export { FollowService } from './follow.service';
 export { ProfileStateService } from './profile-state.service';
+export { QuizService } from './quiz.service';

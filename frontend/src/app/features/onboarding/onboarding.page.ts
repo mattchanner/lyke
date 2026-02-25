@@ -23,6 +23,7 @@ import {
   IonAccordionGroup,
   IonAccordion,
   IonAvatar,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -40,6 +41,8 @@ import {
   CreateBodyProfileRequest,
   FitPreference,
 } from '../../models';
+import { QuizResponse } from '../../models/quiz/quiz.model';
+import { QuizPage } from '../quiz/quiz.page';
 
 @Component({
   selector: 'app-onboarding',
@@ -78,6 +81,7 @@ export class OnboardingPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly modalCtrl = inject(ModalController);
 
   readonly FitPreference = FitPreference;
 
@@ -95,6 +99,8 @@ export class OnboardingPage implements OnInit {
   readonly selectedBodyTypeId = signal<number | null>(null);
   readonly selectedFrameSizeId = signal<number | null>(null);
   readonly selectedFitPreferences = signal<Set<FitPreference>>(new Set());
+  readonly selectedStature = signal<string | null>(null);
+  readonly selectedBuild = signal<string | null>(null);
 
   // Form controls
   readonly heightCmControl = this.fb.control<number | null>(null, [
@@ -244,6 +250,21 @@ export class OnboardingPage implements OnInit {
     }
   }
 
+  async openQuiz(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: QuizPage,
+      componentProps: { isEmbedded: true },
+    });
+    await modal.present();
+    const { data, role } = await modal.onWillDismiss<QuizResponse>();
+    if (role === 'apply' && data) {
+      this.selectedBodyTypeId.set(data.bodyTypeId);
+      this.selectedStature.set(data.stature);
+      this.selectedBuild.set(data.build);
+      this.toast.success(`Body type set to ${data.resultLabel}. You can still change it below.`);
+    }
+  }
+
   onSubmit(): void {
     if (this.selectedFitPreferences().size === 0) return;
 
@@ -255,6 +276,8 @@ export class OnboardingPage implements OnInit {
       bodyTypeId: this.selectedBodyTypeId()!,
       frameSizeId: this.selectedFrameSizeId(),
       fitPreferences: Array.from(this.selectedFitPreferences()),
+      stature: this.selectedStature() ?? undefined,
+      build: this.selectedBuild() ?? undefined,
     };
 
     this.api.post('profile', 'body', request).subscribe({

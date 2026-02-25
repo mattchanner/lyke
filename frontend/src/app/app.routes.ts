@@ -436,6 +436,13 @@ export const routes: Routes = [
     ],
   },
 
+  // Public quiz route (no auth required)
+  {
+    path: 'quiz',
+    loadComponent: () =>
+      import('./features/quiz/quiz.page').then((m) => m.QuizPage),
+  },
+
   // Catch-all redirect
   {
     path: '**',
