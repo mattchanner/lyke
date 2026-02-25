@@ -43,6 +43,7 @@ import {
 } from '../../models';
 import { QuizResponse } from '../../models/quiz/quiz.model';
 import { QuizPage } from '../quiz/quiz.page';
+import { convertToJpeg } from '../../shared/utils/image-convert.util';
 
 @Component({
   selector: 'app-onboarding',
@@ -308,10 +309,13 @@ export class OnboardingPage implements OnInit {
     });
   }
 
-  onFileSelected(event: Event): void {
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
+    const raw = input.files?.[0];
+    if (!raw) return;
+
+    const file = await convertToJpeg(raw);
+
     if (file.size > 5 * 1024 * 1024) {
       this.toast.error('Image must be 5MB or smaller');
       input.value = '';

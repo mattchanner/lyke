@@ -42,6 +42,7 @@ import {
 } from '../../../shared/components/media-carousel';
 import { FitRatingPillsComponent } from './fit-rating-pills.component';
 import { ProductTagSheetComponent } from './product-tag-sheet.component';
+import { convertToJpeg } from '../../../shared/utils/image-convert.util';
 
 interface TaggedProduct {
   product: ProductResponse;
@@ -174,26 +175,8 @@ export class PostCreatePage {
     return file.type.startsWith('video/') ? MediaType.Video : MediaType.Image;
   }
 
-  private async normalizeImageFile(file: File): Promise<File> {
-    const heifTypes = ['image/heif', 'image/heic', 'image/heif-sequence', 'image/heic-sequence'];
-    const heifExtensions = ['.heif', '.heic'];
-    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
-    const isHeif = heifTypes.includes(file.type.toLowerCase()) || heifExtensions.includes(ext);
-    if (!isHeif) return file;
-
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(bitmap, 0, 0);
-    bitmap.close();
-
-    const blob = await new Promise<Blob>((resolve) =>
-      canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.92)
-    );
-    const name = file.name.replace(/\.hei[cf]$/i, '.jpg');
-    return new File([blob], name, { type: 'image/jpeg' });
+  private normalizeImageFile(file: File): Promise<File> {
+    return convertToJpeg(file);
   }
 
   removeMedia(index: number): void {

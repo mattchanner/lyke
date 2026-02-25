@@ -23,6 +23,7 @@ import {
   UpdateProfileRequest,
 } from '../../../models';
 import { ImageCropModalComponent } from './image-crop-modal.component';
+import { convertToJpeg } from '../../../shared/utils/image-convert.util';
 
 @Component({
   selector: 'app-profile-edit',
@@ -125,9 +126,10 @@ export class ProfileEditPage implements OnInit {
       return;
     }
 
+    const convertedFile = await convertToJpeg(file);
     const modal = await this.modalCtrl.create({
       component: ImageCropModalComponent,
-      componentProps: { imageFile: file },
+      componentProps: { imageFile: convertedFile },
     });
     await modal.present();
 
@@ -138,7 +140,7 @@ export class ProfileEditPage implements OnInit {
 
     this.isUploading.set(true);
     const formData = new FormData();
-    formData.append('file', croppedBlob, file.name);
+    formData.append('file', croppedBlob, convertedFile.name);
 
     this.api.uploadFile<UserProfileResponse>('profile', 'me/image', formData).subscribe({
       next: (response) => {
