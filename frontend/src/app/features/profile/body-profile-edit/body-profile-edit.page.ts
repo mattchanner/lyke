@@ -256,6 +256,13 @@ export class BodyProfileEditPage implements OnInit {
     const { data, role } = await modal.onWillDismiss<QuizResponse>();
     if (role === 'apply' && data) {
       this.selectedBodyTypeId.set(data.bodyTypeId);
+
+      const frameSizeName = data.build === 'Plus' ? 'Plus' : data.stature;
+      const matchedFrameSize = this.frameSizes().find((fs) => fs.name === frameSizeName);
+      if (matchedFrameSize) {
+        this.selectedFrameSizeId.set(matchedFrameSize.id);
+      }
+
       this.toast.success(`Body type set to ${data.resultLabel}. You can still change it below.`);
     }
   }

@@ -261,6 +261,13 @@ export class OnboardingPage implements OnInit {
       this.selectedBodyTypeId.set(data.bodyTypeId);
       this.selectedStature.set(data.stature);
       this.selectedBuild.set(data.build);
+
+      const frameSizeName = data.build === 'Plus' ? 'Plus' : data.stature;
+      const matchedFrameSize = this.frameSizes().find((fs) => fs.name === frameSizeName);
+      if (matchedFrameSize) {
+        this.selectedFrameSizeId.set(matchedFrameSize.id);
+      }
+
       this.toast.success(`Body type set to ${data.resultLabel}. You can still change it below.`);
     }
   }
