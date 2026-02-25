@@ -32,15 +32,15 @@ public static class TestDbContextFactory
 
     public static async Task SeedTestDataAsync(LykeDbContext context)
     {
-        // Seed body types
+        // Seed body types (matching production data)
         if (!context.BodyTypes.Any())
         {
             context.BodyTypes.AddRange(
-                new BodyType { Id = 1, Name = "Slim", Description = "Slim body type", DisplayOrder = 1 },
-                new BodyType { Id = 2, Name = "Athletic", Description = "Athletic body type", DisplayOrder = 2 },
-                new BodyType { Id = 3, Name = "Average", Description = "Average body type", DisplayOrder = 3 },
-                new BodyType { Id = 4, Name = "Curvy", Description = "Curvy body type", DisplayOrder = 4 },
-                new BodyType { Id = 5, Name = "Plus Size", Description = "Plus size body type", DisplayOrder = 5 }
+                new BodyType { Id = 1, Name = "Hourglass", Description = "Balanced bust and hips with defined waist", DisplayOrder = 1 },
+                new BodyType { Id = 2, Name = "Pear", Description = "Hips wider than shoulders", DisplayOrder = 2 },
+                new BodyType { Id = 3, Name = "Apple", Description = "Fuller midsection with slimmer legs", DisplayOrder = 3 },
+                new BodyType { Id = 4, Name = "Rectangle", Description = "Balanced proportions, less waist definition", DisplayOrder = 4 },
+                new BodyType { Id = 5, Name = "Inverted Triangle", Description = "Shoulders wider than hips", DisplayOrder = 5 }
             );
         }
 
