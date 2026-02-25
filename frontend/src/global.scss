@@ -130,6 +130,16 @@ ion-item {
   --ion-color-tint: var(--ion-color-tertiary-tint);
 }
 
+// Body shape SVG silhouettes are black-filled assets.
+// In dark mode, invert them so they render as white on a dark background.
+@media (prefers-color-scheme: dark) {
+  .body-shape-icon,
+  .result-body-shape,
+  .intro-illustration {
+    filter: invert(1);
+  }
+}
+
 // Bottom safe area for Android gesture navigation.
 // Android WebView doesn't report env(safe-area-inset-bottom),
 // so add explicit padding when running inside Capacitor on Android.

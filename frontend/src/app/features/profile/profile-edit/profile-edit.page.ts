@@ -138,22 +138,32 @@ export class ProfileEditPage implements OnInit {
 
     if (!croppedBlob) return;
 
+    // Show the cropped image immediately — no waiting for upload, no cache issues.
+    const prevUrl = this.imagePreview();
+    const localUrl = URL.createObjectURL(croppedBlob);
+    this.imagePreview.set(localUrl);
     this.isUploading.set(true);
+
     const formData = new FormData();
     formData.append('file', croppedBlob, convertedFile.name);
 
     this.api.uploadFile<UserProfileResponse>('profile', 'me/image', formData).subscribe({
       next: (response) => {
+        URL.revokeObjectURL(localUrl);
         if (response.success && response.data) {
-          this.imagePreview.set(response.data.profileImageUrl);
+          // Cache-bust so the browser doesn't serve the stale image from the same URL.
+          this.imagePreview.set(`${response.data.profileImageUrl}?v=${Date.now()}`);
           this.auth.setProfileImageUrl(response.data.profileImageUrl);
           this.profileState.updateProfile({ profileImageUrl: response.data.profileImageUrl });
           this.toast.success('Profile image updated');
         } else {
+          this.imagePreview.set(prevUrl);
           this.toast.error(response.error?.message || 'Failed to upload image');
         }
       },
       error: () => {
+        URL.revokeObjectURL(localUrl);
+        this.imagePreview.set(prevUrl);
         this.toast.error('Failed to upload image');
         this.isUploading.set(false);
       },
