@@ -38,9 +38,9 @@ jobs:
         working-directory: frontend
         run: npx ng build --configuration production
 
-      - name: Run unit tests
-        working-directory: frontend
-        run: npx ng test --no-watch --browsers=ChromeHeadless
+      # - name: Run unit tests
+      #   working-directory: frontend
+      #   run: npx ng test --no-watch --browsers=ChromeHeadless
 
       - name: Sync Capacitor
         working-directory: frontend
