@@ -117,7 +117,7 @@
   (dismissed)="closeFilter()"
 ></app-feed-filter-modal>
 
-<ion-content>
+<ion-content [scrollY]="false">
   <ion-refresher slot="fixed" (ionRefresh)="onRefresh($event)">
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
@@ -134,24 +134,32 @@
       <p>New outfit posts from people with a similar build will appear here.</p>
     </div>
   } @else {
-    <div class="feed-grid">
-      @for (post of posts(); track post.id) {
+    <cdk-virtual-scroll-viewport
+      [itemSize]="itemSize"
+      class="feed-viewport"
+      (scrolledIndexChange)="onScrollIndexChange()"
+    >
+      <div class="feed-grid">
         <app-post-card
+          *cdkVirtualFor="let post of posts(); trackBy: trackPost"
           [post]="post"
           (liked)="onPostLiked($event)"
           (saved)="onPostSaved($event)"
         ></app-post-card>
-      }
-    </div>
+      </div>
 
-    <ion-infinite-scroll
-      (ionInfinite)="loadMore($event)"
-      [disabled]="!hasMore()"
-    >
-      <ion-infinite-scroll-content
-        loadingSpinner="crescent"
-        loadingText="Loading more..."
-      ></ion-infinite-scroll-content>
-    </ion-infinite-scroll>
+      @if (isLoadingMore()) {
+        <div class="loading-more">
+          <ion-spinner name="crescent"></ion-spinner>
+          <span>Loading more...</span>
+        </div>
+      }
+
+      @if (!hasMore() && posts().length > 0) {
+        <div class="end-of-feed">
+          <span>You've reached the end</span>
+        </div>
+      }
+    </cdk-virtual-scroll-viewport>
   }
 </ion-content>
