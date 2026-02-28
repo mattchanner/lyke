@@ -18,7 +18,7 @@
 
 ## Current Progress Summary
 
-**Last Updated:** 2026-02-23
+**Last Updated:** 2026-02-28
 
 | Component | Status |
 |-----------|--------|
@@ -33,7 +33,8 @@
 | Feed Service & Endpoints | ✅ Complete (9 endpoints) |
 | Commerce Service & Endpoints | ✅ Complete (6 endpoints) |
 | Creator Service & Endpoints | ✅ Complete (15 endpoints) |
-| Media Upload Service | ✅ Complete (4 endpoints) |
+| Media Upload Service | ✅ Complete (5 endpoints, async via Azure Queue + Functions) |
+| Async Media Processing | ✅ Complete (Lyke.Functions isolated worker, queue trigger, status polling) |
 | Creator Verification Workflow | ✅ Complete (5 endpoints) |
 | Admin Service & Endpoints | ✅ Complete (17 endpoints) |
 | Retailer Portal Service & Endpoints | ✅ Complete (14 endpoints) |
@@ -61,10 +62,10 @@
 | Account Management Web Pages | ✅ Complete (Razor Pages: password reset form, email verification, result pages) |
 | Frontend App Insights | ✅ Complete (exception tracking, page views, HTTP error telemetry, custom ErrorHandler) |
 | Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
-| CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop, Android APK build; unit tests in both pipelines; auto-migrations on startup) |
+| CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop for API + Functions, Android APK build; unit tests in both pipelines; auto-migrations on startup) |
 | Infrastructure as Code | ✅ Complete (Terraform: 9 Azure resources, dev/prod tfvars, validated) |
 
-**Overall Backend Progress: ~99%** | **Overall Frontend Progress: ~98%** | **Overall Project: ~93%**
+**Overall Backend Progress: ~99%** | **Overall Frontend Progress: ~98%** | **Overall Project: ~94%**
 
 ---
 
@@ -103,6 +104,7 @@
 
 ### 1.3 CI/CD Pipeline
 - [x] Set up GitHub Actions for backend deployment (Azure Web App, triggers on push to develop)
+- [x] Set up GitHub Actions for Azure Functions deployment (`develop_lyke-dev-functions-media.yml`; uses `az functionapp deployment source config-zip` via OIDC to avoid SCM/IP restriction issues)
 - [x] Set up GitHub Actions for Android APK build (triggers on frontend changes)
 - [x] Add `dotnet test` step to backend CI pipeline
 - [x] Set up database migrations automation
@@ -495,6 +497,19 @@ GET    /api/creators/earnings/history - Get earnings history ✅
   - [x] Thumbnail generation
   - [x] SAS token generation for secure access
   - [x] Bulk upload support (up to 10 files)
+  - [x] **Async processing via Azure Storage Queue + Function App**
+    - `POST /upload` uploads original and returns immediately with `status: Pending` (< 500ms)
+    - `GET /{mediaId}/status` polls until `Completed` or `Failed`
+    - `IMessageQueue<T>` abstraction in Application layer (Service Bus can swap in later)
+    - `AzureStorageQueueService<T>` in Infrastructure (plain-text JSON, `QueueMessageEncoding.None`)
+    - `MediaProcessingJob` entity tracks per-upload state in PostgreSQL
+    - `MediaProcessingStatus` enum: `Pending | Processing | Completed | Failed`
+    - `Lyke.Functions` — Azure Functions v4 isolated-worker project
+      - `MediaProcessingFunction` queue trigger processes images (ImageSharp) and videos (FFmpeg)
+      - Uses `AddDatabase` + `AddStorage` from Infrastructure (no Identity/background services)
+      - `host.json` with `messageEncoding: None`; `Microsoft.Azure.Functions.Worker.Sdk` generates `.azurefunctions` metadata at publish
+    - `AddDatabase()` extracted from `AddInfrastructure()` so Functions can reuse DB without Identity
+    - Connection string resolution reads `ConnectionStrings:X` (Aspire) then falls back to `configuration["X"]` (Azure app settings)
 - [x] Create post draft/publish workflow
 - [x] Implement product search and tagging
 - [x] Build earnings calculation service
@@ -785,10 +800,12 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
   - Log Analytics Workspace (`law-lyke-{env}`)
   - Container Registry (`lyke{env}acr`, Basic SKU, admin enabled)
   - PostgreSQL Flexible Server v16 (`psql-lyke-{env}`) + database + firewall
-  - Storage Account (`lyke{env}stor`) + "media" blob container
+  - Storage Account (`lyke{env}stor`) + "media" blob container + "media-processing" queue
   - Azure Communication Services (`acs-lyke-{env}`, Europe data location)
   - Key Vault (`kv-lyke-{env}`) + secrets for all sensitive values
   - Container Apps Environment (`cae-lyke-{env}`) + Container App (`ca-lyke-{env}-api`)
+- [x] Azure Function App (`lyke-dev-functions-media`) provisioned in dev environment (manual, pending Terraform)
+  - Required app settings: `FUNCTIONS_WORKER_RUNTIME=dotnet-isolated`, `AzureWebJobsStorage`, `AzureStorage`, `ConnectionStrings__DefaultConnection`
 - [x] Configure per-environment tfvars (dev: scale-to-zero B1ms, prod: always-on D2s_v3)
 - [x] Map all appsettings.json keys to Container App env vars via `__` convention
 - [x] Configure health probes (startup, liveness, readiness on `/health:8080`)
@@ -895,8 +912,13 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
       LykeDbContext.cs  - DbContext with Identity
     /Repositories       - Generic repository implementation
     /Storage            - Azure Blob Storage implementation
+    /Queue              - AzureStorageQueueService<T> (IMessageQueue<T> implementation)
     /Services           - Image/Video processing services
-    /Configuration      - Infrastructure settings (AzureBlobSettings)
+    /Configuration      - Infrastructure settings (AzureBlobSettings, AzureQueueSettings)
+  /Lyke.Functions       - Azure Functions isolated-worker (queue trigger for media processing)
+    /Functions          - MediaProcessingFunction.cs
+    Program.cs          - HostBuilder with AddDatabase + AddStorage
+    host.json           - messageEncoding: None
   /Lyke.AppHost         - .NET Aspire orchestration
   /Lyke.ServiceDefaults - Aspire service defaults
 /tests
@@ -951,16 +973,24 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 
 ## Appendix C: Environment Variables
 
-### Backend
+### Backend (API)
 ```
-DATABASE_URL=postgresql://user:pass@host:5432/lyke
-JWT_SECRET=<secret>
-JWT_EXPIRY_MINUTES=60
-REFRESH_TOKEN_EXPIRY_DAYS=30
-AZURE_STORAGE_CONNECTION=<connection-string>
+ConnectionStrings__DefaultConnection=postgresql://user:pass@host:5432/lyke
+Jwt__Secret=<secret>
+Jwt__ExpiryMinutes=60
+Jwt__RefreshTokenExpiryDays=30
+ConnectionStrings__AzureStorage=<storage-connection-string>   # Aspire injects this
 REDIS_CONNECTION=<connection-string>
-GOOGLE_CLIENT_ID=<client-id>
-APPLE_CLIENT_ID=<client-id>
+SocialAuth__GoogleClientId=<client-id>
+SocialAuth__AppleAppId=<client-id>
+```
+
+### Azure Functions (lyke-dev-functions-media)
+```
+FUNCTIONS_WORKER_RUNTIME=dotnet-isolated
+AzureWebJobsStorage=<storage-connection-string>      # Required by Functions host
+AzureStorage=<storage-connection-string>             # Queue trigger + blob/queue clients
+ConnectionStrings__DefaultConnection=<postgres-conn> # Double underscore = nested config
 ```
 
 ### Frontend
@@ -984,7 +1014,7 @@ ANALYTICS_KEY=<key>
 | Phase 4: User Profile | 18 | 18 | Critical | 100% |
 | Phase 5: Content Feed | 25 | 25 | Critical | 100% |
 | Phase 6: Commerce | 18 | 18 | Critical | 100% |
-| Phase 7: Creator | 22 | 22 | High | 100% |
+| Phase 7: Creator | 30 | 30 | High | 100% (async media processing via queue + Functions added and complete) |
 | Phase 8: Retailer Portal | 22 | 22 | High | 100% |
 | Phase 9: Admin | 22 | 22 | High | 100% |
 | Phase 10: Analytics | 12 | 12 | Medium | 100% |
@@ -994,7 +1024,7 @@ ANALYTICS_KEY=<key>
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
 
-**Total: ~245 actionable tasks (~230 completed, ~94% overall)**
+**Total: ~253 actionable tasks (~238 completed, ~94% overall)**
 
 ---
 
