@@ -188,14 +188,14 @@ If a Mac device is owned (see Part 5), this cost is £0.
 
 | Item | Cost | Required? | Notes |
 |------|------|-----------|-------|
-| Mac Mini M4 (16GB RAM, 256GB SSD) | £899 | Yes, if no Mac available | Required for iOS builds (Xcode only runs on macOS). Mac Mini is the lowest-cost option that meets requirements. |
+| Mac Mini M4 (16GB RAM, 256GB SSD) | £540 | Yes, if no Mac available | Required for iOS builds (Xcode only runs on macOS). Mac Mini is the lowest-cost option that meets requirements. |
 | MacBook Pro 14" M4 (if portability needed) | £1,799 | Alternative to Mac Mini | Higher cost; prefer if developer needs a portable machine |
 | Apple iPhone (for physical device testing) | £0–£700 | Recommended | Simulator catches most issues; physical device testing is best practice before App Store submission. Use existing device if available. |
 | Android test device | £0–£300 | Recommended | A mid-range device (Pixel 7a ~£300) is sufficient; emulator covers most cases |
 | AWIN publisher registration | £0 | Yes | Free for publishers |
 | Azure initial resource provisioning | £0 | Yes | Covered by pay-as-you-go; no setup fee |
 | Terraform remote state storage | ~£1/month | Yes | Azure Storage blob for state file; negligible |
-| **One-time total (Mac Mini path)** | **£899–£1,899** | | Varies based on device testing requirements |
+| **One-time total (Mac Mini path)** | **£540–£1,540** | | Varies based on device testing requirements |
 
 ---
 
@@ -222,12 +222,12 @@ If a Mac device is owned (see Part 5), this cost is £0.
 | Domain renewal | £30 | Fixed annual |
 | **Recurring Annual Total** | **£7,159** | |
 | | | |
-| Mac Mini M4 (one-time) | £899 | If no Mac owned |
+| Mac Mini M4 (one-time) | £540 | If no Mac owned |
 | Additional test devices | £0–£1,000 | As needed |
 | GitHub Actions macOS runners | £330 | Only if no Mac; otherwise £0 |
-| **One-time / conditional costs** | **£899–£2,229** | |
+| **One-time / conditional costs** | **£540–£1,870** | |
 | | | |
-| **Year 1 Grand Total (Mac Mini path)** | **~£8,058** | |
+| **Year 1 Grand Total (Mac Mini path)** | **~£7,699** | |
 | **Year 1 Grand Total (MacBook path)** | **~£8,958** | |
 | **Year 1 if Mac already owned** | **~£7,159** | |
 
