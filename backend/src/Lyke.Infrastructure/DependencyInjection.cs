@@ -58,10 +58,21 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
+        // Aspire injects under ConnectionStrings:DefaultConnection.
+        // Azure portal: add as an Application Setting with key
+        // ConnectionStrings__DefaultConnection (double underscore).
+        var dbConnectionString =
+            configuration.GetConnectionString("DefaultConnection")
+            ?? configuration["DefaultConnection"]
+            ?? throw new InvalidOperationException(
+                "DefaultConnection is not configured. " +
+                "Set ConnectionStrings:DefaultConnection (Aspire) or the " +
+                "ConnectionStrings__DefaultConnection app setting (Azure).");
+
         services.AddDbContext<LykeDbContext>(options =>
         {
             options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
+                dbConnectionString,
                 b =>
                 {
                     b.MigrationsAssembly(typeof(LykeDbContext).Assembly.FullName);
@@ -85,9 +96,16 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        // Parse blob connection string — Aspire appends ";ContainerName=..." which
-        // BlobServiceClient doesn't understand, so strip it and use separately.
-        var rawConnectionString = configuration.GetConnectionString("AzureStorage")!;
+        // Aspire injects under ConnectionStrings:AzureStorage.
+        // Azure portal app settings inject under the root key AzureStorage.
+        // Aspire also appends ";ContainerName=..." which BlobServiceClient doesn't
+        // understand — strip it out and track separately.
+        var rawConnectionString =
+            configuration.GetConnectionString("AzureStorage")
+            ?? configuration["AzureStorage"]
+            ?? throw new InvalidOperationException(
+                "AzureStorage connection string is not configured. " +
+                "Set ConnectionStrings:AzureStorage (Aspire) or the AzureStorage app setting (Azure).");
         var containerName = configuration.GetSection(AzureBlobSettings.SectionName)
             .GetValue("ContainerName", "media");
 
