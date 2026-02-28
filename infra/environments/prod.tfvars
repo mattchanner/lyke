@@ -22,5 +22,8 @@ email_dry_run      = false
 email_app_base_url = "https://app.be-lyke.clothing"
 email_api_base_url = "https://api.be-lyke.clothing"
 
+# Functions - Elastic Premium (no cold start, VNet-capable)
+functions_sku = "EP1"
+
 # ASP.NET Core
 aspnetcore_environment = "Production"

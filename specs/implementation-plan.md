@@ -64,8 +64,10 @@
 | Android Platform | ✅ Complete (Capacitor 8, cleartext network config, Gradle setup) |
 | CI/CD Pipelines | 🔄 Partial (Azure deploy on push to develop for API + Functions, Android APK build; unit tests in both pipelines; auto-migrations on startup) |
 | Infrastructure as Code | ✅ Complete (Terraform: 9 Azure resources, dev/prod tfvars, validated) |
+| Creator Payout System | ❌ Not started (design complete — see `specs/payout-design.md`) |
+| Affiliate Network Integration | ❌ Not started (design complete — see `specs/affiliate-network-design.md`) |
 
-**Overall Backend Progress: ~99%** | **Overall Frontend Progress: ~98%** | **Overall Project: ~94%**
+**Overall Backend Progress: ~99%** | **Overall Frontend Progress: ~98%** | **Overall Project: ~90%**
 
 ---
 
@@ -855,7 +857,290 @@ POST   /api/admin/posts/{id}/tags       - Correct product tags
 
 ---
 
-## Appendix A: API Response Standards
+## Phase 16: Creator Payout System
+
+> **Design reference:** `specs/payout-design.md`
+
+### 16.1 Backend - Data Model & Migrations
+
+- [ ] Add `CreatorPayoutAccount` entity (`Lyke.Core`)
+  - Fields: `Id`, `CreatorId` (FK, unique), `StripeAccountId` (encrypted), `AccountStatus` (enum), `OnboardingComplete`, `PayoutCurrency`, `CreatedAt`, `UpdatedAt`
+- [ ] Add `PayoutRequest` entity (`Lyke.Core`)
+  - Fields: `Id`, `CreatorId` (FK), `Amount`, `Currency`, `Status` (enum), `StripeTransferId`, `FailureReason`, `AdminNotes`, `RequestedAt`, `ReviewedAt`, `ProcessedAt`
+- [ ] Add `PayoutRequestStatus` enum: `Pending`, `Approved`, `Processing`, `Completed`, `Failed`, `Rejected`
+- [ ] Add `StripeAccountStatus` enum: `Pending`, `Active`, `Restricted`, `Suspended`
+- [ ] Add `PayoutRequestId` (nullable FK) to `CreatorEarning`
+- [ ] Add `CreatorId` (nullable FK) to `SponsoredPlacement`
+- [ ] Add EF Core configurations for `CreatorPayoutAccount` and `PayoutRequest`
+  - Encrypt/decrypt `StripeAccountId` via value converter
+  - Unique index on `CreatorPayoutAccount.CreatorId`
+  - Index on `PayoutRequest.CreatorId, Status`
+- [ ] Create and apply EF Core migration
+
+### 16.2 Backend - Infrastructure: Encryption & Stripe
+
+- [ ] Add `IEncryptionService` interface to `Lyke.Application`
+  - `string Encrypt(string plaintext)` / `string Decrypt(string ciphertext)`
+- [ ] Implement `AesEncryptionService` in `Lyke.Infrastructure`
+  - AES-256-GCM, key read from Azure Key Vault via existing Key Vault reference in Container App env vars
+- [ ] Add `Stripe.net` NuGet package to `Lyke.Infrastructure`
+- [ ] Add `PayoutSettings` configuration class to `Lyke.Application.Configuration`
+  - `AutoApproveThreshold` (default 200.00), `AttributionWindowDays` (default 30), `StripeSecretKey`, `StripeWebhookSecret`, `ConfirmationJobSchedule`, `ConfirmationBatchSize` (default 500)
+- [ ] Register `PayoutSettings` in DI (`appsettings.json` section: `Payout`)
+- [ ] Register `IEncryptionService` / `AesEncryptionService` in `AddInfrastructure()`
+
+### 16.3 Backend - Services
+
+- [ ] Add `IPayoutService` interface to `Lyke.Application`
+- [ ] Add `IEarningConfirmationService` interface to `Lyke.Application`
+- [ ] Implement `PayoutService` in `Lyke.Application.Services`
+  - `CreateOnboardingUrlAsync` — create Stripe Express account + AccountLink, persist `CreatorPayoutAccount`
+  - `GetPayoutAccountAsync` — return account status from DB (not live Stripe call)
+  - `RequestPayoutAsync` — validate verified + account active + balance ≥ threshold + no pending request; bundle `Confirmed` earnings into `PayoutRequest`; auto-approve if ≤ `AutoApproveThreshold`
+  - `GetPayoutHistoryAsync` — paginated `PayoutRequest` list for creator
+  - `ApprovePayoutAsync` (admin) — set `Approved`, call `ExecuteStripeTransferAsync` internally, set `Processing`
+  - `RejectPayoutAsync` (admin) — set `Rejected`, earnings remain `Confirmed`
+  - `HandleStripeAccountUpdatedAsync` — update `AccountStatus` / `OnboardingComplete` from Stripe webhook payload
+  - `HandleTransferPaidAsync` — set `PayoutRequest.Status = Completed`, set all associated `CreatorEarning.Status = Paid`, send email
+  - `HandleTransferFailedAsync` — set `Failed`, revert earnings to `Confirmed`, clear `PayoutRequestId`, send email
+- [ ] Implement `EarningConfirmationService` in `Lyke.Application.Services`
+  - Query `CreatorEarning` where `Status = Pending` and `CreatedAt < now - AttributionWindowDays`
+  - Bulk-update `Status = Confirmed` in batches of `ConfirmationBatchSize`
+  - Return count confirmed
+
+### 16.4 Backend - API Endpoints
+
+Creator endpoints (add to `CreatorEndpoints.cs` or new `PayoutEndpoints.cs`):
+```
+POST   /api/creators/v1/payouts/onboarding    - Create Stripe account, return onboarding URL
+GET    /api/creators/v1/payouts/account        - Get payout account status
+POST   /api/creators/v1/payouts/request        - Request payout (bundles confirmed earnings)
+GET    /api/creators/v1/payouts/history        - Paginated payout request history
+```
+
+Admin endpoints (add to `AdminEndpoints.cs`):
+```
+GET    /api/admin/v1/payouts                   - List payout requests (filter: status, creatorId, date)
+POST   /api/admin/v1/payouts/{id}/approve      - Approve payout → triggers Stripe transfer
+POST   /api/admin/v1/payouts/{id}/reject       - Reject payout, return earnings to Confirmed
+```
+
+Webhook endpoint (new `WebhookEndpoints.cs`):
+```
+POST   /api/webhooks/stripe                    - Handle Stripe Connect events (signature verified)
+```
+
+- [ ] Implement `POST /api/creators/v1/payouts/onboarding` (requires `CreatorOnly` + `VerificationStatus == Approved`)
+- [ ] Implement `GET /api/creators/v1/payouts/account`
+- [ ] Implement `POST /api/creators/v1/payouts/request`
+- [ ] Implement `GET /api/creators/v1/payouts/history`
+- [ ] Implement `GET /api/admin/v1/payouts` (requires `AdminOnly`)
+- [ ] Implement `POST /api/admin/v1/payouts/{id}/approve`
+- [ ] Implement `POST /api/admin/v1/payouts/{id}/reject`
+- [ ] Implement `POST /api/webhooks/stripe` (no auth, HMAC verified inside handler)
+- [ ] Add FluentValidation validators for all new request DTOs
+
+### 16.5 Backend - Background Jobs (Azure Functions)
+
+- [ ] Add `EarningConfirmationFunction` to `Lyke.Functions`
+  - Timer trigger, cron from `PayoutSettings.ConfirmationJobSchedule`
+  - Resolves `IEarningConfirmationService` from DI
+  - Logs: "Confirmed {n} earnings"
+- [ ] Add `AutoPayoutFunction` to `Lyke.Functions` _(Phase 2 — stub only for now)_
+  - Timer trigger, 1st of month at 06:00 UTC
+  - For each creator with confirmed balance ≥ threshold and Active account, submit `PayoutRequest`
+- [ ] Add `PayoutSettings` to Functions host DI registration (`AddPayout()` extension)
+- [ ] Add `PAYOUT__STRIPE_SECRET_KEY` and `PAYOUT__STRIPE_WEBHOOK_SECRET` to Azure Functions app settings in Terraform
+
+### 16.6 Backend - Email Notifications
+
+Add Liquid email templates to the existing Azure ACS email service:
+
+- [ ] `payout-requested.liquid` — "Your payout request of £{amount} has been received"
+- [ ] `payout-completed.liquid` — "Your payout of £{amount} has been sent to your bank"
+- [ ] `payout-failed.liquid` — "Your payout failed. Reason: {reason}. Your earnings remain available."
+- [ ] `payout-rejected.liquid` — "Your payout request was not approved. Reason: {reason}"
+- [ ] `payout-admin-review.liquid` — Admin notification: new payout request above auto-approve threshold
+- [ ] Wire all templates into `PayoutService` at appropriate lifecycle transitions
+
+### 16.7 Backend - Sponsored Earnings (Fixed Fee)
+
+- [ ] Update `SponsoredPlacement` entity with `CreatorId` (nullable FK) and `FeeAmount` / `FeeType` (`FixedFee` | `Cpm`) fields
+- [ ] Update `RetailerService.CreateCampaignAsync` to accept `creatorId` and `feeAmount` in campaign creation request
+- [ ] In `RetailerService.CreateCampaignAsync`: if `FeeType == FixedFee`, create a `CreatorEarning` of `EarningType.Sponsored` with `Status = Confirmed` immediately (no attribution window)
+- [ ] Update campaign creation validator to require `feeAmount > 0` when `creatorId` is provided
+- [ ] Extend `GET /api/creators/v1/earnings/summary` response to break out Affiliate vs Sponsored totals
+
+### 16.8 Backend - GDPR Extension
+
+- [ ] On account deletion (`AuthService.DeleteAccountAsync`): call `StripeClient.Accounts.DeleteAsync(stripeAccountId)` if `CreatorPayoutAccount` exists
+- [ ] Null out / delete `CreatorPayoutAccount` record on deletion
+- [ ] Add Stripe account data to GDPR data export (`GET /api/privacy/v1/export`)
+
+### 16.9 Frontend - Payout Onboarding Page (new)
+
+- [ ] Create `payout-onboarding` page in `features/creator/`
+- [ ] Explain what bank connection means and what Stripe collects
+- [ ] "Connect bank account" button → `POST /api/creators/v1/payouts/onboarding` → open `onboardingUrl` in Capacitor Browser
+- [ ] Handle deep link return: `lyke://payouts/onboarding/complete`
+- [ ] Poll `GET /api/creators/v1/payouts/account` every 3s for up to 30s after return; show success/pending state
+- [ ] Register route `/creator/payouts/onboarding` with `creatorGuard`
+- [ ] Add `PayoutService` to Angular core services (wraps new payout endpoints)
+
+### 16.10 Frontend - Earnings Page (update existing)
+
+- [ ] Add payout account status card at top of earnings page
+  - If `onboardingComplete == false`: show "Set up payouts" CTA → navigate to onboarding page
+  - If `accountStatus == Restricted`: show warning banner with Stripe dashboard link
+  - If `accountStatus == Active`: show "Request payout" button (disabled if not `eligibleForPayout`)
+- [ ] "Request payout" → calls `POST /api/creators/v1/payouts/request`; shows toast on success/error
+- [ ] Add "Payouts" tab to existing earnings page tab bar (alongside existing history tabs)
+- [ ] "Payouts" tab: paginated list of `PayoutRequest` records with status badge and amount
+
+### 16.11 Frontend - Admin Payout Management Page (new)
+
+- [ ] Create `payout-management` page in `features/admin/`
+- [ ] Tab bar: "Pending Review" (Status=Pending) / "All"
+- [ ] List rows: creator name, amount, currency, requested date, status badge
+- [ ] Approve action → confirmation alert with optional notes field → `POST /api/admin/v1/payouts/{id}/approve`
+- [ ] Reject action → alert with required reason input → `POST /api/admin/v1/payouts/{id}/reject`
+- [ ] Register route `/admin/payouts` with `adminGuard`
+- [ ] Add navigation link to admin dashboard
+
+### 16.12 Infrastructure & Configuration
+
+- [ ] Add `Payout__StripeSecretKey` and `Payout__StripeWebhookSecret` secrets to Azure Key Vault (Terraform `azurerm_key_vault_secret`)
+- [ ] Map Key Vault secrets to Container App environment variables (Terraform)
+- [ ] Add `PAYOUT__ATTRIBUTION_WINDOW_DAYS=30` and `PAYOUT__AUTO_APPROVE_THRESHOLD=200` to Container App env vars
+- [ ] Add `AesEncryptionKey` (32-byte base64) to Key Vault
+- [ ] Register Stripe webhook in Stripe dashboard pointing to `https://api.lyke.app/api/webhooks/stripe`
+- [ ] Update `appsettings.json` template with `Payout` section (placeholder values)
+
+### 16.13 Testing
+
+- [ ] Unit tests: `PayoutServiceTests` (xUnit)
+  - Onboarding URL creation (Stripe mocked)
+  - Payout request: happy path, insufficient balance, no active account, already pending
+  - Auto-approve below threshold
+  - Stripe transfer success and failure webhook handlers
+  - Earnings reversion on failure
+- [ ] Unit tests: `EarningConfirmationServiceTests`
+  - Confirms earnings past window, skips earnings within window
+  - Batching logic
+- [ ] Integration tests: payout endpoints (creator and admin)
+- [ ] Frontend unit tests: `PayoutService` spec (wraps API calls)
+
+---
+
+## Phase 17: Affiliate Network Integration (AWIN)
+
+> **Design reference:** `specs/affiliate-network-design.md`
+>
+> **Dependency:** Phase 16 (Creator Payout System) must be complete before this phase, as it establishes `EarningStatus`, `CreatorEarning`, and the payout flow that this phase modifies.
+
+### 17.1 Commercial Setup (Non-Code Prerequisites)
+
+These steps are done once by LYKE commercially, before any development work begins.
+
+- [ ] Register LYKE as an AWIN Publisher at `ui.awin.com`
+- [ ] Record the assigned **Publisher ID** in `AwinSettings.PublisherId` config
+- [ ] Apply to first retailer's AWIN programme; record their **Merchant ID** once approved
+- [ ] Register postback URL in AWIN publisher dashboard: `https://api.lyke.app/api/webhooks/awin?transaction_id={transaction_id}&order_ref={order_ref}&pence={pence}&clickref={clickref}&merchant_id={merchant}&status={status}&currency={currency}`
+- [ ] Obtain AWIN API access token (OAuth2) for reconciliation job
+
+### 17.2 Backend - Data Model & Enum Changes
+
+- [ ] Add `Reversed = 3` to `EarningStatus` enum (`Lyke.Core`)
+- [ ] Add `Clawback = 2` to `EarningType` enum (`Lyke.Core`)
+- [ ] Add `NetworkType` (`string`, default `"Direct"`) and `MerchantId` (`string?`) fields to `AffiliateConfig` internal class in `CommerceService.cs`
+- [ ] Update `AffiliateConfig` JSON documentation comment on `Retailer.AffiliateConfig` to reflect new fields
+- [ ] Create EF Core migration for `EarningStatus` enum change (no schema change needed — stored as int — but verify existing data is unaffected)
+
+### 17.3 Backend - Configuration
+
+- [ ] Add `AwinSettings` configuration class to `Lyke.Application.Configuration`
+  - `PublisherId` (string), `ApiToken` (string), `AllowedIpRanges` (string, comma-separated CIDRs), `ApiBaseUrl` (default `https://api.awin.com`), `ClawbackThreshold` (decimal, default `10.00`)
+- [ ] Register `AwinSettings` in DI (`appsettings.json` section: `Awin`)
+- [ ] Add `AWIN__API_TOKEN` secret to Azure Key Vault (Terraform)
+- [ ] Map Key Vault secret to Container App environment variable
+- [ ] Add `AWIN__PUBLISHER_ID` and `AWIN__ALLOWED_IP_RANGES` to Container App env vars
+- [ ] Add `AWIN__PUBLISHER_ID` and `AWIN__API_TOKEN` to Azure Functions app settings (needed by reconciliation job)
+- [ ] Update `appsettings.json` template with `Awin` section (placeholder values)
+
+### 17.4 Backend - AWIN Postback Endpoint
+
+- [ ] Create `POST /api/webhooks/awin` endpoint (new `AwinWebhookEndpoints.cs` or add to `WebhookEndpoints.cs`)
+  - No JWT auth; IP allowlist middleware validates caller against `AwinSettings.AllowedIpRanges`
+  - Accepts query parameters: `transaction_id`, `order_ref`, `pence`, `clickref`, `merchant_id`, `status`, `currency`
+  - Always returns `200 OK` (log errors internally; AWIN does not retry on non-200)
+  - Delegates to `IAwinService.ProcessPostbackAsync()`
+- [ ] Implement IP allowlist middleware/filter (`AwinIpAllowlistFilter`)
+  - Reads CIDR ranges from `AwinSettings.AllowedIpRanges`
+  - Returns `403` if caller IP is not in any allowed range
+- [ ] Add `IAwinService` interface to `Lyke.Application`
+- [ ] Implement `AwinService` in `Lyke.Application.Services`
+  - `ProcessPostbackAsync`: handle `status=pending` (create earning), `status=confirmed` (promote to Confirmed), `status=declined`/`deleted` (reverse earning)
+  - Idempotency: check for existing `CreatorEarning` by `awinTransactionId` before creating
+  - Store `awinTransactionId` and `awinMerchantId` in `ClickEvent.AttributionData` JSON
+  - Resolve `Retailer` from `merchant_id` via `Retailer.AffiliateConfig` JSON
+  - Convert `pence` (int, minor units) to `decimal` commission amount
+  - On `Reversed`: if earning is `Paid` and amount > `ClawbackThreshold`, create a `Clawback` earning (negative `Amount`) against the same creator
+- [ ] `ReconcileTransactionsAsync`: call AWIN transactions API, diff against local `CreatorEarning` records, apply status updates
+- [ ] `HandleReversalAsync`: encapsulate reversal + optional clawback creation logic (shared between postback and reconciliation paths)
+
+### 17.5 Backend - AWIN Reconciliation Job (replaces `EarningConfirmationFunction`)
+
+- [ ] Add `AwinReconciliationFunction` to `Lyke.Functions`
+  - Timer trigger, daily at 06:00 UTC
+  - Queries AWIN transactions API for all transactions modified in the past 48 hours
+  - Calls `IAwinService.ReconcileTransactionsAsync()` with date window
+  - Logs: confirmed count, reversed count, skipped count, any unmatched AWIN transactions
+- [ ] Disable (or delete) the existing `EarningConfirmationFunction` — time-based confirmation logic is superseded
+  - If keeping for non-AWIN ("Direct") retailers, gate it behind a check: only process earnings for retailers where `AffiliateConfig.NetworkType == "Direct"`
+- [ ] Register `IAwinService` / `AwinService` in Functions DI (`AddAwin()` extension, alongside existing `AddDatabase()` / `AddStorage()`)
+
+### 17.6 Backend - Retailer Config Updates
+
+- [ ] Update the admin `PUT /api/admin/v1/retailers/{id}` endpoint (or add a dedicated config endpoint) to accept and persist the new `AffiliateConfig` fields: `NetworkType` and `MerchantId`
+- [ ] Update the retailer admin UI validator to validate `MerchantId` is present when `NetworkType == "AWIN"`
+- [ ] Seed the first retailer's `AffiliateConfig` with correct AWIN values (migration seed or admin action)
+
+### 17.7 Backend - Retain Direct Retailer Webhook
+
+- [ ] Verify `POST /api/retailers/{id}/conversions` still works for non-AWIN retailers (no change needed, but add integration test coverage for the `NetworkType == "Direct"` path)
+- [ ] Add guard in `CommerceService.ProcessConversionAsync()`: if `AffiliateConfig.NetworkType != "Direct"`, return a clear error (conversions for AWIN retailers must come through `/api/webhooks/awin`)
+
+### 17.8 Frontend - Creator Earnings UI (minor update)
+
+- [ ] Show estimated confirmation date on pending earnings:
+  - Formula: `ClickEvent.CreatedAt + retailer.CookieWindowDays` (surfaced via the earnings history API response)
+  - Display as "Expected confirmation: {date}" on each `Pending` earning row
+- [ ] Show `Reversed` status on earning rows with appropriate label ("Commission reversed") and muted styling
+- [ ] Show `Clawback` earning type with negative amount and explanatory tooltip
+
+### 17.9 Testing
+
+- [ ] Unit tests: `AwinServiceTests` (xUnit)
+  - `ProcessPostbackAsync`: pending → creates earning, confirmed → promotes, declined → reverses, duplicate transaction ID is idempotent
+  - `HandleReversalAsync`: below clawback threshold (absorb), above threshold (creates Clawback earning)
+  - `ReconcileTransactionsAsync`: AWIN API mocked; status diff applied correctly
+  - `merchant_id` not found in `Retailer` table → logged and skipped, no exception
+  - `clickref` not a valid GUID → logged and skipped
+- [ ] Unit tests: `AwinIpAllowlistFilterTests`
+  - Allowed IP passes, unknown IP blocked, CIDR range boundary cases
+- [ ] Integration tests: `POST /api/webhooks/awin`
+  - Valid postback → 200, earning created
+  - Unknown merchant → 200 (no crash), earning not created
+  - Already-processed transaction → 200, no duplicate earning
+  - IP not in allowlist → 403
+- [ ] Manual end-to-end test checklist (staging environment):
+  - [ ] Click a product link → verify AWIN tracking URL is generated with correct `awinmid`, `awinpid`, `clickref`
+  - [ ] Simulate AWIN postback (use AWIN publisher UI test conversion tool) → verify `CreatorEarning` created
+  - [ ] Simulate AWIN confirmation postback → verify `EarningStatus` → `Confirmed`
+  - [ ] Simulate AWIN declined postback → verify `EarningStatus` → `Reversed`
+  - [ ] Run reconciliation job manually → verify no duplicate status updates
+
+---
 
 ```json
 // Success Response
@@ -1023,8 +1308,10 @@ ANALYTICS_KEY=<key>
 | Phase 13: Performance | 14 | 11 | Medium | ~79% (backend optimization done, Redis/virtual scroll/service worker/WebP remaining) |
 | Phase 14: Deployment | 17 | 5 | High | 29% (Terraform IaC complete, deploy + monitoring remaining) |
 | Phase 15: Launch | 8 | 0 | Critical | 0% |
+| Phase 16: Creator Payouts | 53 | 0 | High | 0% |
+| Phase 17: Affiliate Network (AWIN) | 38 | 0 | High | 0% (commercial prerequisites first) |
 
-**Total: ~253 actionable tasks (~238 completed, ~94% overall)**
+**Total: ~344 actionable tasks (~238 completed, ~69% overall)**
 
 ---
 

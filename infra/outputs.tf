@@ -21,3 +21,7 @@ output "storage_account_name" {
 output "key_vault_uri" {
   value = azurerm_key_vault.main.vault_uri
 }
+
+output "function_app_url" {
+  value = "https://${azurerm_linux_function_app.media.default_hostname}"
+}

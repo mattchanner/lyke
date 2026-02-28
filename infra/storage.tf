@@ -25,6 +25,11 @@ resource "azurerm_storage_container" "media" {
   container_access_type = "private"
 }
 
+resource "azurerm_storage_queue" "media_processing" {
+  name                 = "media-processing"
+  storage_account_name = azurerm_storage_account.main.name
+}
+
 locals {
   storage_connection_string = azurerm_storage_account.main.primary_connection_string
 }

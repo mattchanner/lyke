@@ -22,5 +22,8 @@ email_dry_run      = true
 email_app_base_url = "https://dev.be-lyke.clothing"
 email_api_base_url = "https://dev-api.be-lyke.clothing"
 
+# Functions - Consumption (scale to zero, pay per execution)
+functions_sku = "Y1"
+
 # ASP.NET Core
 aspnetcore_environment = "Development"
