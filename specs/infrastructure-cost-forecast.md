@@ -1,6 +1,7 @@
 # Infrastructure Cost Forecast — Year 1
 
 **Created:** 2026-02-28
+**Updated:** 2026-02-28 — Switched production Azure Functions from EP1 (Elastic Premium) to Y1 (Consumption) to reduce costs. Annual saving of ~£1,488.
 **Currency:** GBP (£). Azure bills in USD; estimates use £1 = $1.27 (approximate). All figures are estimates and should be re-validated against current Azure pricing at time of provisioning.
 
 ---
@@ -23,7 +24,7 @@ Two permanent environments, matching current Terraform structure:
 | Environment | Purpose | Key difference |
 |-------------|---------|---------------|
 | **Dev/Staging** | CI/CD deployments, QA, integration testing | Scale-to-zero, smaller SKUs, email dry-run |
-| **Production** | Live users | Always-on, larger SKUs, GRS storage, 90-day log retention |
+| **Production** | Live users | Larger SKUs, GRS storage, 90-day log retention; Functions use Consumption plan (cold starts acceptable for async workloads) |
 
 The Container Registry (Basic SKU) is shared between both environments.
 
@@ -60,7 +61,7 @@ Production scales across four quarters as the user base and feature set grows.
 |---------|-----------|-----------|-----------|-------------|
 | Container App | 1 vCPU, 2Gi, min 1 | 1 vCPU, 2Gi, min 1 | 1 vCPU, 2Gi, min 1–2 | 2 vCPU, 4Gi, min 1–2 |
 | PostgreSQL | D2s_v3, 64GB, GRS | D2s_v3, 64GB, GRS | D4s_v3, 128GB, GRS | D4s_v3, 128GB, GRS |
-| Functions | EP1 Elastic Premium | EP1 | EP1 | EP1 |
+| Functions | Y1 Consumption | Y1 Consumption | Y1 Consumption | Y1 Consumption |
 | Redis | — | Standard C1 (1GB) | Standard C1 (1GB) | Standard C2 (6GB) |
 | Storage | ~20GB GRS | ~50GB GRS | ~100GB GRS | ~200GB GRS |
 | CDN | — | Basic | Standard | Standard |
@@ -73,12 +74,12 @@ Production scales across four quarters as the user base and feature set grows.
 |---------|---------|-------|
 | Container App (API) | £57 | 1 vCPU, 2Gi, min 1 replica always on; ~£75 including peak scaling |
 | PostgreSQL D2s_v3 + 64GB GRS | £80 | ~$92/hr compute + $0.115/GB storage + GRS backup |
-| Azure Functions EP1 | £122 | ⚠️ 1 always-ready instance; eliminates cold starts for media processing |
+| Azure Functions Y1 | £3 | Consumption plan; negligible executions during soft launch; 10–30s cold start on first media job after inactivity |
 | Storage GRS ~20GB | £3 | Hot tier, geo-redundant |
 | Log Analytics + App Insights | £10 | 90-day retention; within or just above 5GB free tier |
 | Key Vault | £2 | ~20 secrets + low ops volume |
 | ACS Email (~3,000/month) | £1 | Within or just above 3,000/month free tier |
-| **Q1 Monthly Total** | **£275** | |
+| **Q1 Monthly Total** | **£156** | |
 
 **Q2 — Growth Phase (months 4–6)** ← *Redis and CDN added; AWIN live*
 
@@ -86,14 +87,14 @@ Production scales across four quarters as the user base and feature set grows.
 |---------|---------|-------|
 | Container App (API) | £80 | Increased traffic from AWIN clicks |
 | PostgreSQL D2s_v3 + 64GB GRS | £80 | Same SKU; no upgrade needed yet |
-| Azure Functions EP1 | £122 | Now running AWIN reconciliation job in addition to media processing |
+| Azure Functions Y1 | £5 | AWIN reconciliation job added; still low execution volume on Consumption plan |
 | Redis Standard C1 (1GB) | £63 | Feed caching, session data; Standard tier for HA/SLA |
 | Storage GRS ~50GB | £5 | Growing media library |
 | CDN | £8 | Azure CDN Standard for static assets + media delivery |
 | Log Analytics + App Insights | £12 | Slightly more telemetry with AWIN |
 | Key Vault | £2 | Additional AWIN API token secret |
 | ACS Email (~6,000/month) | £1 | Verification, moderation, onboarding emails |
-| **Q2 Monthly Total** | **£373** | |
+| **Q2 Monthly Total** | **£256** | |
 
 **Q3 — Scaling Phase (months 7–9)** ← *Stripe payouts live; DB upgraded; creator base growing*
 
@@ -101,14 +102,14 @@ Production scales across four quarters as the user base and feature set grows.
 |---------|---------|-------|
 | Container App (API) | £100 | Average 1.5 replicas as shopper traffic grows |
 | PostgreSQL D4s_v3 + 128GB GRS | £157 | ⚠️ Upgrade trigger: read latency or CPU > 70% sustained |
-| Azure Functions EP1 | £130 | 2 additional timer jobs (AWIN reconciliation, payout confirmation); slightly more compute |
+| Azure Functions Y1 | £8 | 3 active functions (media processing, AWIN reconciliation, payout confirmation); growing execution volume |
 | Redis Standard C1 (1GB) | £63 | Same tier; monitor memory usage |
 | Storage GRS ~100GB | £8 | Media growing with creator cohort expansion |
 | CDN | £15 | Growing asset delivery volume |
 | Log Analytics + App Insights | £15 | More services generating telemetry |
 | Key Vault | £3 | Stripe secrets + AES encryption key added |
 | ACS Email (~10,000/month) | £2 | Payout notifications added to email volume |
-| **Q3 Monthly Total** | **£493** | |
+| **Q3 Monthly Total** | **£371** | |
 
 **Q4 — Established (months 10–12)** ← *Full feature set; sustained growth*
 
@@ -116,26 +117,26 @@ Production scales across four quarters as the user base and feature set grows.
 |---------|---------|-------|
 | Container App (API) | £130 | Average 1.8 replicas; may need 2 vCPU if CPU-bound |
 | PostgreSQL D4s_v3 + 128GB GRS | £157 | Same SKU; add read replica if query load warrants it (+£145/month) |
-| Azure Functions EP1 | £150 | 2 minimum instances for redundancy at scale |
+| Azure Functions Y1 | £12 | Consumption costs grow with execution volume; still well under EP1 cost |
 | Redis Standard C2 (6GB) | £133 | ⚠️ Upgrade trigger: C1 memory utilisation > 70% |
 | Storage GRS ~200GB | £13 | ~200GB accumulated media |
 | CDN | £20 | Standard volume |
 | Log Analytics + App Insights | £20 | 90-day retention of growing telemetry |
 | Key Vault | £4 | Low growth |
 | ACS Email (~20,000/month) | £3 | Growing user base, more notification triggers |
-| **Q4 Monthly Total** | **£630** | |
+| **Q4 Monthly Total** | **£492** | |
 
 ### Annual Production Total
 
 | Quarter | Monthly | × Months | Subtotal |
 |---------|---------|----------|---------|
-| Q1 | £275 | 3 | £825 |
-| Q2 | £373 | 3 | £1,119 |
-| Q3 | £493 | 3 | £1,479 |
-| Q4 | £630 | 3 | £1,890 |
-| **Annual Production** | | | **£5,313** |
+| Q1 | £156 | 3 | £468 |
+| Q2 | £256 | 3 | £768 |
+| Q3 | £371 | 3 | £1,113 |
+| Q4 | £492 | 3 | £1,476 |
+| **Annual Production** | | | **£3,825** |
 
-> **Note on Azure Functions EP1:** The Elastic Premium plan (currently configured in `prod.tfvars`) costs ~£122/month for 1 always-ready instance, primarily to eliminate cold starts for media processing. If a 10–30 second cold start on media jobs is acceptable (they run asynchronously via queue), switching to Y1 Consumption for prod functions would save approximately **£1,400/year**. The trade-off: first media processing job after a period of inactivity will be slower. Timer-triggered jobs (earnings confirmation, AWIN reconciliation) are unaffected by cold starts. This is worth revisiting before launch.
+> **Note on Azure Functions Y1 Consumption:** All three production functions (media processing, AWIN reconciliation, payout confirmation) are queue-triggered or timer-triggered and run asynchronously. Cold starts of 10–30 seconds add no user-visible latency. Timer-triggered jobs (earnings confirmation, AWIN reconciliation) are unaffected by cold starts. If sustained high-frequency media processing causes cold starts to degrade the creator upload experience noticeably, upgrading to EP1 Elastic Premium (~£122/month for 1 always-ready instance) can be revisited — but this is unlikely to be needed in year 1.
 
 ---
 
@@ -206,39 +207,39 @@ If a Mac device is owned (see Part 5), this cost is £0.
 | Environment | Annual Cost |
 |-------------|------------|
 | Dev/Staging | £501 |
-| Production | £5,313 |
-| **Azure Total** | **£5,814** |
+| Production | £3,825 |
+| **Azure Total** | **£4,326** |
 
 ### All Costs Combined
 
 | Category | Annual | Notes |
 |----------|--------|-------|
 | Azure — Dev/Staging | £501 | Stable throughout year |
-| Azure — Production | £5,313 | Grows from £275 to £630/month |
+| Azure — Production | £3,825 | Grows from £156 to £492/month |
 | Stripe Connect fees | £1,104 | Variable; only from Q3 when payouts go live |
 | GitHub Team plan | £113 | Fixed |
 | Apple Developer Program | £78 | Fixed annual |
 | Google Play (one-time) | £20 | One-time only |
 | Domain renewal | £30 | Fixed annual |
-| **Recurring Annual Total** | **£7,159** | |
+| **Recurring Annual Total** | **£5,671** | |
 | | | |
 | Mac Mini M4 (one-time) | £540 | If no Mac owned |
 | Additional test devices | £0–£1,000 | As needed |
 | GitHub Actions macOS runners | £330 | Only if no Mac; otherwise £0 |
 | **One-time / conditional costs** | **£540–£1,870** | |
 | | | |
-| **Year 1 Grand Total (Mac Mini path)** | **~£7,699** | |
-| **Year 1 Grand Total (MacBook path)** | **~£8,958** | |
-| **Year 1 if Mac already owned** | **~£7,159** | |
+| **Year 1 Grand Total (Mac Mini path)** | **~£6,211** | |
+| **Year 1 Grand Total (MacBook path)** | **~£7,470** | |
+| **Year 1 if Mac already owned** | **~£5,671** | |
 
 ### Monthly Progression
 
 | Month | Dev/Staging | Production | Stripe | Other | Monthly Total |
 |-------|------------|-----------|--------|-------|--------------|
-| 1–3 | £32 | £275 | £0 | £20 | £327 |
-| 4–6 | £45 | £373 | £0 | £20 | £438 |
-| 7–9 | £45 | £493 | £105 | £20 | £663 |
-| 10–12 | £45 | £630 | £263 | £20 | £958 |
+| 1–3 | £32 | £156 | £0 | £20 | £208 |
+| 4–6 | £45 | £256 | £0 | £20 | £321 |
+| 7–9 | £45 | £371 | £105 | £20 | £541 |
+| 10–12 | £45 | £492 | £263 | £20 | £820 |
 
 "Other" = monthly share of annual subscriptions (GitHub, Apple, domain = £241/year ÷ 12 ≈ £20/month).
 
@@ -257,7 +258,7 @@ These are the specific thresholds that should prompt infrastructure changes. Mon
 | Container App avg CPU > 60% | Azure Monitor: `CpuPercentage` | Add 1 replica (auto-scales) or upgrade vCPU | +£57–114/month |
 | Container App p95 response time > 500ms | App Insights: `requests/duration` | Investigate; likely DB or N+1 query before scaling | Varies |
 | Log Analytics ingestion > 8GB/month | Azure Portal billing | Review log verbosity; move verbose logs to cheaper tier | +£8/month per GB |
-| Functions EP1 CPU > 60% | Azure Monitor | Add second always-ready instance | +£122/month |
+| Functions cold start impacting creator uploads | App Insights: media processing duration p95 | Upgrade Y1 → EP1 (Elastic Premium, 1 always-ready instance) | +£122/month |
 
 ---
 
@@ -265,9 +266,9 @@ These are the specific thresholds that should prompt infrastructure changes. Mon
 
 The following changes are not implemented yet but would reduce costs materially:
 
-### 1. Functions: Downgrade EP1 → Y1 Consumption (~£1,400/year saving)
+### 1. ✅ Functions: Downgraded EP1 → Y1 Consumption (saving ~£1,488/year) — IMPLEMENTED
 
-The prod Functions plan is EP1 (Elastic Premium) to eliminate cold starts. All three functions (media processing, AWIN reconciliation, payout confirmation) are queue-triggered or timer-triggered and run asynchronously. A 10–30 second cold start adds no user-visible latency. Switching to Y1 Consumption in prod saves approximately £122/month from day one. **Recommend evaluating before prod launch.**
+Production Functions now use the Y1 Consumption plan instead of EP1 Elastic Premium. All three functions (media processing, AWIN reconciliation, payout confirmation) are queue-triggered or timer-triggered and run asynchronously. Cold starts of 10–30 seconds add no user-visible latency. This saves approximately £119–138/month depending on the quarter. Monitor cold start impact on creator upload experience; upgrade to EP1 only if needed.
 
 ### 2. Redis: Defer to Q2 (~£63/month saving in Q1)
 
@@ -297,8 +298,8 @@ Set the following Azure Budget alerts before provisioning prod:
 
 | Budget | Alert threshold | Alert at |
 |--------|----------------|----------|
-| Production — monthly | £700 (Q1), £1,000 (Q4) | 80%, 100%, 110% |
+| Production — monthly | £500 (Q1–Q2), £800 (Q3–Q4) | 80%, 100%, 110% |
 | Dev/Staging — monthly | £80 | 80%, 100% |
-| Entire subscription — monthly | £1,200 | 90%, 100% |
+| Entire subscription — monthly | £1,000 | 90%, 100% |
 
-The 110% alert on prod is critical: it catches unexpected scaling events or misconfigured retry loops (e.g., a Functions job stuck in a retry storm consuming EP1 compute).
+The 110% alert on prod is critical: it catches unexpected scaling events or misconfigured retry loops (e.g., a Functions job stuck in a retry storm consuming Consumption plan compute).

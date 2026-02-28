@@ -16,6 +16,7 @@ LYKE supports four distinct user roles, each with specific workflows and capabil
 ## Quick Links
 
 - [Authentication](./authentication.md) - Login, registration, and account management
+- [Affiliate Integration](./affiliate-integration.md) - How LYKE earns revenue through retailer affiliate programmes
 - [API Reference](./api-reference.md) - Complete API endpoint documentation
 - [Privacy & GDPR](./privacy.md) - Data protection and privacy policies
 

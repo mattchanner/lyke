@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 380">
+  <defs>
+    <style>
+      .phase-box { stroke-width: 2; rx: 8; }
+      .phase-sale { fill: #e3f2fd; stroke: #1976d2; }
+      .phase-validate { fill: #fff3e0; stroke: #f57c00; }
+      .phase-awin-pay { fill: #e8f5e9; stroke: #388e3c; }
+      .phase-creator-pay { fill: #c8e6c9; stroke: #2e7d32; }
+      .phase-label { font-family: system-ui, sans-serif; font-size: 11px; fill: #212529; font-weight: 600; }
+      .phase-detail { font-family: system-ui, sans-serif; font-size: 9.5px; fill: #616161; }
+      .timeline-line { stroke: #bdbdbd; stroke-width: 2; }
+      .timeline-dot { fill: #757575; }
+      .timeline-dot-green { fill: #2e7d32; }
+      .day-label { font-family: system-ui, sans-serif; font-size: 10px; fill: #424242; font-weight: 600; }
+      .title { font-family: system-ui, sans-serif; font-size: 15px; font-weight: 600; fill: #212529; }
+      .subtitle { font-family: system-ui, sans-serif; font-size: 10px; fill: #757575; }
+      .bracket-text { font-family: system-ui, sans-serif; font-size: 9px; fill: #f57c00; font-weight: 600; }
+      .status-label { font-family: system-ui, sans-serif; font-size: 9px; fill: #ffffff; font-weight: 600; }
+      .status-pending { fill: #ff9800; rx: 3; }
+      .status-confirmed { fill: #2196f3; rx: 3; }
+      .status-payable { fill: #4caf50; rx: 3; }
+      .status-paid { fill: #2e7d32; rx: 3; }
+      .note-text { font-family: system-ui, sans-serif; font-size: 9px; fill: #9e9e9e; font-style: italic; }
+    </style>
+  </defs>
+
+  <!-- Title -->
+  <text x="375" y="24" text-anchor="middle" class="title">Payment Timeline: From Sale to Creator Payout</text>
+  <text x="375" y="42" text-anchor="middle" class="subtitle">Typical timeline for a single affiliate sale (worst case ~10 weeks)</text>
+
+  <!-- Timeline base line -->
+  <line x1="50" y1="100" x2="720" y2="100" class="timeline-line"/>
+
+  <!-- Timeline dots and day markers -->
+  <!-- Day 0 -->
+  <circle cx="70" cy="100" r="5" class="timeline-dot"/>
+  <text x="70" y="88" text-anchor="middle" class="day-label">Day 0</text>
+
+  <!-- Day 30 -->
+  <circle cx="250" cy="100" r="5" class="timeline-dot"/>
+  <text x="250" y="88" text-anchor="middle" class="day-label">~Day 30</text>
+
+  <!-- End of month -->
+  <circle cx="400" cy="100" r="5" class="timeline-dot"/>
+  <text x="400" y="88" text-anchor="middle" class="day-label">Month end</text>
+
+  <!-- Day 60 -->
+  <circle cx="560" cy="100" r="5" class="timeline-dot"/>
+  <text x="560" y="88" text-anchor="middle" class="day-label">~Day 60</text>
+
+  <!-- Day 67 -->
+  <circle cx="700" cy="100" r="6" class="timeline-dot-green"/>
+  <text x="700" y="88" text-anchor="middle" class="day-label">~Day 67</text>
+
+  <!-- Phase 1: Sale -->
+  <rect x="40" y="115" width="140" height="65" class="phase-box phase-sale"/>
+  <text x="110" y="137" text-anchor="middle" class="phase-label">Sale Happens</text>
+  <text x="110" y="153" text-anchor="middle" class="phase-detail">Shopper buys from</text>
+  <text x="110" y="165" text-anchor="middle" class="phase-detail">retailer via LYKE link</text>
+
+  <!-- Status: Pending -->
+  <rect x="75" y="186" width="70" height="18" class="status-pending"/>
+  <text x="110" y="199" text-anchor="middle" class="status-label">PENDING</text>
+
+  <!-- Phase 2: Validation -->
+  <rect x="195" y="115" width="160" height="65" class="phase-box phase-validate"/>
+  <text x="275" y="137" text-anchor="middle" class="phase-label">Retailer Validates</text>
+  <text x="275" y="153" text-anchor="middle" class="phase-detail">Retailer confirms the sale</text>
+  <text x="275" y="165" text-anchor="middle" class="phase-detail">was genuine (1–45 days)</text>
+
+  <!-- Status: Confirmed -->
+  <rect x="237" y="186" width="76" height="18" class="status-confirmed"/>
+  <text x="275" y="199" text-anchor="middle" class="status-label">CONFIRMED</text>
+
+  <!-- Phase 3: AWIN pays LYKE -->
+  <rect x="380" y="115" width="160" height="65" class="phase-box phase-awin-pay"/>
+  <text x="460" y="137" text-anchor="middle" class="phase-label">AWIN Pays LYKE</text>
+  <text x="460" y="153" text-anchor="middle" class="phase-detail">Monthly settlement,</text>
+  <text x="460" y="165" text-anchor="middle" class="phase-detail">30 days after month end</text>
+
+  <!-- Status: Payable -->
+  <rect x="425" y="186" width="70" height="18" class="status-payable"/>
+  <text x="460" y="199" text-anchor="middle" class="status-label">PAYABLE</text>
+
+  <!-- Phase 4: Creator paid -->
+  <rect x="570" y="115" width="160" height="65" class="phase-box phase-creator-pay"/>
+  <text x="650" y="137" text-anchor="middle" class="phase-label">Creator Gets Paid</text>
+  <text x="650" y="153" text-anchor="middle" class="phase-detail">Creator requests payout;</text>
+  <text x="650" y="165" text-anchor="middle" class="phase-detail">Stripe transfer to bank</text>
+
+  <!-- Status: Paid -->
+  <rect x="625" y="186" width="50" height="18" class="status-paid"/>
+  <text x="650" y="199" text-anchor="middle" class="status-label">PAID</text>
+
+  <!-- Bracket: Retailer validation window -->
+  <line x1="70" y1="225" x2="70" y2="235" stroke="#f57c00" stroke-width="1.5"/>
+  <line x1="70" y1="235" x2="350" y2="235" stroke="#f57c00" stroke-width="1.5"/>
+  <line x1="350" y1="225" x2="350" y2="235" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="210" y="250" text-anchor="middle" class="bracket-text">Retailer validation window (up to 45 days)</text>
+
+  <!-- Bracket: AWIN payment cycle -->
+  <line x1="350" y1="265" x2="350" y2="275" stroke="#388e3c" stroke-width="1.5"/>
+  <line x1="350" y1="275" x2="560" y2="275" stroke="#388e3c" stroke-width="1.5"/>
+  <line x1="560" y1="265" x2="560" y2="275" stroke="#388e3c" stroke-width="1.5"/>
+  <text x="455" y="290" text-anchor="middle" font-family="system-ui, sans-serif" font-size="9" fill="#388e3c" font-weight="600">AWIN payment cycle (NET-30 from month end)</text>
+
+  <!-- Key insight box -->
+  <rect x="50" y="310" width="650" height="55" rx="8" fill="#fff8e1" stroke="#ffc107" stroke-width="1.5"/>
+  <text x="375" y="332" text-anchor="middle" font-family="system-ui, sans-serif" font-size="11" fill="#424242" font-weight="600">Key: LYKE can only pay creators after AWIN pays LYKE</text>
+  <text x="375" y="350" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#757575">Creators typically receive payment 6–10 weeks after the original sale. This is standard in affiliate marketing.</text>
+</svg>

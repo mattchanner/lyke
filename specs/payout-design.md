@@ -2,6 +2,7 @@
 
 **Status:** Proposed
 **Created:** 2026-02-28
+**Updated:** 2026-02-28 — Payment schedule and earning confirmation updated to reflect AWIN affiliate network integration (see `specs/affiliate-network-design.md`). Earning confirmation is now driven by AWIN transaction status, not elapsed time. Payout eligibility requires AWIN payment receipt. Clawback mechanism added.
 
 ---
 
@@ -18,9 +19,9 @@ The existing implementation records earnings but does not move money:
 | Concern | Current State |
 |---------|--------------|
 | Click tracking | ✅ Complete — `ClickEvent` created on every outbound product link click |
-| Conversion ingestion | ✅ Complete — retailer webhook creates a `CreatorEarning` with `Status = Pending` |
-| Attribution window | ⚠️ Configured (30 days default) but not enforced — earnings never leave `Pending` |
-| Earnings confirmation | ❌ Missing — no job promotes `Pending → Confirmed` |
+| Conversion ingestion | ✅ Complete — AWIN postback creates a `CreatorEarning` with `Status = Pending` (see `affiliate-network-design.md` Part 3) |
+| Earning confirmation | ✅ Complete — driven by AWIN transaction status updates via postback and `AwinReconciliationFunction` (see `affiliate-network-design.md` Part 4) |
+| AWIN payment tracking | ❌ Missing — no record of when AWIN settles payments to LYKE |
 | Payout disbursement | ❌ Missing — `Creator.PayoutDetails` stored but never read; no payment processor |
 | Payout account management | ❌ Missing — no onboarding flow to collect banking info |
 | Sponsored earnings | ❌ Missing — `SponsoredPlacement` entity exists but never generates `CreatorEarning` records |
@@ -41,32 +42,73 @@ LYKE operates as the Stripe platform account. Affiliate commissions and sponsore
 
 ---
 
+## Payment Schedule: AWIN → LYKE → Creator
+
+The affiliate network integration introduces a cash flow dependency that determines when creators can be paid. LYKE cannot pay creators until AWIN has paid LYKE.
+
+### Timeline for a Single Conversion
+
+```
+Day 0        Shopper buys from retailer via LYKE link
+             → AWIN postback creates CreatorEarning (Pending)
+
+Day 1–45     Retailer validation window
+             → Retailer confirms or declines the transaction within AWIN
+             → AWIN postback or reconciliation job promotes Pending → Confirmed (or Reversed)
+
+End of month AWIN closes the monthly billing cycle
+             → All transactions confirmed during the month are batched
+
++30 days     AWIN pays LYKE (NET-30 after month-end)
+             → LYKE records AwinPaymentBatch; marks covered earnings as Payable
+
++30–37 days  Creator can request payout (or auto-payout triggers on 1st of month)
+             → PayoutRequest created, approved, Stripe transfer issued
+```
+
+**Realistic end-to-end timeline:** A sale on day 1 of a month, confirmed on day 30, would not be paid to LYKE until ~day 60, and the creator could receive funds around day 60–67. In the worst case (sale on day 1, confirmed on day 45, AWIN pays NET-30 from end of that month), the creator waits ~10 weeks.
+
+This delay is standard in affiliate marketing and should be clearly communicated in the creator earnings UI with an estimated payment date.
+
+---
+
 ## Earning Lifecycle
 
 ```
-Retailer webhook received
+AWIN postback received (status=pending)
          │
          ▼
-  CreatorEarning (Pending)          ← conversion recorded, attribution window open
+  CreatorEarning (Pending)          ← conversion recorded; awaiting retailer validation
          │
-         │  Nightly job: EarningConfirmationJob
-         │  (runs when CreatedAt + AttributionWindowDays < now)
+         │  AWIN postback (status=confirmed) or AwinReconciliationFunction
+         │
+         ├──────────────────────────────────────────────────┐
+         │                                                  │
+         ▼                                                  ▼
+  CreatorEarning (Confirmed)        ← AWIN validated    CreatorEarning (Reversed)
+         │                                               ← retailer declined/returned
+         │  AWIN monthly payment received by LYKE         (excluded from all balances)
+         │  (AwinPaymentBatch recorded)
          ▼
-  CreatorEarning (Confirmed)        ← safe to pay; window closed, no chargeback risk
+  CreatorEarning (Payable)          ← LYKE has the cash; safe to pay creator
          │
          │  Creator requests payout (or auto-payout threshold reached)
          ▼
-  PayoutRequest (Pending)           ← bundles all Confirmed earnings into one request
+  PayoutRequest (Pending)           ← bundles all Payable earnings into one request
          │
          │  Admin approves (auto-approved below threshold)
          ▼
   PayoutRequest (Processing)        ← Stripe Transfer created
          │
-         │  Stripe transfer.created webhook received
+         │  Stripe transfer.paid webhook received
          ▼
   PayoutRequest (Completed)         ← funds sent to creator's bank
   CreatorEarning (Paid)             ← all associated earnings marked Paid
 ```
+
+### Reversal After Payment (Clawback)
+
+If a transaction is reversed by AWIN after the creator has already been paid, LYKE faces a shortfall. See "Clawback Mechanism" below.
 
 ---
 
@@ -100,7 +142,7 @@ Suspended    = 3   ← account disabled by LYKE or Stripe
 
 ### New Entity: `PayoutRequest`
 
-Tracks a single payout event that bundles multiple confirmed earnings.
+Tracks a single payout event that bundles multiple payable earnings.
 
 ```
 PayoutRequest
@@ -124,21 +166,62 @@ Pending     = 0   ← submitted by creator, awaiting admin review
 Approved    = 1   ← approved (by admin or auto-approved below threshold)
 Processing  = 2   ← Stripe Transfer API call made
 Completed   = 3   ← Stripe webhook confirmed transfer paid
-Failed      = 4   ← Stripe transfer failed; earnings reverted to Confirmed
+Failed      = 4   ← Stripe transfer failed; earnings reverted to Payable
 Rejected    = 5   ← admin rejected (e.g. fraud suspicion)
 ```
 
+### New Entity: `AwinPaymentBatch`
+
+Tracks when AWIN pays LYKE, enabling the Confirmed → Payable transition.
+
+```
+AwinPaymentBatch
+├── Id (GUID)
+├── AwinPaymentReference (string)         ← AWIN's payment reference from their report
+├── PeriodStart (DateTime)                ← start of AWIN billing period covered
+├── PeriodEnd (DateTime)                  ← end of AWIN billing period covered
+├── TotalAmount (decimal)                 ← total amount received from AWIN
+├── Currency (string)                     ← ISO 4217
+├── ReceivedAt (DateTime)                 ← date LYKE received the AWIN payment
+├── RecordedByUserId (Guid)              ← admin who recorded the payment
+├── CreatedAt (DateTime)
+└── Notes (string?)
+```
+
+When an `AwinPaymentBatch` is recorded, all `Confirmed` earnings with `CreatedAt` within the batch's `PeriodStart–PeriodEnd` range are promoted to `Payable`. This is the gate that ensures LYKE has the cash before paying creators.
+
+For MVP with a single retailer and low volume, this is a **manual admin action**: the admin records the batch when the AWIN payment lands in LYKE's bank account. Automation via AWIN's reporting API can be added later.
+
 ### Modified Entity: `CreatorEarning`
 
-Add a nullable FK to `PayoutRequest`:
+Add a nullable FK to `PayoutRequest` and the `AwinPaymentBatch`:
 
 ```
 CreatorEarning
 ├── ... (existing fields)
-└── PayoutRequestId (Guid?, FK → PayoutRequest)   ← set when earning is included in a payout
+├── PayoutRequestId (Guid?, FK → PayoutRequest)       ← set when earning is included in a payout
+└── AwinPaymentBatchId (Guid?, FK → AwinPaymentBatch) ← set when AWIN payment received
 ```
 
-When a `PayoutRequest` enters `Failed` status, `PayoutRequestId` on all associated earnings is cleared and their `Status` is reverted to `Confirmed` so they can be included in the next payout attempt.
+When a `PayoutRequest` enters `Failed` status, `PayoutRequestId` on all associated earnings is cleared and their `Status` is reverted to `Payable` so they can be included in the next payout attempt.
+
+**Updated Enum: `EarningStatus`**
+```
+Pending   = 0   ← AWIN transaction pending retailer validation
+Confirmed = 1   ← AWIN confirmed; awaiting AWIN payment to LYKE
+Payable   = 2   ← AWIN has paid LYKE; creator can request payout
+Paid      = 3   ← included in a completed PayoutRequest
+Reversed  = 4   ← AWIN declined/deleted; excluded from all balances
+```
+
+Note: `Payable` is a new status inserted between `Confirmed` and `Paid`. This is the key change driven by the AWIN payment schedule — `Confirmed` alone no longer means the money is available for creator payout.
+
+**Updated Enum: `EarningType`**
+```
+Affiliate  = 0   ← commission from affiliate sale
+Sponsored  = 1   ← fee from sponsored placement
+Clawback   = 2   ← negative earning to recover reversed paid commissions
+```
 
 ### Modified Entity: `SponsoredPlacement`
 
@@ -152,6 +235,33 @@ SponsoredPlacement
 
 ---
 
+## Clawback Mechanism
+
+If AWIN reverses a transaction after the creator has already been paid (`EarningStatus = Paid`), LYKE needs to recover the funds. This is addressed with a tiered approach:
+
+### Rules
+
+| Reversal amount | Action |
+|----------------|--------|
+| ≤ £10 | **Absorb** — LYKE takes the loss. The reversed earning is marked `Reversed` but no clawback is created. |
+| > £10 | **Clawback** — A `CreatorEarning` of type `Clawback` is created with a negative `Amount`. This is deducted from the creator's next payout balance. |
+
+### Implementation
+
+1. When `AwinReconciliationFunction` or an AWIN postback marks a `Paid` earning as `Reversed`:
+   - If `|Amount| <= ClawbackThreshold` (£10 default, configured in `AwinSettings`): log and absorb
+   - If `|Amount| > ClawbackThreshold`: create a `CreatorEarning` with `EarningType = Clawback`, `Amount = -originalAmount × 0.70` (creator's share only), `Status = Payable` (immediately deductible)
+2. When `PayoutRequest` is created, `Clawback` earnings are included in the balance calculation, reducing the total payout amount
+3. If clawbacks exceed the creator's available balance, the payout request is blocked until positive earnings cover the deficit
+
+### Creator Communication
+
+The creator earnings UI must clearly show clawbacks with an explanation:
+- "A previous sale of £X was returned by the customer. £Y has been deducted from your balance."
+- Link to FAQ explaining retailer return policies and how they affect creator earnings
+
+---
+
 ## New Configuration: `PayoutSettings`
 
 ```csharp
@@ -162,23 +272,18 @@ public class PayoutSettings
     // Auto-approve payouts below this amount; above requires admin review
     public decimal AutoApproveThreshold { get; set; } = 200.00m;
 
-    // Number of days after conversion before earnings are confirmed
-    // Should match CommerceSettings.DefaultAttributionWindowDays
-    public int AttributionWindowDays { get; set; } = 30;
+    // Minimum payout amount a creator can request
+    public decimal MinPayoutThreshold { get; set; } = 50.00m;
 
     // Stripe platform account secret key
     public string StripeSecretKey { get; set; } = string.Empty;
 
     // Stripe webhook signing secret for /api/webhooks/stripe
     public string StripeWebhookSecret { get; set; } = string.Empty;
-
-    // Cron expression for EarningConfirmationJob (default: 2am daily)
-    public string ConfirmationJobSchedule { get; set; } = "0 2 * * *";
-
-    // Maximum number of earnings to confirm per job run (prevents timeout)
-    public int ConfirmationBatchSize { get; set; } = 500;
 }
 ```
+
+Note: `AttributionWindowDays` and `ConfirmationJobSchedule` have been removed. Earning confirmation is now driven by AWIN transaction status (see `affiliate-network-design.md` Part 4), not by elapsed time. The `AwinReconciliationFunction` schedule is configured in `AwinSettings`.
 
 ---
 
@@ -203,21 +308,13 @@ public interface IPayoutService
     Task ApprovePayoutAsync(Guid payoutRequestId, string? adminNotes, CancellationToken ct = default);
     Task RejectPayoutAsync(Guid payoutRequestId, string reason, CancellationToken ct = default);
 
+    // AWIN payment tracking
+    Task RecordAwinPaymentBatchAsync(AwinPaymentBatchRequest request, CancellationToken ct = default);
+
     // Stripe webhook
     Task HandleTransferCreatedAsync(string stripeTransferId, CancellationToken ct = default);
     Task HandleTransferPaidAsync(string stripeTransferId, CancellationToken ct = default);
     Task HandleTransferFailedAsync(string stripeTransferId, string failureReason, CancellationToken ct = default);
-}
-```
-
-### `IEarningConfirmationService` (Application layer)
-
-```csharp
-public interface IEarningConfirmationService
-{
-    // Promote Pending → Confirmed for earnings past the attribution window.
-    // Returns count of earnings confirmed.
-    Task<int> ConfirmEligibleEarningsAsync(CancellationToken ct = default);
 }
 ```
 
@@ -248,13 +345,20 @@ GET    /api/creators/v1/payouts/account
   → Returns CreatorPayoutAccountResponse { accountStatus, onboardingComplete, payoutCurrency }
 
 POST   /api/creators/v1/payouts/request
-  → Bundles all Confirmed earnings into a PayoutRequest
-  → Validates: account Active, confirmed balance >= MinPayoutThreshold
+  → Bundles all Payable earnings (including any Clawback deductions) into a PayoutRequest
+  → Validates: account Active, payable balance >= MinPayoutThreshold
   → Auto-approves if amount <= AutoApproveThreshold (triggers Stripe immediately)
   → Returns PayoutRequestResponse
 
 GET    /api/creators/v1/payouts/history
   → Paginated list of PayoutRequest records for the creator
+
+GET    /api/creators/v1/payouts/balance
+  → Returns { confirmedBalance, payableBalance, pendingBalance, clawbackBalance }
+  → confirmedBalance: earnings confirmed by AWIN but not yet paid to LYKE
+  → payableBalance: earnings available for payout (AWIN has paid LYKE)
+  → pendingBalance: earnings awaiting AWIN validation
+  → clawbackBalance: outstanding clawback deductions
 ```
 
 ### Admin Endpoints
@@ -269,8 +373,14 @@ POST   /api/admin/v1/payouts/{id}/approve
   → Body: { adminNotes? }
 
 POST   /api/admin/v1/payouts/{id}/reject
-  → Sets status Rejected, earnings remain Confirmed for future payout
+  → Sets status Rejected, earnings revert to Payable for future payout
   → Body: { reason }
+
+POST   /api/admin/v1/awin-payments
+  → Records an AwinPaymentBatch (admin enters when AWIN payment lands in bank)
+  → Body: { awinPaymentReference, periodStart, periodEnd, totalAmount, currency, notes? }
+  → On success: all Confirmed earnings within the period are promoted to Payable
+  → Returns { earningsPromoted: int, totalAmountPromoted: decimal }
 ```
 
 ### Webhook Endpoint
@@ -286,18 +396,20 @@ POST   /api/webhooks/stripe
 
 ## Background Jobs: Azure Functions Timer Triggers
 
-Consistent with the existing `Lyke.Functions` isolated-worker project.
+Consistent with the existing `Lyke.Functions` isolated-worker project. All functions use Y1 Consumption plan (scale-to-zero; see `infrastructure-cost-forecast.md`).
 
-### `EarningConfirmationFunction`
+### `AwinReconciliationFunction`
 
-- **Schedule:** `0 2 * * *` (2:00am UTC daily, configurable)
-- **Logic:** Queries `CreatorEarning` where `Status = Pending` and `CreatedAt < (now - AttributionWindowDays)`. Promotes them to `Confirmed` in batches of `ConfirmationBatchSize`. Logs count confirmed.
-- **No external calls** — pure DB update. Safe to retry.
+- **Schedule:** `0 6 * * *` (6:00am UTC daily)
+- **Logic:** Queries AWIN's transactions API for the past 48 hours. For each transaction, syncs the AWIN status to the matching `CreatorEarning` record. Handles `pending → confirmed`, `pending → declined`, and `confirmed → declined` transitions.
+- **Replaces:** The previously planned time-based `EarningConfirmationFunction`. Confirmation is now driven entirely by AWIN transaction status, not elapsed time.
+- **Details:** See `affiliate-network-design.md` Part 4.
 
 ### `AutoPayoutFunction` _(optional, Phase 2)_
 
 - **Schedule:** `0 6 1 * *` (6:00am UTC on the 1st of each month)
-- **Logic:** For each creator with `confirmed balance >= MinPayoutThreshold` and an Active payout account, automatically submits a `PayoutRequest` and approves it if below `AutoApproveThreshold`.
+- **Logic:** For each creator with `payable balance >= MinPayoutThreshold` and an Active payout account, automatically submits a `PayoutRequest` and approves it if below `AutoApproveThreshold`.
+- **Note:** This runs on the 1st of the month. AWIN typically pays LYKE around the end of the previous month (NET-30). The admin must record the `AwinPaymentBatch` before auto-payouts run, otherwise no earnings will be in `Payable` status. Consider adding a pre-check that warns if no payment batch has been recorded for the previous month.
 
 ---
 
@@ -344,7 +456,7 @@ Consistent with the existing `Lyke.Functions` isolated-worker project.
 ```
 1. Stripe sends transfer.failed webhook
 2. PayoutService sets PayoutRequest.Status = Failed, FailureReason = <stripe message>
-3. Associated CreatorEarning.PayoutRequestId = null, Status reverted to Confirmed
+3. Associated CreatorEarning.PayoutRequestId = null, Status reverted to Payable
 4. Email notification sent to creator: "Your payout failed — please check your account"
 5. Creator can retry by calling POST /api/creators/v1/payouts/request again
 ```
@@ -359,10 +471,12 @@ The `SponsoredPlacement` entity currently tracks retailer ad campaigns but does 
 2. **Campaign serve event** — when a sponsored post impression is served (tracked via `EngagementType.View` on a post linked to an active placement), create a `CreatorEarning` of `EarningType.Sponsored`
 3. **Budget deduction** — deduct `SpentAmount` from `SponsoredPlacement.BudgetAmount`; deactivate placement when budget exhausted
 4. **Fixed fee vs CPM** — two models:
-   - **Fixed fee**: agreed upfront, single `CreatorEarning` created when campaign starts (Status=Confirmed immediately, no attribution window needed)
-   - **CPM (cost per mille)**: earning created per 1000 impressions served, goes through normal Pending→Confirmed flow
+   - **Fixed fee**: agreed upfront, single `CreatorEarning` created when campaign starts (Status=Payable immediately — no AWIN dependency since sponsored fees are paid directly by the retailer to LYKE)
+   - **CPM (cost per mille)**: earning created per 1000 impressions served, Status=Payable immediately (same rationale)
 
 For MVP, implement **fixed fee only** as it is simpler and avoids impression fraud concerns.
+
+Note: Sponsored earnings bypass the AWIN payment schedule entirely. The retailer pays LYKE directly for sponsored placements (via Stripe invoice or similar), so these earnings can be made `Payable` immediately upon confirmation. No `AwinPaymentBatch` dependency.
 
 ---
 
@@ -375,7 +489,9 @@ For MVP, implement **fixed fee only** as it is simpler and avoids impression fra
 | Double-payout | `PayoutRequest` creation checks for existing `Pending/Processing` request; `CreatorEarning.PayoutRequestId` prevents double-inclusion |
 | Payout to unverified creator | `POST /payouts/onboarding` requires `VerificationStatus == Approved` |
 | Payout account not Active | `POST /payouts/request` validates `AccountStatus == Active` |
+| Payout before LYKE has cash | Only `Payable` earnings (covered by `AwinPaymentBatch`) can be included in payout requests |
 | Earnings manipulation | `CreatorEarning` records are system-generated only (no creator write endpoint) |
+| Clawback abuse | Clawbacks are system-generated from AWIN reversals only; creators cannot dispute via API |
 | GDPR | Stripe stores PII/bank info under its own DPA; `StripeAccountId` stored encrypted; on GDPR deletion, call Stripe Accounts.DeleteAsync and null out `StripeAccountId` |
 
 ---
@@ -390,6 +506,8 @@ For MVP, implement **fixed fee only** as it is simpler and avoids impression fra
 | Payout failed | `payout-failed.liquid` | Creator |
 | Payout rejected by admin | `payout-rejected.liquid` | Creator |
 | Payout requires admin review | `payout-admin-review.liquid` | Admin |
+| Earnings now payable (AWIN payment received) | `earnings-payable.liquid` | Creator |
+| Clawback applied | `clawback-applied.liquid` | Creator |
 
 ---
 
@@ -399,8 +517,14 @@ For MVP, implement **fixed fee only** as it is simpler and avoids impression fra
 
 - Add "Set up payouts" CTA when `onboardingComplete == false`
 - Show payout account status badge (Pending / Active / Restricted)
-- "Request payout" button: enabled when `eligibleForPayout && accountStatus == Active`
+- **Balance breakdown:** Show three balances clearly:
+  - **Pending** — awaiting retailer validation (not yet confirmed by AWIN)
+  - **Confirmed** — validated by AWIN, awaiting AWIN payment to LYKE
+  - **Available for payout** — AWIN has paid LYKE; creator can request payout
+- "Request payout" button: enabled when `payableBalance >= MinPayoutThreshold && accountStatus == Active`
 - Payout history tab: list of `PayoutRequest` records with status and amount
+- **Clawback visibility:** If clawback balance exists, show a notice explaining the deduction with a link to the reversed transaction
+- **Estimated payment date:** For `Pending` and `Confirmed` earnings, show an estimated date based on AWIN's validation + payment cycle (e.g., "Estimated available: mid-March")
 
 ### Creator — Payout Onboarding Page (new)
 
@@ -416,12 +540,20 @@ For MVP, implement **fixed fee only** as it is simpler and avoids impression fra
 - Approve modal: optional admin notes field
 - Reject modal: required reason field
 
+### Admin — AWIN Payment Recording (new)
+
+- Simple form: AWIN payment reference, period start/end, total amount, currency, notes
+- On submit: calls `POST /api/admin/v1/awin-payments`
+- Shows confirmation: "X earnings totalling £Y promoted to Payable"
+- List of past `AwinPaymentBatch` records for audit
+
 ---
 
 ## Open Questions / Out of Scope for MVP
 
 1. **Tax reporting (1099/HMRC)** — Stripe provides tax forms for US creators via the dashboard. UK creators will need annual summaries. Out of scope for now.
 2. **Multi-currency conversion** — Stripe handles FX for international creators. LYKE always initiates transfers in the creator's `PayoutCurrency`. Rate risk is Stripe's.
-3. **Chargeback handling** — if a retailer reverses a commission after an earnings record is already `Confirmed` or `Paid`, the current design has no debt recovery mechanism. Mitigation: extend attribution window, add a `Clawback` earning type in future.
+3. **Automated AWIN payment ingestion** — MVP uses manual admin recording of AWIN payments. Future: parse AWIN's monthly payment report CSV or use their reporting API to auto-create `AwinPaymentBatch` records.
 4. **Auto-payout (scheduled)** — `AutoPayoutFunction` described above is Phase 2; MVP requires creator to manually request payout.
 5. **Minimum payout frequency cap** — prevent creators requesting payout more than once per 7 days (spam mitigation). Add to `POST /payouts/request` validation in Phase 2.
+6. **Clawback dispute process** — currently no mechanism for creators to dispute a clawback. For MVP, direct creators to contact support. Consider a formal dispute flow in Phase 2.
