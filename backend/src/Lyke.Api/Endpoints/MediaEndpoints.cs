@@ -34,6 +34,14 @@ public static class MediaEndpoints
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
         group
+            .MapGet("/{mediaId}/status", GetMediaStatusAsync)
+            .WithName("GetMediaStatus")
+            .WithSummary("Poll for media processing completion")
+            .Produces<ApiResponse<MediaUploadResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound)
+            .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
+
+        group
             .MapDelete("/", DeleteMediaAsync)
             .WithName("DeleteMedia")
             .WithSummary("Delete media files by their IDs")
@@ -99,6 +107,23 @@ public static class MediaEndpoints
 
         await mediaService.DeleteMediaAsync(userId.Value, request.MediaIds, cancellationToken);
         return Results.Ok(ApiResponse.Ok());
+    }
+
+    private static async Task<IResult> GetMediaStatusAsync(
+        string mediaId,
+        ClaimsPrincipal user,
+        [FromServices] IMediaService mediaService,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = GetUserId(user);
+        if (userId == null)
+            return Results.Unauthorized();
+
+        var result = await mediaService.GetMediaStatusAsync(mediaId, userId.Value, cancellationToken);
+        return result == null
+            ? Results.NotFound(ApiResponse.Fail("MEDIA_NOT_FOUND", "Media not found"))
+            : Results.Ok(ApiResponse<MediaUploadResponse>.Ok(result));
     }
 
     private static async Task<IResult> GetSecureUrlAsync(

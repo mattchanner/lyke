@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\backend\src\Lyke.Api\Lyke.Api.csproj" />
+    <ProjectReference Include="..\..\backend\src\Lyke.Functions\Lyke.Functions.csproj" />
   </ItemGroup>
 
 </Project>

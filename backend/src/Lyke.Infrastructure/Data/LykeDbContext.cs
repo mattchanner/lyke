@@ -34,6 +34,7 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<AnalyticsEvent> AnalyticsEvents => Set<AnalyticsEvent>();
     public DbSet<DailyMetricSnapshot> DailyMetricSnapshots => Set<DailyMetricSnapshot>();
     public DbSet<UserFollow> UserFollows => Set<UserFollow>();
+    public DbSet<MediaProcessingJob> MediaProcessingJobs => Set<MediaProcessingJob>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

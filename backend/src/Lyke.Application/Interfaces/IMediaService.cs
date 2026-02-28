@@ -24,4 +24,10 @@ public interface IMediaService
     );
 
     Task<string> GetSecureUrlAsync(string mediaUrl, CancellationToken cancellationToken = default);
+
+    Task<MediaUploadResponse?> GetMediaStatusAsync(
+        string mediaId,
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
 }

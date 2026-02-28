@@ -337,6 +337,12 @@ internal class MockStorageService : IStorageService
         return Task.FromResult($"https://mockstorage.example.com/{blobPath}?sas=mock-token");
     }
 
+    public Task<Stream> DownloadAsync(string blobPath, CancellationToken cancellationToken = default)
+    {
+        Stream ms = new MemoryStream();
+        return Task.FromResult(ms);
+    }
+
     public Task<bool> ExistsAsync(string blobPath, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_uploadedFiles.Contains(blobPath));

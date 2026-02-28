@@ -111,6 +111,19 @@ public class AzureBlobStorageService : IStorageService
         return Task.FromResult(sasUri.ToString());
     }
 
+    public async Task<Stream> DownloadAsync(
+        string blobPath,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var blobClient = _containerClient.GetBlobClient(blobPath);
+        var response = await blobClient.DownloadAsync(cancellationToken);
+        var ms = new MemoryStream();
+        await response.Value.Content.CopyToAsync(ms, cancellationToken);
+        ms.Position = 0;
+        return ms;
+    }
+
     public async Task<bool> ExistsAsync(
         string blobPath,
         CancellationToken cancellationToken = default

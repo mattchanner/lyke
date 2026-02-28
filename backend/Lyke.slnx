@@ -9,6 +9,7 @@
     <Project Path="src/Lyke.Application/Lyke.Application.csproj" />
     <Project Path="src/Lyke.Core/Lyke.Core.csproj" />
     <Project Path="src/Lyke.Infrastructure/Lyke.Infrastructure.csproj" />
+    <Project Path="src/Lyke.Functions/Lyke.Functions.csproj" />
   </Folder>
   <Folder Name="/backend/tests/">
     <Project Path="tests/Lyke.IntegrationTests/Lyke.IntegrationTests.csproj" />
