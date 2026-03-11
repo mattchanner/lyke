@@ -23,6 +23,7 @@ public class User : IdentityUser<Guid>
 
     // Navigation properties
     public BodyProfile? BodyProfile { get; set; }
+    public StyleProfile? StyleProfile { get; set; }
     public Creator? Creator { get; set; }
     public Retailer? Retailer { get; set; }
     public ICollection<Engagement> Engagements { get; set; } = new List<Engagement>();

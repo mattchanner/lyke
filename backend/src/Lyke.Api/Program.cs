@@ -18,6 +18,7 @@ using Lyke.Api.Endpoints.Profile;
 using Lyke.Api.Endpoints.Quiz;
 using Lyke.Api.Endpoints.Retailer;
 using Lyke.Api.Endpoints.Search;
+using Lyke.Api.Endpoints.Style;
 using Lyke.Api.Middleware;
 using Lyke.Application;
 using Lyke.Application.DTOs;
@@ -287,6 +288,7 @@ app.MapBrandEndpoints();
 app.MapPrivacyEndpoints();
 app.MapAnalyticsEndpoints();
 app.MapQuizEndpoints();
+app.MapStyleEndpoints();
 
 await app.RunAsync();
 

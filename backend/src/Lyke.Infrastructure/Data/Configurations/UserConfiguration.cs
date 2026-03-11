@@ -32,6 +32,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey<Retailer>(r => r.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder
+            .HasOne(u => u.StyleProfile)
+            .WithOne(sp => sp.User)
+            .HasForeignKey<StyleProfile>(sp => sp.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Index for finding suspended/active users
         builder.HasIndex(u => u.IsActive).HasDatabaseName("IX_Users_IsActive");
     }
