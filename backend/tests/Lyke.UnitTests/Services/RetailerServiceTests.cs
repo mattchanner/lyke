@@ -26,20 +26,23 @@ public class RetailerServiceTests : IDisposable
     {
         _context = TestDbContextFactory.Create();
         _userManagerMock = MockUserManager.Create();
-        _retailerSettings = Options.Create(new RetailerSettings
-        {
-            MaxImportRows = 100,
-            MinAnonymityGroupSize = 2,
-            DefaultCurrency = "GBP",
-            MaxCampaignBudget = 10000m
-        });
+        _retailerSettings = Options.Create(
+            new RetailerSettings
+            {
+                MaxImportRows = 100,
+                MinAnonymityGroupSize = 2,
+                DefaultCurrency = "GBP",
+                MaxCampaignBudget = 10000m,
+            }
+        );
         _loggerMock = new Mock<ILogger<RetailerService>>();
 
         _sut = new RetailerService(
             _context,
             _userManagerMock.Object,
             _retailerSettings,
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -66,7 +69,7 @@ public class RetailerServiceTests : IDisposable
             Name = "Test Retailer",
             WebsiteUrl = "https://test-retailer.com",
             ContactEmail = "contact@test-retailer.com",
-            IsActive = true
+            IsActive = true,
         };
         _context.Retailers.Add(retailer);
         await _context.SaveChangesAsync();
@@ -85,12 +88,17 @@ public class RetailerServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
-        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
+        _userManagerMock
+            .Setup(x => x.UpdateAsync(It.IsAny<User>()))
             .ReturnsAsync(IdentityResult.Success);
 
-        var request = new RegisterRetailerRequest("New Retailer", null, "https://retailer.com", "info@retailer.com");
+        var request = new RegisterRetailerRequest(
+            "New Retailer",
+            null,
+            "https://retailer.com",
+            "info@retailer.com"
+        );
 
         // Act
         var result = await _sut.RegisterAsRetailerAsync(user.Id, request);
@@ -109,8 +117,7 @@ public class RetailerServiceTests : IDisposable
         // Arrange
         var (user, _) = await SetupRetailerDataAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         var request = new RegisterRetailerRequest("Another Retailer", null, null, null);
 
@@ -118,7 +125,8 @@ public class RetailerServiceTests : IDisposable
         var act = () => _sut.RegisterAsRetailerAsync(user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should()
+            .ThrowAsync<ValidationException>()
             .WithMessage("*already registered as a retailer*");
     }
 
@@ -128,7 +136,8 @@ public class RetailerServiceTests : IDisposable
         // Arrange
         var nonExistentUserId = Guid.NewGuid();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
+        _userManagerMock
+            .Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
             .ReturnsAsync((User?)null);
 
         var request = new RegisterRetailerRequest("Retailer", null, null, null);
@@ -170,7 +179,8 @@ public class RetailerServiceTests : IDisposable
             LogoUrl: "https://logo.com/new.png",
             WebsiteUrl: null,
             ContactEmail: null,
-            AffiliateConfig: null);
+            AffiliateConfig: null
+        );
 
         // Act
         var result = await _sut.UpdateRetailerProfileAsync(user.Id, request);
@@ -200,7 +210,8 @@ public class RetailerServiceTests : IDisposable
             TargetBodyTypes: null,
             TargetCategories: null,
             StartDate: DateTime.UtcNow,
-            EndDate: DateTime.UtcNow.AddDays(30));
+            EndDate: DateTime.UtcNow.AddDays(30)
+        );
 
         // Act
         var result = await _sut.CreateCampaignAsync(user.Id, request);
@@ -224,14 +235,14 @@ public class RetailerServiceTests : IDisposable
             TargetBodyTypes: null,
             TargetCategories: null,
             StartDate: DateTime.UtcNow,
-            EndDate: DateTime.UtcNow.AddDays(30));
+            EndDate: DateTime.UtcNow.AddDays(30)
+        );
 
         // Act
         var act = () => _sut.CreateCampaignAsync(user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Budget cannot exceed*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*Budget cannot exceed*");
     }
 
     #endregion
@@ -244,10 +255,16 @@ public class RetailerServiceTests : IDisposable
         // Arrange
         var (user, retailer) = await SetupRetailerDataAsync();
 
-        var topsProduct = TestDbContextFactory.CreateTestProduct(retailerId: retailer.Id, name: "T-Shirt");
+        var topsProduct = TestDbContextFactory.CreateTestProduct(
+            retailerId: retailer.Id,
+            name: "T-Shirt"
+        );
         topsProduct.Category = "Tops";
 
-        var bottomsProduct = TestDbContextFactory.CreateTestProduct(retailerId: retailer.Id, name: "Jeans");
+        var bottomsProduct = TestDbContextFactory.CreateTestProduct(
+            retailerId: retailer.Id,
+            name: "Jeans"
+        );
         bottomsProduct.Category = "Bottoms";
 
         _context.Products.AddRange(topsProduct, bottomsProduct);
@@ -282,7 +299,8 @@ public class RetailerServiceTests : IDisposable
             ProductUrl: null,
             Price: 149.99m,
             Currency: null,
-            IsActive: null);
+            IsActive: null
+        );
 
         // Act
         var result = await _sut.UpdateProductAsync(user.Id, product.Id, request);
@@ -305,7 +323,7 @@ public class RetailerServiceTests : IDisposable
             Id = Guid.NewGuid(),
             UserId = Guid.NewGuid(),
             Name = "Other Retailer",
-            IsActive = true
+            IsActive = true,
         };
         _context.Retailers.Add(otherRetailer);
 
@@ -321,7 +339,8 @@ public class RetailerServiceTests : IDisposable
             ProductUrl: null,
             Price: null,
             Currency: null,
-            IsActive: null);
+            IsActive: null
+        );
 
         // Act
         var act = () => _sut.UpdateProductAsync(user.Id, product.Id, request);

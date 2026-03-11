@@ -18,7 +18,11 @@ namespace Lyke.Infrastructure.Data.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     FollowerUserId = table.Column<Guid>(type: "uuid", nullable: false),
                     FollowedUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW()")
+                    CreatedAt = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false,
+                        defaultValueSql: "NOW()"
+                    ),
                 },
                 constraints: table =>
                 {
@@ -28,32 +32,36 @@ namespace Lyke.Infrastructure.Data.Migrations
                         column: x => x.FollowedUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade
+                    );
                     table.ForeignKey(
                         name: "FK_UserFollows_AspNetUsers_FollowerUserId",
                         column: x => x.FollowerUserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFollows_FollowedUserId",
                 table: "UserFollows",
-                column: "FollowedUserId");
+                column: "FollowedUserId"
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserFollows_FollowerUserId_FollowedUserId",
                 table: "UserFollows",
                 columns: new[] { "FollowerUserId", "FollowedUserId" },
-                unique: true);
+                unique: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "UserFollows");
+            migrationBuilder.DropTable(name: "UserFollows");
         }
     }
 }

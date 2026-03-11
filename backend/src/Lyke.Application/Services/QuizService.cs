@@ -19,7 +19,7 @@ public class QuizService : IQuizService
         ["Pear"] = 2,
         ["Apple"] = 3,
         ["Rectangle"] = 4,
-        ["Inverted Triangle"] = 5
+        ["Inverted Triangle"] = 5,
     };
 
     // Scoring matrices for each question (Q1-Q4)
@@ -29,39 +29,46 @@ public class QuizService : IQuizService
     // Q1: Shoulder-Hip Comparison
     private static readonly int[][] Q1Scores =
     [
-        [0, 0, 1, 1, 3],  // Shoulders wider
-        [2, 1, 1, 2, 0],  // Same width
-        [0, 3, 0, 1, 0]   // Hips wider
+        [0, 0, 1, 1, 3], // Shoulders wider
+        [2, 1, 1, 2, 0], // Same width
+        [0, 3, 0, 1, 0], // Hips wider
     ];
 
     // Q2: Waist Definition
     private static readonly int[][] Q2Scores =
     [
-        [3, 2, 0, 0, 1],  // Very defined
-        [1, 1, 1, 1, 1],  // Moderate
-        [0, 0, 2, 3, 1]   // Minimal
+        [3, 2, 0, 0, 1], // Very defined
+        [1, 1, 1, 1, 1], // Moderate
+        [0, 0, 2, 3, 1], // Minimal
     ];
 
     // Q3: Weight Distribution
     private static readonly int[][] Q3Scores =
     [
-        [0, 0, 1, 0, 3],  // Upper body
-        [0, 0, 3, 1, 0],  // Midsection
-        [1, 3, 0, 0, 0],  // Lower body
-        [2, 1, 1, 2, 1]   // Evenly
+        [0, 0, 1, 0, 3], // Upper body
+        [0, 0, 3, 1, 0], // Midsection
+        [1, 3, 0, 0, 0], // Lower body
+        [2, 1, 1, 2, 1], // Evenly
     ];
 
     // Q4: Clothing Fit Issues
     private static readonly int[][] Q4Scores =
     [
-        [0, 0, 0, 0, 2],  // Tight shoulders
-        [0, 0, 2, 0, 0],  // Tight middle
-        [1, 2, 0, 0, 0],  // Tight hips
-        [0, 0, 0, 2, 0]   // Same everywhere
+        [0, 0, 0, 0, 2], // Tight shoulders
+        [0, 0, 2, 0, 0], // Tight middle
+        [1, 2, 0, 0, 0], // Tight hips
+        [0, 0, 0, 2, 0], // Same everywhere
     ];
 
     // Body shape names in order of index (matching score arrays)
-    private static readonly string[] BodyShapes = ["Hourglass", "Pear", "Apple", "Rectangle", "Inverted Triangle"];
+    private static readonly string[] BodyShapes =
+    [
+        "Hourglass",
+        "Pear",
+        "Apple",
+        "Rectangle",
+        "Inverted Triangle",
+    ];
 
     // Tie-breaker priority (lower index = higher priority)
     private static readonly int[] TieBreakerPriority = [0, 1, 3, 2, 4]; // Hourglass > Pear > Rectangle > Apple > Inverted Triangle
@@ -72,7 +79,10 @@ public class QuizService : IQuizService
         _logger = logger;
     }
 
-    public async Task<QuizResultResponse> CalculateResultAsync(QuizResultRequest request, CancellationToken cancellationToken = default)
+    public async Task<QuizResultResponse> CalculateResultAsync(
+        QuizResultRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         // Initialize scores for each body shape
         var scores = new int[5]; // [Hourglass, Pear, Apple, Rectangle, Inverted Triangle]
@@ -103,7 +113,7 @@ public class QuizService : IQuizService
                         0 => Stature.Petite,
                         1 => Stature.Average,
                         2 => Stature.Tall,
-                        _ => Stature.Average
+                        _ => Stature.Average,
                     };
                     break;
                 case 6:
@@ -112,7 +122,7 @@ public class QuizService : IQuizService
                     {
                         0 => Build.Standard,
                         1 => Build.Plus,
-                        _ => Build.Standard
+                        _ => Build.Standard,
                     };
                     break;
             }
@@ -135,7 +145,11 @@ public class QuizService : IQuizService
 
         _logger.LogInformation(
             "Quiz completed: Shape={Shape} (scores: {Scores}), Stature={Stature}, Build={Build}",
-            winningShapeName, string.Join(",", scores), stature, build);
+            winningShapeName,
+            string.Join(",", scores),
+            stature,
+            build
+        );
 
         return new QuizResultResponse(
             BodyTypeId: bodyTypeId,
@@ -177,10 +191,14 @@ public class QuizService : IQuizService
         return winners.OrderBy(w => Array.IndexOf(TieBreakerPriority, w)).First();
     }
 
-    private async Task<int> GetBodyTypeIdAsync(string shapeName, CancellationToken cancellationToken)
+    private async Task<int> GetBodyTypeIdAsync(
+        string shapeName,
+        CancellationToken cancellationToken
+    )
     {
         // Try to get from database first
-        var bodyType = await _dbContext.Set<BodyType>()
+        var bodyType = await _dbContext
+            .Set<BodyType>()
             .AsNoTracking()
             .FirstOrDefaultAsync(bt => bt.Name == shapeName, cancellationToken);
 

@@ -28,10 +28,7 @@ public class PrivacyServiceTests : IDisposable
     {
         _context = TestDbContextFactory.Create();
         _userManagerMock = MockUserManager.Create();
-        _privacySettings = Options.Create(new PrivacySettings
-        {
-            CurrentPolicyVersion = "2.0"
-        });
+        _privacySettings = Options.Create(new PrivacySettings { CurrentPolicyVersion = "2.0" });
         _emailServiceMock = new Mock<IEmailService>();
         _loggerMock = new Mock<ILogger<PrivacyService>>();
 
@@ -40,7 +37,8 @@ public class PrivacyServiceTests : IDisposable
             _context,
             _privacySettings,
             _emailServiceMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -65,8 +63,7 @@ public class PrivacyServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         // Act
         var result = await _sut.ExportUserDataAsync(user.Id);
@@ -100,17 +97,22 @@ public class PrivacyServiceTests : IDisposable
         product.Retailer = retailer;
         _context.Products.Add(product);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Product = product;
         postProduct.Post = post;
         _context.PostProducts.Add(postProduct);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         // Act
         var result = await _sut.ExportUserDataAsync(user.Id);
@@ -129,7 +131,8 @@ public class PrivacyServiceTests : IDisposable
         // Arrange
         var nonExistentUserId = Guid.NewGuid();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
+        _userManagerMock
+            .Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
             .ReturnsAsync((User?)null);
 
         // Act
@@ -153,8 +156,7 @@ public class PrivacyServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         // Act
         var result = await _sut.GetConsentStatusAsync(user.Id);
@@ -176,8 +178,7 @@ public class PrivacyServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         // Act
         var result = await _sut.GetConsentStatusAsync(user.Id);
@@ -195,7 +196,8 @@ public class PrivacyServiceTests : IDisposable
         // Arrange
         var nonExistentUserId = Guid.NewGuid();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
+        _userManagerMock
+            .Setup(x => x.FindByIdAsync(nonExistentUserId.ToString()))
             .ReturnsAsync((User?)null);
 
         // Act
@@ -218,9 +220,9 @@ public class PrivacyServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
-        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
+        _userManagerMock
+            .Setup(x => x.UpdateAsync(It.IsAny<User>()))
             .ReturnsAsync(IdentityResult.Success);
 
         var request = new UpdateConsentRequest(AcceptPrivacyPolicy: true);
@@ -243,9 +245,9 @@ public class PrivacyServiceTests : IDisposable
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
-        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
+        _userManagerMock
+            .Setup(x => x.UpdateAsync(It.IsAny<User>()))
             .ReturnsAsync(IdentityResult.Success);
 
         var request = new UpdateConsentRequest(MarketingOptIn: true);

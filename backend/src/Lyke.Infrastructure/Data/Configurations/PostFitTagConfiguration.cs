@@ -10,12 +10,14 @@ public class PostFitTagConfiguration : IEntityTypeConfiguration<PostFitTag>
     {
         builder.HasKey(pft => new { pft.PostProductId, pft.FitTagId });
 
-        builder.HasOne(pft => pft.PostProduct)
+        builder
+            .HasOne(pft => pft.PostProduct)
             .WithMany(pp => pp.FitTags)
             .HasForeignKey(pft => pft.PostProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(pft => pft.FitTag)
+        builder
+            .HasOne(pft => pft.FitTag)
             .WithMany(ft => ft.PostFitTags)
             .HasForeignKey(pft => pft.FitTagId)
             .OnDelete(DeleteBehavior.Restrict);

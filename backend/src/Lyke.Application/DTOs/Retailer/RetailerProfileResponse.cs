@@ -12,9 +12,7 @@ public record RetailerProfileResponse(
     int TotalCampaigns,
     int ActiveCampaigns,
     DateTime CreatedAt,
-    AffiliateConfigDto? AffiliateConfig);
+    AffiliateConfigDto? AffiliateConfig
+);
 
-public record AffiliateConfigDto(
-    string? BaseUrl,
-    string? AffiliateId,
-    decimal? CommissionRate);
+public record AffiliateConfigDto(string? BaseUrl, string? AffiliateId, decimal? CommissionRate);

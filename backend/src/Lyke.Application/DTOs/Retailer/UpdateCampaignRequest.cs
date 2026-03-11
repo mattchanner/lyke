@@ -6,4 +6,5 @@ public record UpdateCampaignRequest(
     List<string>? TargetCategories,
     DateTime? StartDate,
     DateTime? EndDate,
-    bool? IsActive);
+    bool? IsActive
+);

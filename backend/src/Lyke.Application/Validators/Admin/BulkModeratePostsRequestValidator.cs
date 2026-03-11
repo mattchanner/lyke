@@ -7,18 +7,14 @@ public class BulkModeratePostsRequestValidator : AbstractValidator<BulkModerateP
 {
     public BulkModeratePostsRequestValidator()
     {
-        RuleFor(x => x.PostIds)
-            .NotEmpty()
-            .WithMessage("At least one post ID is required");
+        RuleFor(x => x.PostIds).NotEmpty().WithMessage("At least one post ID is required");
 
         RuleFor(x => x.PostIds)
             .Must(ids => ids.Count <= 100)
             .When(x => x.PostIds != null)
             .WithMessage("Cannot moderate more than 100 posts at once");
 
-        RuleFor(x => x.Action)
-            .IsInEnum()
-            .WithMessage("Invalid bulk action");
+        RuleFor(x => x.Action).IsInEnum().WithMessage("Invalid bulk action");
 
         RuleFor(x => x.Reason)
             .NotEmpty()

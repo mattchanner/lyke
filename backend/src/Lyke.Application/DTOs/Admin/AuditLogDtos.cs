@@ -11,7 +11,8 @@ public record AuditLogResponse(
     Guid? EntityId,
     string? Details,
     string? IpAddress,
-    DateTime Timestamp);
+    DateTime Timestamp
+);
 
 public record AuditLogQueryRequest(
     Guid? UserId = null,
@@ -20,4 +21,5 @@ public record AuditLogQueryRequest(
     DateTime? From = null,
     DateTime? To = null,
     int Page = 1,
-    int PageSize = 20);
+    int PageSize = 20
+);

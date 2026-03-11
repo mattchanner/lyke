@@ -1,9 +1,6 @@
 namespace Lyke.Application.DTOs.Admin;
 
-public record AdminAnalyticsRequest(
-    DateTime? StartDate,
-    DateTime? EndDate
-);
+public record AdminAnalyticsRequest(DateTime? StartDate, DateTime? EndDate);
 
 public record AdminAnalyticsResponse(
     AdminAnalyticsSummary Summary,

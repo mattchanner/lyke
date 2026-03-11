@@ -1,30 +1,31 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportHeight="108"
-    android:viewportWidth="108">
+<vector
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="108dp"
+  android:height="108dp"
+  android:viewportHeight="108"
+  android:viewportWidth="108"
+>
+  <!-- Hanger hook — curved arc rising from top of heart -->
+  <path
+    android:fillColor="#00000000"
+    android:pathData="M46,36 Q46,28 54,28 Q62,28 62,36"
+    android:strokeColor="#ab5037"
+    android:strokeWidth="3"
+    android:strokeLineCap="round"
+  />
 
-    <!-- Hanger hook — curved arc rising from top of heart -->
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M46,36 Q46,28 54,28 Q62,28 62,36"
-        android:strokeColor="#ab5037"
-        android:strokeWidth="3"
-        android:strokeLineCap="round" />
+  <!-- Small circle at top of hook -->
+  <path android:fillColor="#ab5037" android:pathData="M54,25 a3,3 0 1,1 0,0.01" />
 
-    <!-- Small circle at top of hook -->
-    <path
-        android:fillColor="#ab5037"
-        android:pathData="M54,25 a3,3 0 1,1 0,0.01" />
+  <!-- Heart shape — two cubic bezier lobes meeting at a point -->
+  <path
+    android:fillColor="#c25b3f"
+    android:pathData="M54,78 C54,78 30,62 30,46 C30,38 36,33 43,33 C48,33 52,36 54,40 C56,36 60,33 65,33 C72,33 78,38 78,46 C78,62 54,78 54,78 Z"
+  />
 
-    <!-- Heart shape — two cubic bezier lobes meeting at a point -->
-    <path
-        android:fillColor="#c25b3f"
-        android:pathData="M54,78 C54,78 30,62 30,46 C30,38 36,33 43,33 C48,33 52,36 54,40 C56,36 60,33 65,33 C72,33 78,38 78,46 C78,62 54,78 54,78 Z" />
-
-    <!-- Subtle highlight on left lobe -->
-    <path
-        android:fillColor="#c86b52"
-        android:pathData="M43,36 C39,36 34,40 34,46 C34,50 38,56 43,60 C40,54 37,48 37,44 C37,40 39,37 43,36 Z" />
-
+  <!-- Subtle highlight on left lobe -->
+  <path
+    android:fillColor="#c86b52"
+    android:pathData="M43,36 C39,36 34,40 34,46 C34,50 38,56 43,60 C40,54 37,48 37,44 C37,40 39,37 43,36 Z"
+  />
 </vector>

@@ -15,56 +15,65 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "VerificationDocumentUrls",
                 table: "Creators",
                 type: "jsonb",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "VerificationNotes",
                 table: "Creators",
                 type: "character varying(1000)",
                 maxLength: 1000,
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "VerificationRejectionReason",
                 table: "Creators",
                 type: "character varying(500)",
                 maxLength: 500,
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "VerificationRequestedAt",
                 table: "Creators",
                 type: "timestamp with time zone",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "VerificationReviewedAt",
                 table: "Creators",
                 type: "timestamp with time zone",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<Guid>(
                 name: "VerificationReviewedByUserId",
                 table: "Creators",
                 type: "uuid",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<int>(
                 name: "VerificationStatus",
                 table: "Creators",
                 type: "integer",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_Creators_VerificationReviewedByUserId",
                 table: "Creators",
-                column: "VerificationReviewedByUserId");
+                column: "VerificationReviewedByUserId"
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_Creators_VerificationStatus",
                 table: "Creators",
-                column: "VerificationStatus");
+                column: "VerificationStatus"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Creators_AspNetUsers_VerificationReviewedByUserId",
@@ -72,7 +81,8 @@ namespace Lyke.Infrastructure.Data.Migrations
                 column: "VerificationReviewedByUserId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
+                onDelete: ReferentialAction.SetNull
+            );
         }
 
         /// <inheritdoc />
@@ -80,43 +90,29 @@ namespace Lyke.Infrastructure.Data.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Creators_AspNetUsers_VerificationReviewedByUserId",
-                table: "Creators");
+                table: "Creators"
+            );
 
             migrationBuilder.DropIndex(
                 name: "IX_Creators_VerificationReviewedByUserId",
-                table: "Creators");
+                table: "Creators"
+            );
 
-            migrationBuilder.DropIndex(
-                name: "IX_Creators_VerificationStatus",
-                table: "Creators");
+            migrationBuilder.DropIndex(name: "IX_Creators_VerificationStatus", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationDocumentUrls",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationDocumentUrls", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationNotes",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationNotes", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationRejectionReason",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationRejectionReason", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationRequestedAt",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationRequestedAt", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationReviewedAt",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationReviewedAt", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationReviewedByUserId",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationReviewedByUserId", table: "Creators");
 
-            migrationBuilder.DropColumn(
-                name: "VerificationStatus",
-                table: "Creators");
+            migrationBuilder.DropColumn(name: "VerificationStatus", table: "Creators");
         }
     }
 }

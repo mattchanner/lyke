@@ -22,7 +22,8 @@ public class MediaProcessingFunction
         IStorageService storageService,
         IImageProcessingService imageProcessingService,
         IVideoProcessingService videoProcessingService,
-        ILogger<MediaProcessingFunction> logger)
+        ILogger<MediaProcessingFunction> logger
+    )
     {
         _dbContext = dbContext;
         _storageService = storageService;
@@ -33,15 +34,20 @@ public class MediaProcessingFunction
 
     [Function("MediaProcessingFunction")]
     public async Task Run(
-        [QueueTrigger("media-processing", Connection = "AzureStorage")] MediaProcessingMessage message,
-        FunctionContext context)
+        [QueueTrigger("media-processing", Connection = "AzureStorage")]
+            MediaProcessingMessage message,
+        FunctionContext context
+    )
     {
         _logger.LogInformation(
             "Processing media {MediaId} for user {UserId}",
-            message.MediaId, message.UserId);
+            message.MediaId,
+            message.UserId
+        );
 
-        var job = await _dbContext.MediaProcessingJobs
-            .FirstOrDefaultAsync(j => j.MediaId == message.MediaId && j.UserId == message.UserId);
+        var job = await _dbContext.MediaProcessingJobs.FirstOrDefaultAsync(j =>
+            j.MediaId == message.MediaId && j.UserId == message.UserId
+        );
 
         if (job == null)
         {
@@ -71,31 +77,36 @@ public class MediaProcessingFunction
     private async Task ProcessImageAsync(MediaProcessingJob job, MediaProcessingMessage message)
     {
         // Download original into a seekable MemoryStream
-        using var originalStream = (MemoryStream)await _storageService.DownloadAsync(message.OriginalBlobPath);
+        using var originalStream = (MemoryStream)
+            await _storageService.DownloadAsync(message.OriginalBlobPath);
 
         // Process standard size
         var processed = await _imageProcessingService.ProcessImageAsync(
             originalStream,
             message.StandardWidth,
             message.StandardHeight,
-            message.ImageQuality);
+            message.ImageQuality
+        );
 
         var standardResult = await _storageService.UploadAsync(
             processed.Content,
             $"{message.BaseBlobPath}_standard.webp",
-            processed.ContentType);
+            processed.ContentType
+        );
 
         // Create thumbnail (reset stream first)
         originalStream.Position = 0;
         var thumbnail = await _imageProcessingService.CreateThumbnailAsync(
             originalStream,
             message.ThumbnailWidth,
-            message.ThumbnailHeight);
+            message.ThumbnailHeight
+        );
 
         var thumbnailResult = await _storageService.UploadAsync(
             thumbnail.Content,
             $"{message.BaseBlobPath}_thumb.jpg",
-            thumbnail.ContentType);
+            thumbnail.ContentType
+        );
 
         job.StandardUrl = standardResult.Url;
         job.ThumbnailUrl = thumbnailResult.Url;
@@ -124,19 +135,24 @@ public class MediaProcessingFunction
             using var thumbnailStream = await _videoProcessingService.ExtractThumbnailAsync(
                 tempPath,
                 message.ThumbnailWidth,
-                message.ThumbnailHeight);
+                message.ThumbnailHeight
+            );
 
             var thumbnailResult = await _storageService.UploadAsync(
                 thumbnailStream,
                 $"{message.BaseBlobPath}_thumb.jpg",
-                "image/jpeg");
+                "image/jpeg"
+            );
 
             job.ThumbnailUrl = thumbnailResult.Url;
             job.Status = MediaProcessingStatus.Completed;
             job.CompletedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Video processing completed for mediaId {MediaId}", message.MediaId);
+            _logger.LogInformation(
+                "Video processing completed for mediaId {MediaId}",
+                message.MediaId
+            );
         }
         finally
         {

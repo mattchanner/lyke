@@ -6,9 +6,7 @@ public record ImportProductsResponse(
     int Updated,
     int Skipped,
     int Failed,
-    List<ImportError> Errors);
+    List<ImportError> Errors
+);
 
-public record ImportError(
-    int Row,
-    string? ExternalSku,
-    string ErrorMessage);
+public record ImportError(int Row, string? ExternalSku, string ErrorMessage);

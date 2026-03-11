@@ -16,36 +16,33 @@ namespace Lyke.Infrastructure.Data.Migrations
                 table: "AspNetUsers",
                 type: "boolean",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "PrivacyPolicyAcceptedAt",
                 table: "AspNetUsers",
                 type: "timestamp with time zone",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "PrivacyPolicyVersion",
                 table: "AspNetUsers",
                 type: "character varying(20)",
                 maxLength: 20,
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "MarketingOptIn",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "MarketingOptIn", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "PrivacyPolicyAcceptedAt",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "PrivacyPolicyAcceptedAt", table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "PrivacyPolicyVersion",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "PrivacyPolicyVersion", table: "AspNetUsers");
         }
     }
 }

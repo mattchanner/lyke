@@ -7,7 +7,7 @@ public record TrackEventRequest(
     Guid? EntityId = null,
     string? EntityType = null,
     Dictionary<string, string>? Properties = null,
-    string? SessionId = null);
+    string? SessionId = null
+);
 
-public record TrackEventBatchRequest(
-    List<TrackEventRequest> Events);
+public record TrackEventBatchRequest(List<TrackEventRequest> Events);

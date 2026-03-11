@@ -14,15 +14,14 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "ThumbnailUrls",
                 table: "Posts",
                 type: "text",
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ThumbnailUrls",
-                table: "Posts");
+            migrationBuilder.DropColumn(name: "ThumbnailUrls", table: "Posts");
         }
     }
 }

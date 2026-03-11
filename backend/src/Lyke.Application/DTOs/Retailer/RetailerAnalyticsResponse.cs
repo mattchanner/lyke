@@ -4,7 +4,8 @@ public record RetailerAnalyticsResponse(
     RetailerAnalyticsSummary Summary,
     List<RetailerDailyMetrics> DailyMetrics,
     List<TopProductAnalytics> TopProducts,
-    List<CategoryBreakdown> CategoryBreakdown);
+    List<CategoryBreakdown> CategoryBreakdown
+);
 
 public record RetailerAnalyticsSummary(
     int TotalViews,
@@ -12,14 +13,16 @@ public record RetailerAnalyticsSummary(
     int TotalConversions,
     decimal TotalRevenue,
     int TotalPosts,
-    string Currency);
+    string Currency
+);
 
 public record RetailerDailyMetrics(
     DateTime Date,
     int Views,
     int Clicks,
     int Conversions,
-    decimal Revenue);
+    decimal Revenue
+);
 
 public record TopProductAnalytics(
     Guid ProductId,
@@ -28,11 +31,13 @@ public record TopProductAnalytics(
     int Views,
     int Clicks,
     int Conversions,
-    decimal Revenue);
+    decimal Revenue
+);
 
 public record CategoryBreakdown(
     string Category,
     int ProductCount,
     int PostCount,
     int Clicks,
-    int Conversions);
+    int Conversions
+);

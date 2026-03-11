@@ -17,5 +17,6 @@ public class BodyProfile : BaseEntity
     public User User { get; set; } = null!;
     public BodyType BodyType { get; set; } = null!;
     public FrameSize? FrameSize { get; set; }
-    public ICollection<BodyProfileFitPreference> FitPreferences { get; set; } = new List<BodyProfileFitPreference>();
+    public ICollection<BodyProfileFitPreference> FitPreferences { get; set; } =
+        new List<BodyProfileFitPreference>();
 }

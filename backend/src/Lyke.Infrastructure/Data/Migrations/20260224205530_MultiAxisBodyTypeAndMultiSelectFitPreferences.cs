@@ -20,16 +20,29 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "FrameSizes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    DisplayOrder = table.Column<int>(type: "integer", nullable: false)
+                    Id = table
+                        .Column<int>(type: "integer", nullable: false)
+                        .Annotation(
+                            "Npgsql:ValueGenerationStrategy",
+                            NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
+                        ),
+                    Name = table.Column<string>(
+                        type: "character varying(100)",
+                        maxLength: 100,
+                        nullable: false
+                    ),
+                    Description = table.Column<string>(
+                        type: "character varying(500)",
+                        maxLength: 500,
+                        nullable: true
+                    ),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_FrameSizes", x => x.Id);
-                });
+                }
+            );
 
             migrationBuilder.InsertData(
                 table: "FrameSizes",
@@ -39,26 +52,36 @@ namespace Lyke.Infrastructure.Data.Migrations
                     { 1, "Shorter stature with a smaller overall frame", 1, "Petite" },
                     { 2, "Medium height and proportional build", 2, "Average" },
                     { 3, "Taller stature with a longer frame", 3, "Tall" },
-                    { 4, "Fuller figure across all areas", 4, "Plus" }
-                });
+                    { 4, "Fuller figure across all areas", 4, "Plus" },
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "BodyProfileFitPreferences",
                 columns: table => new
                 {
                     BodyProfileId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FitPreference = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
+                    FitPreference = table.Column<string>(
+                        type: "character varying(20)",
+                        maxLength: 20,
+                        nullable: false
+                    ),
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_BodyProfileFitPreferences", x => new { x.BodyProfileId, x.FitPreference });
+                    table.PrimaryKey(
+                        "PK_BodyProfileFitPreferences",
+                        x => new { x.BodyProfileId, x.FitPreference }
+                    );
                     table.ForeignKey(
                         name: "FK_BodyProfileFitPreferences_BodyProfiles_BodyProfileId",
                         column: x => x.BodyProfileId,
                         principalTable: "BodyProfiles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             // ── 2. Add FrameSizeId column ───────────────────────────────────
 
@@ -66,13 +89,15 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "FrameSizeId",
                 table: "BodyProfiles",
                 type: "integer",
-                nullable: true);
+                nullable: true
+            );
 
             // ── 3. Drop old index (before data migration) ──────────────────
 
             migrationBuilder.DropIndex(
                 name: "IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg",
-                table: "BodyProfiles");
+                table: "BodyProfiles"
+            );
 
             // ── 4. Data migration: set FrameSizeId from old BodyTypeId ─────
             //
@@ -83,7 +108,8 @@ namespace Lyke.Infrastructure.Data.Migrations
             //   8 (Plus Size) → FrameSize 4 (Plus)
             //   4-7           → NULL (pure shapes, no frame info)
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 UPDATE "BodyProfiles" SET "FrameSizeId" = CASE "BodyTypeId"
                     WHEN 1 THEN 1
                     WHEN 2 THEN 2
@@ -92,16 +118,19 @@ namespace Lyke.Infrastructure.Data.Migrations
                     ELSE NULL
                 END
                 WHERE "BodyTypeId" IS NOT NULL;
-                """);
+                """
+            );
 
             // ── 5. Data migration: copy scalar FitPreference → join table ──
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 INSERT INTO "BodyProfileFitPreferences" ("BodyProfileId", "FitPreference")
                 SELECT "Id", "FitPreference"
                 FROM "BodyProfiles"
                 WHERE "FitPreference" IS NOT NULL;
-                """);
+                """
+            );
 
             // ── 6. Data migration: remap BodyTypeId to new pure-shape IDs ──
             //
@@ -115,7 +144,8 @@ namespace Lyke.Infrastructure.Data.Migrations
             //   7 (Rectangle)  → 4 (Rectangle)
             //   8 (Plus Size)  → 4 (Rectangle)
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 UPDATE "BodyProfiles" SET "BodyTypeId" = CASE "BodyTypeId"
                     WHEN 1 THEN 4
                     WHEN 2 THEN 4
@@ -128,24 +158,16 @@ namespace Lyke.Infrastructure.Data.Migrations
                     ELSE "BodyTypeId"
                 END
                 WHERE "BodyTypeId" IS NOT NULL;
-                """);
+                """
+            );
 
             // ── 7. Now safe to delete unreferenced BodyType rows ───────────
 
-            migrationBuilder.DeleteData(
-                table: "BodyTypes",
-                keyColumn: "Id",
-                keyValue: 6);
+            migrationBuilder.DeleteData(table: "BodyTypes", keyColumn: "Id", keyValue: 6);
 
-            migrationBuilder.DeleteData(
-                table: "BodyTypes",
-                keyColumn: "Id",
-                keyValue: 7);
+            migrationBuilder.DeleteData(table: "BodyTypes", keyColumn: "Id", keyValue: 7);
 
-            migrationBuilder.DeleteData(
-                table: "BodyTypes",
-                keyColumn: "Id",
-                keyValue: 8);
+            migrationBuilder.DeleteData(table: "BodyTypes", keyColumn: "Id", keyValue: 8);
 
             // ── 8. Update BodyType rows 1-5 with new pure-shape names ──────
 
@@ -154,47 +176,54 @@ namespace Lyke.Infrastructure.Data.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Balanced bust and hips with defined waist", "Hourglass" });
+                values: new object[] { "Balanced bust and hips with defined waist", "Hourglass" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 2,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Hips wider than shoulders", "Pear" });
+                values: new object[] { "Hips wider than shoulders", "Pear" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 3,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Fuller midsection with slimmer legs", "Apple" });
+                values: new object[] { "Fuller midsection with slimmer legs", "Apple" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 4,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Balanced proportions, less waist definition", "Rectangle" });
+                values: new object[] { "Balanced proportions, less waist definition", "Rectangle" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 5,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Shoulders wider than hips", "Inverted Triangle" });
+                values: new object[] { "Shoulders wider than hips", "Inverted Triangle" }
+            );
 
             // ── 9. Create new indexes + FK ─────────────────────────────────
 
             migrationBuilder.CreateIndex(
                 name: "IX_BodyProfiles_BodyType_FrameSize_Height_Weight",
                 table: "BodyProfiles",
-                columns: new[] { "BodyTypeId", "FrameSizeId", "HeightCm", "WeightKg" });
+                columns: new[] { "BodyTypeId", "FrameSizeId", "HeightCm", "WeightKg" }
+            );
 
             migrationBuilder.CreateIndex(
                 name: "IX_BodyProfiles_FrameSizeId",
                 table: "BodyProfiles",
-                column: "FrameSizeId");
+                column: "FrameSizeId"
+            );
 
             migrationBuilder.AddForeignKey(
                 name: "FK_BodyProfiles_FrameSizes_FrameSizeId",
@@ -202,7 +231,8 @@ namespace Lyke.Infrastructure.Data.Migrations
                 column: "FrameSizeId",
                 principalTable: "FrameSizes",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Restrict
+            );
         }
 
         /// <inheritdoc />
@@ -212,15 +242,15 @@ namespace Lyke.Infrastructure.Data.Migrations
 
             migrationBuilder.DropForeignKey(
                 name: "FK_BodyProfiles_FrameSizes_FrameSizeId",
-                table: "BodyProfiles");
+                table: "BodyProfiles"
+            );
 
             migrationBuilder.DropIndex(
                 name: "IX_BodyProfiles_BodyType_FrameSize_Height_Weight",
-                table: "BodyProfiles");
+                table: "BodyProfiles"
+            );
 
-            migrationBuilder.DropIndex(
-                name: "IX_BodyProfiles_FrameSizeId",
-                table: "BodyProfiles");
+            migrationBuilder.DropIndex(name: "IX_BodyProfiles_FrameSizeId", table: "BodyProfiles");
 
             // ── 2. Data migration: reverse-remap BodyTypeId ────────────────
             //
@@ -234,7 +264,8 @@ namespace Lyke.Infrastructure.Data.Migrations
             //   (4, NULL)        → 7 (Rectangle)
             //   (4, FrameSize=4) → 8 (Plus Size)
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 UPDATE "BodyProfiles" SET "BodyTypeId" = CASE
                     WHEN "BodyTypeId" = 4 AND "FrameSizeId" = 1 THEN 1
                     WHEN "BodyTypeId" = 4 AND "FrameSizeId" = 2 THEN 2
@@ -247,11 +278,13 @@ namespace Lyke.Infrastructure.Data.Migrations
                     ELSE "BodyTypeId"
                 END
                 WHERE "BodyTypeId" IS NOT NULL;
-                """);
+                """
+            );
 
             // ── 3. Data migration: copy first fit preference back to scalar ─
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 UPDATE "BodyProfiles" bp SET "FitPreference" = sub."FitPreference"
                 FROM (
                     SELECT DISTINCT ON ("BodyProfileId") "BodyProfileId", "FitPreference"
@@ -259,21 +292,18 @@ namespace Lyke.Infrastructure.Data.Migrations
                     ORDER BY "BodyProfileId", "FitPreference"
                 ) sub
                 WHERE bp."Id" = sub."BodyProfileId";
-                """);
+                """
+            );
 
             // ── 4. Drop new tables ─────────────────────────────────────────
 
-            migrationBuilder.DropTable(
-                name: "BodyProfileFitPreferences");
+            migrationBuilder.DropTable(name: "BodyProfileFitPreferences");
 
-            migrationBuilder.DropTable(
-                name: "FrameSizes");
+            migrationBuilder.DropTable(name: "FrameSizes");
 
             // ── 5. Drop FrameSizeId column ─────────────────────────────────
 
-            migrationBuilder.DropColumn(
-                name: "FrameSizeId",
-                table: "BodyProfiles");
+            migrationBuilder.DropColumn(name: "FrameSizeId", table: "BodyProfiles");
 
             // ── 6. Restore old BodyType names ──────────────────────────────
 
@@ -282,35 +312,40 @@ namespace Lyke.Infrastructure.Data.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Shorter stature with proportional frame", "Petite" });
+                values: new object[] { "Shorter stature with proportional frame", "Petite" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 2,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Lean build with narrow shoulders and hips", "Slim" });
+                values: new object[] { "Lean build with narrow shoulders and hips", "Slim" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 3,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Muscular build with broader shoulders", "Athletic" });
+                values: new object[] { "Muscular build with broader shoulders", "Athletic" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 4,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Balanced bust and hips with defined waist", "Hourglass" });
+                values: new object[] { "Balanced bust and hips with defined waist", "Hourglass" }
+            );
 
             migrationBuilder.UpdateData(
                 table: "BodyTypes",
                 keyColumn: "Id",
                 keyValue: 5,
                 columns: new[] { "Description", "Name" },
-                values: new object[] { "Hips wider than shoulders", "Pear" });
+                values: new object[] { "Hips wider than shoulders", "Pear" }
+            );
 
             // ── 7. Re-insert deleted BodyType rows ─────────────────────────
 
@@ -321,15 +356,17 @@ namespace Lyke.Infrastructure.Data.Migrations
                 {
                     { 6, "Fuller midsection with slimmer legs", 6, "Apple" },
                     { 7, "Balanced proportions throughout", 7, "Rectangle" },
-                    { 8, "Fuller figure across all areas", 8, "Plus Size" }
-                });
+                    { 8, "Fuller figure across all areas", 8, "Plus Size" },
+                }
+            );
 
             // ── 8. Restore old index ───────────────────────────────────────
 
             migrationBuilder.CreateIndex(
                 name: "IX_BodyProfiles_BodyTypeId_HeightCm_WeightKg",
                 table: "BodyProfiles",
-                columns: new[] { "BodyTypeId", "HeightCm", "WeightKg" });
+                columns: new[] { "BodyTypeId", "HeightCm", "WeightKg" }
+            );
         }
     }
 }

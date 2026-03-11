@@ -6,4 +6,5 @@ public record CreateCampaignRequest(
     List<string>? TargetBodyTypes,
     List<string>? TargetCategories,
     DateTime StartDate,
-    DateTime EndDate);
+    DateTime EndDate
+);

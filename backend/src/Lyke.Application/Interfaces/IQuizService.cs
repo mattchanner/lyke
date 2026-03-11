@@ -4,5 +4,8 @@ namespace Lyke.Application.Interfaces;
 
 public interface IQuizService
 {
-    Task<QuizResultResponse> CalculateResultAsync(QuizResultRequest request, CancellationToken cancellationToken = default);
+    Task<QuizResultResponse> CalculateResultAsync(
+        QuizResultRequest request,
+        CancellationToken cancellationToken = default
+    );
 }

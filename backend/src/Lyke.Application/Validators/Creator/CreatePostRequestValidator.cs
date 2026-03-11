@@ -17,19 +17,12 @@ public class CreatePostRequestValidator : AbstractValidator<CreatePostRequest>
             .When(x => !string.IsNullOrEmpty(x.Description))
             .WithMessage("Description must be at most 2000 characters");
 
-        RuleFor(x => x.MediaType)
-            .IsInEnum()
-            .WithMessage("Invalid media type");
+        RuleFor(x => x.MediaType).IsInEnum().WithMessage("Invalid media type");
 
-        RuleFor(x => x.MediaUrls)
-            .NotEmpty()
-            .WithMessage("At least one media URL is required");
+        RuleFor(x => x.MediaUrls).NotEmpty().WithMessage("At least one media URL is required");
 
-        RuleFor(x => x.Products)
-            .NotEmpty()
-            .WithMessage("At least one product is required");
+        RuleFor(x => x.Products).NotEmpty().WithMessage("At least one product is required");
 
-        RuleForEach(x => x.Products)
-            .SetValidator(new PostProductRequestValidator());
+        RuleForEach(x => x.Products).SetValidator(new PostProductRequestValidator());
     }
 }

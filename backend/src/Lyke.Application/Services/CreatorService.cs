@@ -26,7 +26,7 @@ public class CreatorService : ICreatorService
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     };
 
     public CreatorService(
@@ -34,7 +34,8 @@ public class CreatorService : ICreatorService
         UserManager<User> userManager,
         IOptions<CreatorSettings> creatorSettings,
         IEmailService emailService,
-        ILogger<CreatorService> logger)
+        ILogger<CreatorService> logger
+    )
     {
         _dbContext = dbContext;
         _userManager = userManager;
@@ -48,7 +49,8 @@ public class CreatorService : ICreatorService
     public async Task<CreatorProfileResponse> RegisterAsCreatorAsync(
         Guid userId,
         RegisterCreatorRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -59,7 +61,10 @@ public class CreatorService : ICreatorService
         var creators = _dbContext.Set<Creator>();
 
         // Check if already a creator
-        var existingCreator = await creators.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
+        var existingCreator = await creators.FirstOrDefaultAsync(
+            c => c.UserId == userId,
+            cancellationToken
+        );
         if (existingCreator != null)
         {
             throw new ValidationException("Creator", "User is already registered as a creator");
@@ -72,9 +77,10 @@ public class CreatorService : ICreatorService
             DisplayName = request.DisplayName,
             Bio = request.Bio,
             IsVerified = false,
-            SocialLinks = request.SocialLinks != null
-                ? JsonSerializer.Serialize(request.SocialLinks, JsonOptions)
-                : null
+            SocialLinks =
+                request.SocialLinks != null
+                    ? JsonSerializer.Serialize(request.SocialLinks, JsonOptions)
+                    : null,
         };
 
         await creators.AddAsync(creator, cancellationToken);
@@ -85,27 +91,35 @@ public class CreatorService : ICreatorService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("User {UserId} registered as creator {CreatorId}", userId, creator.Id);
+        _logger.LogInformation(
+            "User {UserId} registered as creator {CreatorId}",
+            userId,
+            creator.Id
+        );
 
         return await GetCreatorProfileAsync(userId, cancellationToken);
     }
 
     public async Task<CreatorProfileResponse> GetCreatorProfileAsync(
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var postCounts = await _dbContext.Set<Post>()
+        var postCounts = await _dbContext
+            .Set<Post>()
             .Where(p => p.CreatorId == creator.Id)
             .GroupBy(p => p.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
         var totalPosts = postCounts.Sum(x => x.Count);
-        var publishedPosts = postCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
+        var publishedPosts =
+            postCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
         var draftPosts = postCounts.FirstOrDefault(x => x.Status == PostStatus.Draft)?.Count ?? 0;
-        var pendingPosts = postCounts.FirstOrDefault(x => x.Status == PostStatus.PendingReview)?.Count ?? 0;
+        var pendingPosts =
+            postCounts.FirstOrDefault(x => x.Status == PostStatus.PendingReview)?.Count ?? 0;
 
         return new CreatorProfileResponse(
             Id: creator.Id,
@@ -125,7 +139,8 @@ public class CreatorService : ICreatorService
     public async Task<CreatorProfileResponse> UpdateCreatorProfileAsync(
         Guid userId,
         UpdateCreatorProfileRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
@@ -153,27 +168,33 @@ public class CreatorService : ICreatorService
 
     public async Task<PublicCreatorProfileResponse> GetPublicCreatorProfileAsync(
         Guid creatorId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .AsNoTracking()
             .Include(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.BodyType)
             .Include(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.FrameSize)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.FrameSize)
             .Include(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.FitPreferences)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.FitPreferences)
             .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == creatorId, cancellationToken);
 
         if (creator == null)
             throw new NotFoundException("Creator", creatorId);
 
-        var publishedPosts = await _dbContext.Set<Post>()
-            .CountAsync(p => p.CreatorId == creatorId && p.Status == PostStatus.Published, cancellationToken);
+        var publishedPosts = await _dbContext
+            .Set<Post>()
+            .CountAsync(
+                p => p.CreatorId == creatorId && p.Status == PostStatus.Published,
+                cancellationToken
+            );
 
         AnonymizedBodyProfileResponse? bodyProfile = null;
         var bp = creator.User.BodyProfile;
@@ -186,7 +207,11 @@ public class CreatorService : ICreatorService
                 FrameSizeName: bp.FrameSize?.Name,
                 Stature: bp.Stature,
                 Build: bp.Build,
-                BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(bp.Stature, bp.Build, bp.BodyType.Name),
+                BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(
+                    bp.Stature,
+                    bp.Build,
+                    bp.BodyType.Name
+                ),
                 FitPreferences: bp.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
@@ -209,7 +234,8 @@ public class CreatorService : ICreatorService
 
     public async Task<VerificationStatusResponse> GetVerificationStatusAsync(
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
@@ -226,13 +252,17 @@ public class CreatorService : ICreatorService
     public async Task<VerificationStatusResponse> SubmitVerificationAsync(
         Guid userId,
         SubmitVerificationRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
         if (creator.VerificationStatus == VerificationStatus.Pending)
         {
-            throw new ValidationException("Verification", "A verification request is already pending");
+            throw new ValidationException(
+                "Verification",
+                "A verification request is already pending"
+            );
         }
 
         if (creator.VerificationStatus == VerificationStatus.Approved)
@@ -242,7 +272,10 @@ public class CreatorService : ICreatorService
 
         creator.VerificationStatus = VerificationStatus.Pending;
         creator.VerificationNotes = request.Notes;
-        creator.VerificationDocumentUrls = JsonSerializer.Serialize(request.DocumentUrls, JsonOptions);
+        creator.VerificationDocumentUrls = JsonSerializer.Serialize(
+            request.DocumentUrls,
+            JsonOptions
+        );
         creator.VerificationRequestedAt = DateTime.UtcNow;
         creator.VerificationReviewedAt = null;
         creator.VerificationReviewedByUserId = null;
@@ -259,11 +292,15 @@ public class CreatorService : ICreatorService
 
     #region Verification (Admin)
 
-    public async Task<(IReadOnlyList<PendingVerificationResponse> Verifications, PaginationMeta Meta)> GetPendingVerificationsAsync(
+    public async Task<(
+        IReadOnlyList<PendingVerificationResponse> Verifications,
+        PaginationMeta Meta
+    )> GetPendingVerificationsAsync(
         VerificationStatus? status,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var query = _dbContext.Set<Creator>().AsQueryable();
 
@@ -287,38 +324,48 @@ public class CreatorService : ICreatorService
 
         var creatorIds = creators.Select(c => c.Id).ToList();
 
-        var postCounts = await _dbContext.Set<Post>()
+        var postCounts = await _dbContext
+            .Set<Post>()
             .Where(p => creatorIds.Contains(p.CreatorId))
             .GroupBy(p => new { p.CreatorId, p.Status })
-            .Select(g => new { g.Key.CreatorId, g.Key.Status, Count = g.Count() })
+            .Select(g => new
+            {
+                g.Key.CreatorId,
+                g.Key.Status,
+                Count = g.Count(),
+            })
             .ToListAsync(cancellationToken);
 
-        var responses = creators.Select(c =>
-        {
-            var creatorPostCounts = postCounts.Where(pc => pc.CreatorId == c.Id).ToList();
-            var totalPosts = creatorPostCounts.Sum(x => x.Count);
-            var publishedPosts = creatorPostCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
+        var responses = creators
+            .Select(c =>
+            {
+                var creatorPostCounts = postCounts.Where(pc => pc.CreatorId == c.Id).ToList();
+                var totalPosts = creatorPostCounts.Sum(x => x.Count);
+                var publishedPosts =
+                    creatorPostCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count
+                    ?? 0;
 
-            return new PendingVerificationResponse(
-                CreatorId: c.Id,
-                DisplayName: c.DisplayName,
-                Bio: c.Bio,
-                SocialLinks: ParseSocialLinks(c.SocialLinks),
-                Status: c.VerificationStatus,
-                Notes: c.VerificationNotes,
-                DocumentUrls: ParseDocumentUrls(c.VerificationDocumentUrls),
-                RequestedAt: c.VerificationRequestedAt,
-                TotalPosts: totalPosts,
-                PublishedPosts: publishedPosts,
-                CreatedAt: c.CreatedAt
-            );
-        }).ToList();
+                return new PendingVerificationResponse(
+                    CreatorId: c.Id,
+                    DisplayName: c.DisplayName,
+                    Bio: c.Bio,
+                    SocialLinks: ParseSocialLinks(c.SocialLinks),
+                    Status: c.VerificationStatus,
+                    Notes: c.VerificationNotes,
+                    DocumentUrls: ParseDocumentUrls(c.VerificationDocumentUrls),
+                    RequestedAt: c.VerificationRequestedAt,
+                    TotalPosts: totalPosts,
+                    PublishedPosts: publishedPosts,
+                    CreatedAt: c.CreatedAt
+                );
+            })
+            .ToList();
 
         var meta = new PaginationMeta
         {
             Page = page,
             PageSize = pageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (responses, meta);
@@ -326,9 +373,11 @@ public class CreatorService : ICreatorService
 
     public async Task<PendingVerificationResponse> GetVerificationDetailsAsync(
         Guid creatorId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .FirstOrDefaultAsync(c => c.Id == creatorId, cancellationToken);
 
         if (creator == null)
@@ -336,14 +385,16 @@ public class CreatorService : ICreatorService
             throw new NotFoundException(nameof(Creator), creatorId);
         }
 
-        var postCounts = await _dbContext.Set<Post>()
+        var postCounts = await _dbContext
+            .Set<Post>()
             .Where(p => p.CreatorId == creatorId)
             .GroupBy(p => p.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
         var totalPosts = postCounts.Sum(x => x.Count);
-        var publishedPosts = postCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
+        var publishedPosts =
+            postCounts.FirstOrDefault(x => x.Status == PostStatus.Published)?.Count ?? 0;
 
         return new PendingVerificationResponse(
             CreatorId: creator.Id,
@@ -364,9 +415,11 @@ public class CreatorService : ICreatorService
         Guid adminUserId,
         Guid creatorId,
         ReviewVerificationRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .FirstOrDefaultAsync(c => c.Id == creatorId, cancellationToken);
 
         if (creator == null)
@@ -376,7 +429,10 @@ public class CreatorService : ICreatorService
 
         if (creator.VerificationStatus != VerificationStatus.Pending)
         {
-            throw new ValidationException("Verification", "Only pending verifications can be reviewed");
+            throw new ValidationException(
+                "Verification",
+                "Only pending verifications can be reviewed"
+            );
         }
 
         creator.VerificationReviewedAt = DateTime.UtcNow;
@@ -388,7 +444,11 @@ public class CreatorService : ICreatorService
             creator.IsVerified = true;
             creator.VerificationRejectionReason = null;
 
-            _logger.LogInformation("Admin {AdminUserId} approved verification for creator {CreatorId}", adminUserId, creatorId);
+            _logger.LogInformation(
+                "Admin {AdminUserId} approved verification for creator {CreatorId}",
+                adminUserId,
+                creatorId
+            );
         }
         else
         {
@@ -396,8 +456,12 @@ public class CreatorService : ICreatorService
             creator.IsVerified = false;
             creator.VerificationRejectionReason = request.RejectionReason;
 
-            _logger.LogInformation("Admin {AdminUserId} rejected verification for creator {CreatorId}: {Reason}",
-                adminUserId, creatorId, request.RejectionReason);
+            _logger.LogInformation(
+                "Admin {AdminUserId} rejected verification for creator {CreatorId}: {Reason}",
+                adminUserId,
+                creatorId,
+                request.RejectionReason
+            );
         }
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -410,7 +474,8 @@ public class CreatorService : ICreatorService
                 creator.DisplayName,
                 request.Approve,
                 request.RejectionReason,
-                cancellationToken);
+                cancellationToken
+            );
         }
 
         return new VerificationStatusResponse(
@@ -430,40 +495,58 @@ public class CreatorService : ICreatorService
     public async Task<CreatorPostResponse> CreatePostAsync(
         Guid userId,
         CreatePostRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
         // Check draft post limit
-        var draftCount = await _dbContext.Set<Post>()
-            .CountAsync(p => p.CreatorId == creator.Id && p.Status == PostStatus.Draft, cancellationToken);
+        var draftCount = await _dbContext
+            .Set<Post>()
+            .CountAsync(
+                p => p.CreatorId == creator.Id && p.Status == PostStatus.Draft,
+                cancellationToken
+            );
 
         if (draftCount >= _creatorSettings.MaxDraftPosts)
         {
-            throw new ValidationException("Post", $"Maximum draft posts limit ({_creatorSettings.MaxDraftPosts}) reached");
+            throw new ValidationException(
+                "Post",
+                $"Maximum draft posts limit ({_creatorSettings.MaxDraftPosts}) reached"
+            );
         }
 
         // Validate media count
         if (request.MediaUrls.Count > _creatorSettings.MaxMediaPerPost)
         {
-            throw new ValidationException("MediaUrls", $"Maximum {_creatorSettings.MaxMediaPerPost} media items allowed");
+            throw new ValidationException(
+                "MediaUrls",
+                $"Maximum {_creatorSettings.MaxMediaPerPost} media items allowed"
+            );
         }
 
         // Validate products count
         if (request.Products.Count > _creatorSettings.MaxProductsPerPost)
         {
-            throw new ValidationException("Products", $"Maximum {_creatorSettings.MaxProductsPerPost} products allowed");
+            throw new ValidationException(
+                "Products",
+                $"Maximum {_creatorSettings.MaxProductsPerPost} products allowed"
+            );
         }
 
         // Validate products exist and are active
         var productIds = request.Products.Select(p => p.ProductId).ToList();
-        var products = await _dbContext.Set<Product>()
+        var products = await _dbContext
+            .Set<Product>()
             .Where(p => productIds.Contains(p.Id) && p.IsActive)
             .ToListAsync(cancellationToken);
 
         if (products.Count != productIds.Count)
         {
-            throw new ValidationException("Products", "One or more products are invalid or inactive");
+            throw new ValidationException(
+                "Products",
+                "One or more products are invalid or inactive"
+            );
         }
 
         var post = new Post
@@ -474,10 +557,11 @@ public class CreatorService : ICreatorService
             Description = request.Description,
             MediaType = request.MediaType,
             MediaUrls = JsonSerializer.Serialize(request.MediaUrls, JsonOptions),
-            ThumbnailUrls = request.ThumbnailUrls != null
-                ? JsonSerializer.Serialize(request.ThumbnailUrls, JsonOptions)
-                : null,
-            Status = PostStatus.Draft
+            ThumbnailUrls =
+                request.ThumbnailUrls != null
+                    ? JsonSerializer.Serialize(request.ThumbnailUrls, JsonOptions)
+                    : null,
+            Status = PostStatus.Draft,
         };
 
         await _dbContext.Set<Post>().AddAsync(post, cancellationToken);
@@ -496,12 +580,17 @@ public class CreatorService : ICreatorService
         Guid userId,
         Guid postId,
         UpdatePostRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var post = await _dbContext.Set<Post>()
-            .FirstOrDefaultAsync(p => p.Id == postId && p.CreatorId == creator.Id, cancellationToken);
+        var post = await _dbContext
+            .Set<Post>()
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.CreatorId == creator.Id,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -532,7 +621,10 @@ public class CreatorService : ICreatorService
         {
             if (request.MediaUrls.Count > _creatorSettings.MaxMediaPerPost)
             {
-                throw new ValidationException("MediaUrls", $"Maximum {_creatorSettings.MaxMediaPerPost} media items allowed");
+                throw new ValidationException(
+                    "MediaUrls",
+                    $"Maximum {_creatorSettings.MaxMediaPerPost} media items allowed"
+                );
             }
             post.MediaUrls = JsonSerializer.Serialize(request.MediaUrls, JsonOptions);
         }
@@ -546,27 +638,36 @@ public class CreatorService : ICreatorService
         {
             if (request.Products.Count > _creatorSettings.MaxProductsPerPost)
             {
-                throw new ValidationException("Products", $"Maximum {_creatorSettings.MaxProductsPerPost} products allowed");
+                throw new ValidationException(
+                    "Products",
+                    $"Maximum {_creatorSettings.MaxProductsPerPost} products allowed"
+                );
             }
 
             // Validate products exist and are active
             var productIds = request.Products.Select(p => p.ProductId).ToList();
-            var products = await _dbContext.Set<Product>()
+            var products = await _dbContext
+                .Set<Product>()
                 .Where(p => productIds.Contains(p.Id) && p.IsActive)
                 .ToListAsync(cancellationToken);
 
             if (products.Count != productIds.Count)
             {
-                throw new ValidationException("Products", "One or more products are invalid or inactive");
+                throw new ValidationException(
+                    "Products",
+                    "One or more products are invalid or inactive"
+                );
             }
 
             // Remove existing post products and fit tags
-            var existingPostProducts = await _dbContext.Set<PostProduct>()
+            var existingPostProducts = await _dbContext
+                .Set<PostProduct>()
                 .Where(pp => pp.PostId == postId)
                 .ToListAsync(cancellationToken);
 
             var existingPostProductIds = existingPostProducts.Select(pp => pp.Id).ToList();
-            var existingFitTags = await _dbContext.Set<PostFitTag>()
+            var existingFitTags = await _dbContext
+                .Set<PostFitTag>()
                 .Where(pft => existingPostProductIds.Contains(pft.PostProductId))
                 .ToListAsync(cancellationToken);
 
@@ -587,12 +688,17 @@ public class CreatorService : ICreatorService
     public async Task DeletePostAsync(
         Guid userId,
         Guid postId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var post = await _dbContext.Set<Post>()
-            .FirstOrDefaultAsync(p => p.Id == postId && p.CreatorId == creator.Id, cancellationToken);
+        var post = await _dbContext
+            .Set<Post>()
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.CreatorId == creator.Id,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -600,26 +706,30 @@ public class CreatorService : ICreatorService
         }
 
         // Remove fit tags
-        var postProductIds = await _dbContext.Set<PostProduct>()
+        var postProductIds = await _dbContext
+            .Set<PostProduct>()
             .Where(pp => pp.PostId == postId)
             .Select(pp => pp.Id)
             .ToListAsync(cancellationToken);
 
-        var fitTags = await _dbContext.Set<PostFitTag>()
+        var fitTags = await _dbContext
+            .Set<PostFitTag>()
             .Where(pft => postProductIds.Contains(pft.PostProductId))
             .ToListAsync(cancellationToken);
 
         _dbContext.Set<PostFitTag>().RemoveRange(fitTags);
 
         // Remove post products
-        var postProducts = await _dbContext.Set<PostProduct>()
+        var postProducts = await _dbContext
+            .Set<PostProduct>()
             .Where(pp => pp.PostId == postId)
             .ToListAsync(cancellationToken);
 
         _dbContext.Set<PostProduct>().RemoveRange(postProducts);
 
         // Remove engagements
-        var engagements = await _dbContext.Set<Engagement>()
+        var engagements = await _dbContext
+            .Set<Engagement>()
             .Where(e => e.PostId == postId)
             .ToListAsync(cancellationToken);
 
@@ -636,11 +746,13 @@ public class CreatorService : ICreatorService
     public async Task<CreatorPostResponse> GetPostAsync(
         Guid userId,
         Guid postId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var post = await _dbContext.Set<Post>()
+        var post = await _dbContext
+            .Set<Post>()
             .AsNoTracking()
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
@@ -651,7 +763,10 @@ public class CreatorService : ICreatorService
             .Include(p => p.Engagements)
             .Include(p => p.ClickEvents)
             .AsSplitQuery()
-            .FirstOrDefaultAsync(p => p.Id == postId && p.CreatorId == creator.Id, cancellationToken);
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.CreatorId == creator.Id,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -661,15 +776,18 @@ public class CreatorService : ICreatorService
         return MapToCreatorPostResponse(post);
     }
 
-    public async Task<(IReadOnlyList<CreatorPostResponse> Posts, PaginationMeta Meta)> GetPostsAsync(
+    public async Task<(
+        IReadOnlyList<CreatorPostResponse> Posts,
+        PaginationMeta Meta
+    )> GetPostsAsync(
         Guid userId,
         CreatorPostsRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var query = _dbContext.Set<Post>()
-            .Where(p => p.CreatorId == creator.Id);
+        var query = _dbContext.Set<Post>().Where(p => p.CreatorId == creator.Id);
 
         if (request.Status.HasValue)
         {
@@ -700,7 +818,7 @@ public class CreatorService : ICreatorService
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (postResponses, meta);
@@ -709,13 +827,18 @@ public class CreatorService : ICreatorService
     public async Task<CreatorPostResponse> SubmitPostForReviewAsync(
         Guid userId,
         Guid postId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var post = await _dbContext.Set<Post>()
+        var post = await _dbContext
+            .Set<Post>()
             .Include(p => p.PostProducts)
-            .FirstOrDefaultAsync(p => p.Id == postId && p.CreatorId == creator.Id, cancellationToken);
+            .FirstOrDefaultAsync(
+                p => p.Id == postId && p.CreatorId == creator.Id,
+                cancellationToken
+            );
 
         if (post == null)
         {
@@ -745,7 +868,11 @@ public class CreatorService : ICreatorService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Creator {CreatorId} submitted post {PostId} for review", creator.Id, postId);
+        _logger.LogInformation(
+            "Creator {CreatorId} submitted post {PostId} for review",
+            creator.Id,
+            postId
+        );
 
         return await GetPostAsync(userId, postId, cancellationToken);
     }
@@ -757,7 +884,8 @@ public class CreatorService : ICreatorService
     public async Task<CreatorAnalyticsResponse> GetAnalyticsAsync(
         Guid userId,
         CreatorAnalyticsRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
@@ -765,14 +893,18 @@ public class CreatorService : ICreatorService
         var endDate = request.EndDate ?? DateTime.UtcNow;
 
         // Get post IDs for this creator
-        var postIds = await _dbContext.Set<Post>()
+        var postIds = await _dbContext
+            .Set<Post>()
             .Where(p => p.CreatorId == creator.Id)
             .Select(p => p.Id)
             .ToListAsync(cancellationToken);
 
         // Aggregate engagements
-        var engagements = await _dbContext.Set<Engagement>()
-            .Where(e => postIds.Contains(e.PostId) && e.CreatedAt >= startDate && e.CreatedAt <= endDate)
+        var engagements = await _dbContext
+            .Set<Engagement>()
+            .Where(e =>
+                postIds.Contains(e.PostId) && e.CreatedAt >= startDate && e.CreatedAt <= endDate
+            )
             .ToListAsync(cancellationToken);
 
         var totalViews = engagements.Count(e => e.Type == EngagementType.View);
@@ -781,15 +913,21 @@ public class CreatorService : ICreatorService
         var totalShares = engagements.Count(e => e.Type == EngagementType.Share);
 
         // Aggregate clicks
-        var clicks = await _dbContext.Set<ClickEvent>()
-            .Where(c => postIds.Contains(c.PostId) && c.CreatedAt >= startDate && c.CreatedAt <= endDate)
+        var clicks = await _dbContext
+            .Set<ClickEvent>()
+            .Where(c =>
+                postIds.Contains(c.PostId) && c.CreatedAt >= startDate && c.CreatedAt <= endDate
+            )
             .ToListAsync(cancellationToken);
 
         var totalClicks = clicks.Count;
 
         // Aggregate earnings
-        var earnings = await _dbContext.Set<CreatorEarning>()
-            .Where(e => e.CreatorId == creator.Id && e.CreatedAt >= startDate && e.CreatedAt <= endDate)
+        var earnings = await _dbContext
+            .Set<CreatorEarning>()
+            .Where(e =>
+                e.CreatorId == creator.Id && e.CreatedAt >= startDate && e.CreatedAt <= endDate
+            )
             .ToListAsync(cancellationToken);
 
         var totalEarnings = earnings.Sum(e => e.Amount);
@@ -805,13 +943,15 @@ public class CreatorService : ICreatorService
         );
 
         // Top posts by engagement
-        var posts = await _dbContext.Set<Post>()
+        var posts = await _dbContext
+            .Set<Post>()
             .Where(p => p.CreatorId == creator.Id && p.Status == PostStatus.Published)
             .Include(p => p.Engagements)
             .Include(p => p.ClickEvents)
             .ToListAsync(cancellationToken);
 
-        var postEarnings = await _dbContext.Set<CreatorEarning>()
+        var postEarnings = await _dbContext
+            .Set<CreatorEarning>()
             .Where(e => e.CreatorId == creator.Id)
             .Include(e => e.ClickEvent)
             .ToListAsync(cancellationToken);
@@ -831,12 +971,17 @@ public class CreatorService : ICreatorService
             .ToList();
 
         // Daily metrics
-        var dailyMetrics = Enumerable.Range(0, (endDate - startDate).Days + 1)
+        var dailyMetrics = Enumerable
+            .Range(0, (endDate - startDate).Days + 1)
             .Select(i => startDate.AddDays(i).Date)
             .Select(date => new DailyMetrics(
                 Date: date,
-                Views: engagements.Count(e => e.Type == EngagementType.View && e.CreatedAt.Date == date),
-                Likes: engagements.Count(e => e.Type == EngagementType.Like && e.CreatedAt.Date == date),
+                Views: engagements.Count(e =>
+                    e.Type == EngagementType.View && e.CreatedAt.Date == date
+                ),
+                Likes: engagements.Count(e =>
+                    e.Type == EngagementType.Like && e.CreatedAt.Date == date
+                ),
                 Clicks: clicks.Count(c => c.CreatedAt.Date == date),
                 Earnings: earnings.Where(e => e.CreatedAt.Date == date).Sum(e => e.Amount)
             ))
@@ -847,17 +992,23 @@ public class CreatorService : ICreatorService
 
     public async Task<EarningsSummaryResponse> GetEarningsSummaryAsync(
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var earnings = await _dbContext.Set<CreatorEarning>()
+        var earnings = await _dbContext
+            .Set<CreatorEarning>()
             .Where(e => e.CreatorId == creator.Id)
             .ToListAsync(cancellationToken);
 
         var totalEarnings = earnings.Sum(e => e.Amount);
-        var pendingEarnings = earnings.Where(e => e.Status == EarningStatus.Pending).Sum(e => e.Amount);
-        var confirmedEarnings = earnings.Where(e => e.Status == EarningStatus.Confirmed).Sum(e => e.Amount);
+        var pendingEarnings = earnings
+            .Where(e => e.Status == EarningStatus.Pending)
+            .Sum(e => e.Amount);
+        var confirmedEarnings = earnings
+            .Where(e => e.Status == EarningStatus.Confirmed)
+            .Sum(e => e.Amount);
         var paidEarnings = earnings.Where(e => e.Status == EarningStatus.Paid).Sum(e => e.Amount);
 
         var eligibleForPayout = confirmedEarnings >= _creatorSettings.MinPayoutThreshold;
@@ -873,15 +1024,18 @@ public class CreatorService : ICreatorService
         );
     }
 
-    public async Task<(IReadOnlyList<EarningDetailResponse> Earnings, PaginationMeta Meta)> GetEarningsHistoryAsync(
+    public async Task<(
+        IReadOnlyList<EarningDetailResponse> Earnings,
+        PaginationMeta Meta
+    )> GetEarningsHistoryAsync(
         Guid userId,
         EarningsHistoryRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var creator = await GetCreatorByUserIdAsync(userId, cancellationToken);
 
-        var query = _dbContext.Set<CreatorEarning>()
-            .Where(e => e.CreatorId == creator.Id);
+        var query = _dbContext.Set<CreatorEarning>().Where(e => e.CreatorId == creator.Id);
 
         if (request.Status.HasValue)
         {
@@ -911,25 +1065,27 @@ public class CreatorService : ICreatorService
             .Take(request.PageSize)
             .ToListAsync(cancellationToken);
 
-        var earningResponses = earnings.Select(e => new EarningDetailResponse(
-            Id: e.Id,
-            EarningType: e.EarningType,
-            Amount: e.Amount,
-            Currency: e.Currency,
-            Status: e.Status,
-            PostId: e.ClickEvent.PostId,
-            PostTitle: e.ClickEvent.Post.Title,
-            ProductId: e.ClickEvent.PostProduct.ProductId,
-            ProductName: e.ClickEvent.PostProduct.Product.Name,
-            PaidAt: e.PaidAt,
-            CreatedAt: e.CreatedAt
-        )).ToList();
+        var earningResponses = earnings
+            .Select(e => new EarningDetailResponse(
+                Id: e.Id,
+                EarningType: e.EarningType,
+                Amount: e.Amount,
+                Currency: e.Currency,
+                Status: e.Status,
+                PostId: e.ClickEvent.PostId,
+                PostTitle: e.ClickEvent.Post.Title,
+                ProductId: e.ClickEvent.PostProduct.ProductId,
+                ProductName: e.ClickEvent.PostProduct.Product.Name,
+                PaidAt: e.PaidAt,
+                CreatedAt: e.CreatedAt
+            ))
+            .ToList();
 
         var meta = new PaginationMeta
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (earningResponses, meta);
@@ -939,9 +1095,13 @@ public class CreatorService : ICreatorService
 
     #region Private Methods
 
-    private async Task<Creator> GetCreatorByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+    private async Task<Creator> GetCreatorByUserIdAsync(
+        Guid userId,
+        CancellationToken cancellationToken
+    )
     {
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
 
         if (creator == null)
@@ -955,7 +1115,8 @@ public class CreatorService : ICreatorService
     private async Task CreatePostProductsAsync(
         Guid postId,
         List<PostProductRequest> productRequests,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var fitTags = _dbContext.Set<FitTag>();
         var postProducts = _dbContext.Set<PostProduct>();
@@ -971,7 +1132,7 @@ public class CreatorService : ICreatorService
                 SizeWorn = productRequest.SizeWorn,
                 FitRating = productRequest.FitRating,
                 FitNotes = productRequest.FitNotes,
-                StylingNotes = productRequest.StylingNotes
+                StylingNotes = productRequest.StylingNotes,
             };
 
             await postProducts.AddAsync(postProduct, cancellationToken);
@@ -990,7 +1151,7 @@ public class CreatorService : ICreatorService
                     var postFitTag = new PostFitTag
                     {
                         PostProductId = postProduct.Id,
-                        FitTagId = fitTagId
+                        FitTagId = fitTagId,
                     };
 
                     await postFitTags.AddAsync(postFitTag, cancellationToken);
@@ -1001,20 +1162,22 @@ public class CreatorService : ICreatorService
 
     private static CreatorPostResponse MapToCreatorPostResponse(Post post)
     {
-        var products = post.PostProducts.Select(pp => new CreatorPostProductResponse(
-            Id: pp.Id,
-            ProductId: pp.ProductId,
-            ProductName: pp.Product.Name,
-            ProductImage: ParseMediaUrls(pp.Product.ImageUrls).FirstOrDefault(),
-            ProductPrice: pp.Product.Price,
-            ProductCurrency: pp.Product.Currency,
-            RetailerName: pp.Product.Retailer.Name,
-            SizeWorn: pp.SizeWorn,
-            FitRating: pp.FitRating,
-            FitNotes: pp.FitNotes,
-            StylingNotes: pp.StylingNotes,
-            FitTags: pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
-        )).ToList();
+        var products = post
+            .PostProducts.Select(pp => new CreatorPostProductResponse(
+                Id: pp.Id,
+                ProductId: pp.ProductId,
+                ProductName: pp.Product.Name,
+                ProductImage: ParseMediaUrls(pp.Product.ImageUrls).FirstOrDefault(),
+                ProductPrice: pp.Product.Price,
+                ProductCurrency: pp.Product.Currency,
+                RetailerName: pp.Product.Retailer.Name,
+                SizeWorn: pp.SizeWorn,
+                FitRating: pp.FitRating,
+                FitNotes: pp.FitNotes,
+                StylingNotes: pp.StylingNotes,
+                FitTags: pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
+            ))
+            .ToList();
 
         var engagements = new CreatorPostEngagementResponse(
             Views: post.Engagements.Count(e => e.Type == EngagementType.View),
@@ -1050,7 +1213,8 @@ public class CreatorService : ICreatorService
 
         try
         {
-            return JsonSerializer.Deserialize<List<string>>(json, JsonOptions) ?? new List<string>();
+            return JsonSerializer.Deserialize<List<string>>(json, JsonOptions)
+                ?? new List<string>();
         }
         catch
         {

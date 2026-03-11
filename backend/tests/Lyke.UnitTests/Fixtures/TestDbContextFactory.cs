@@ -1,7 +1,6 @@
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
 using Lyke.Infrastructure.Data;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,11 +35,41 @@ public static class TestDbContextFactory
         if (!context.BodyTypes.Any())
         {
             context.BodyTypes.AddRange(
-                new BodyType { Id = 1, Name = "Hourglass", Description = "Balanced bust and hips with defined waist", DisplayOrder = 1 },
-                new BodyType { Id = 2, Name = "Pear", Description = "Hips wider than shoulders", DisplayOrder = 2 },
-                new BodyType { Id = 3, Name = "Apple", Description = "Fuller midsection with slimmer legs", DisplayOrder = 3 },
-                new BodyType { Id = 4, Name = "Rectangle", Description = "Balanced proportions, less waist definition", DisplayOrder = 4 },
-                new BodyType { Id = 5, Name = "Inverted Triangle", Description = "Shoulders wider than hips", DisplayOrder = 5 }
+                new BodyType
+                {
+                    Id = 1,
+                    Name = "Hourglass",
+                    Description = "Balanced bust and hips with defined waist",
+                    DisplayOrder = 1,
+                },
+                new BodyType
+                {
+                    Id = 2,
+                    Name = "Pear",
+                    Description = "Hips wider than shoulders",
+                    DisplayOrder = 2,
+                },
+                new BodyType
+                {
+                    Id = 3,
+                    Name = "Apple",
+                    Description = "Fuller midsection with slimmer legs",
+                    DisplayOrder = 3,
+                },
+                new BodyType
+                {
+                    Id = 4,
+                    Name = "Rectangle",
+                    Description = "Balanced proportions, less waist definition",
+                    DisplayOrder = 4,
+                },
+                new BodyType
+                {
+                    Id = 5,
+                    Name = "Inverted Triangle",
+                    Description = "Shoulders wider than hips",
+                    DisplayOrder = 5,
+                }
             );
         }
 
@@ -48,11 +77,36 @@ public static class TestDbContextFactory
         if (!context.FitTags.Any())
         {
             context.FitTags.AddRange(
-                new FitTag { Id = 1, Name = "True to Size", Category = "Fit" },
-                new FitTag { Id = 2, Name = "Runs Small", Category = "Fit" },
-                new FitTag { Id = 3, Name = "Runs Large", Category = "Fit" },
-                new FitTag { Id = 4, Name = "Stretchy", Category = "Material" },
-                new FitTag { Id = 5, Name = "Comfortable", Category = "Feel" }
+                new FitTag
+                {
+                    Id = 1,
+                    Name = "True to Size",
+                    Category = "Fit",
+                },
+                new FitTag
+                {
+                    Id = 2,
+                    Name = "Runs Small",
+                    Category = "Fit",
+                },
+                new FitTag
+                {
+                    Id = 3,
+                    Name = "Runs Large",
+                    Category = "Fit",
+                },
+                new FitTag
+                {
+                    Id = 4,
+                    Name = "Stretchy",
+                    Category = "Material",
+                },
+                new FitTag
+                {
+                    Id = 5,
+                    Name = "Comfortable",
+                    Category = "Feel",
+                }
             );
         }
 
@@ -63,7 +117,8 @@ public static class TestDbContextFactory
         Guid? id = null,
         string? email = null,
         UserType userType = UserType.Shopper,
-        bool isActive = true)
+        bool isActive = true
+    )
     {
         id ??= Guid.NewGuid();
         email ??= $"test-{id}@test.com";
@@ -78,7 +133,7 @@ public static class TestDbContextFactory
             UserType = userType,
             IsActive = isActive,
             CreatedAt = DateTime.UtcNow,
-            SecurityStamp = Guid.NewGuid().ToString()
+            SecurityStamp = Guid.NewGuid().ToString(),
         };
     }
 
@@ -86,7 +141,8 @@ public static class TestDbContextFactory
         Guid? id = null,
         Guid? userId = null,
         string displayName = "Test Creator",
-        bool isVerified = false)
+        bool isVerified = false
+    )
     {
         return new Creator
         {
@@ -94,21 +150,22 @@ public static class TestDbContextFactory
             UserId = userId ?? Guid.NewGuid(),
             DisplayName = displayName,
             Bio = "Test bio",
-            IsVerified = isVerified
+            IsVerified = isVerified,
         };
     }
 
     public static Retailer CreateTestRetailer(
         Guid? id = null,
         string name = "Test Retailer",
-        bool isActive = true)
+        bool isActive = true
+    )
     {
         return new Retailer
         {
             Id = id ?? Guid.NewGuid(),
             Name = name,
             WebsiteUrl = "https://test-retailer.com",
-            IsActive = isActive
+            IsActive = isActive,
         };
     }
 
@@ -117,7 +174,8 @@ public static class TestDbContextFactory
         Guid? retailerId = null,
         string name = "Test Product",
         decimal price = 99.99m,
-        bool isActive = true)
+        bool isActive = true
+    )
     {
         return new Product
         {
@@ -130,7 +188,7 @@ public static class TestDbContextFactory
             Price = price,
             Currency = "USD",
             ProductUrl = "https://test-retailer.com/product/1",
-            IsActive = isActive
+            IsActive = isActive,
         };
     }
 
@@ -138,7 +196,8 @@ public static class TestDbContextFactory
         Guid? id = null,
         Guid? creatorId = null,
         PostStatus status = PostStatus.Draft,
-        string? title = null)
+        string? title = null
+    )
     {
         return new Post
         {
@@ -149,7 +208,7 @@ public static class TestDbContextFactory
             MediaType = MediaType.Image,
             MediaUrls = "[\"https://example.com/image1.jpg\"]",
             Status = status,
-            PublishedAt = status == PostStatus.Published ? DateTime.UtcNow : null
+            PublishedAt = status == PostStatus.Published ? DateTime.UtcNow : null,
         };
     }
 
@@ -157,7 +216,8 @@ public static class TestDbContextFactory
         Guid? id = null,
         Guid? postId = null,
         Guid? productId = null,
-        string sizeWorn = "M")
+        string sizeWorn = "M"
+    )
     {
         return new PostProduct
         {
@@ -166,7 +226,7 @@ public static class TestDbContextFactory
             ProductId = productId ?? Guid.NewGuid(),
             SizeWorn = sizeWorn,
             FitRating = FitRating.TrueToSize,
-            FitNotes = "Fits well"
+            FitNotes = "Fits well",
         };
     }
 
@@ -175,7 +235,8 @@ public static class TestDbContextFactory
         Guid? userId = null,
         int heightCm = 170,
         decimal weightKg = 70m,
-        int bodyTypeId = 1)
+        int bodyTypeId = 1
+    )
     {
         return new BodyProfile
         {
@@ -184,7 +245,7 @@ public static class TestDbContextFactory
             HeightCm = heightCm,
             WeightKg = weightKg,
             BodyTypeId = bodyTypeId,
-            FitPreference = FitPreference.Regular
+            FitPreference = FitPreference.Regular,
         };
     }
 }

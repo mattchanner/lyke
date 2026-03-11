@@ -10,5 +10,5 @@ public enum AnalyticsEventType
     ProductConvert = 5,
     FeedFilter = 6,
     SearchExecute = 7,
-    ProfileComplete = 8
+    ProfileComplete = 8,
 }

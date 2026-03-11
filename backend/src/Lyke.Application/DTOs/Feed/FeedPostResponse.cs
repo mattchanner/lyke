@@ -41,9 +41,4 @@ public record PostProductSummaryResponse(
     List<string> FitTags
 );
 
-public record EngagementCountsResponse(
-    int Views,
-    int Likes,
-    int Saves,
-    int Shares
-);
+public record EngagementCountsResponse(int Views, int Likes, int Saves, int Shares);

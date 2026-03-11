@@ -10,7 +10,10 @@ public class ExceptionHandlingMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionHandlingMiddleware> logger
+    )
     {
         _next = next;
         _logger = logger;
@@ -32,10 +35,13 @@ public class ExceptionHandlingMiddleware
     {
         var (statusCode, response) = exception switch
         {
-            NotFoundException ex => (HttpStatusCode.NotFound,
-                ApiResponse.Fail("NOT_FOUND", ex.Message)),
+            NotFoundException ex => (
+                HttpStatusCode.NotFound,
+                ApiResponse.Fail("NOT_FOUND", ex.Message)
+            ),
 
-            ValidationException ex => (HttpStatusCode.BadRequest,
+            ValidationException ex => (
+                HttpStatusCode.BadRequest,
                 new ApiResponse
                 {
                     Success = false,
@@ -43,11 +49,13 @@ public class ExceptionHandlingMiddleware
                     {
                         Code = "VALIDATION_ERROR",
                         Message = "One or more validation errors occurred",
-                        Details = ex.Errors
-                    }
-                }),
+                        Details = ex.Errors,
+                    },
+                }
+            ),
 
-            AccountLockedException ex => (HttpStatusCode.Unauthorized,
+            AccountLockedException ex => (
+                HttpStatusCode.Unauthorized,
                 new ApiResponse
                 {
                     Success = false,
@@ -58,17 +66,22 @@ public class ExceptionHandlingMiddleware
                         Details = ex.LockoutEnd.HasValue
                             ? new Dictionary<string, string[]>
                             {
-                                ["lockoutEnd"] = [ex.LockoutEnd.Value.UtcDateTime.ToString("o")]
+                                ["lockoutEnd"] = [ex.LockoutEnd.Value.UtcDateTime.ToString("o")],
                             }
-                            : null
-                    }
-                }),
+                            : null,
+                    },
+                }
+            ),
 
-            UnauthorizedException ex => (HttpStatusCode.Unauthorized,
-                ApiResponse.Fail("UNAUTHORIZED", ex.Message)),
+            UnauthorizedException ex => (
+                HttpStatusCode.Unauthorized,
+                ApiResponse.Fail("UNAUTHORIZED", ex.Message)
+            ),
 
-            _ => (HttpStatusCode.InternalServerError,
-                ApiResponse.Fail("INTERNAL_ERROR", "An unexpected error occurred"))
+            _ => (
+                HttpStatusCode.InternalServerError,
+                ApiResponse.Fail("INTERNAL_ERROR", "An unexpected error occurred")
+            ),
         };
 
         if (statusCode == HttpStatusCode.InternalServerError)
@@ -83,7 +96,10 @@ public class ExceptionHandlingMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 
-        var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
         await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
     }
 }

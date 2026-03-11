@@ -10,11 +10,11 @@ public class SocialLoginRequestValidator : AbstractValidator<SocialLoginRequest>
     public SocialLoginRequestValidator()
     {
         RuleFor(x => x.Provider)
-            .NotEmpty().WithMessage("Provider is required")
+            .NotEmpty()
+            .WithMessage("Provider is required")
             .Must(p => SupportedProviders.Contains(p))
             .WithMessage("Provider must be 'Google' or 'Apple'");
 
-        RuleFor(x => x.IdToken)
-            .NotEmpty().WithMessage("ID token is required");
+        RuleFor(x => x.IdToken).NotEmpty().WithMessage("ID token is required");
     }
 }

@@ -11,7 +11,15 @@ public static class MockUserManager
         var store = new Mock<IUserStore<User>>();
         var mgr = new Mock<UserManager<User>>(
             store.Object,
-            null!, null!, null!, null!, null!, null!, null!, null!);
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!
+        );
 
         mgr.Object.UserValidators.Add(new UserValidator<User>());
         mgr.Object.PasswordValidators.Add(new PasswordValidator<User>());
@@ -23,20 +31,20 @@ public static class MockUserManager
     {
         var mock = Create();
 
-        mock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        mock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
-        mock.Setup(x => x.FindByEmailAsync(user.Email!))
-            .ReturnsAsync(user);
+        mock.Setup(x => x.FindByEmailAsync(user.Email!)).ReturnsAsync(user);
 
-        mock.Setup(x => x.CheckPasswordAsync(user, It.IsAny<string>()))
-            .ReturnsAsync(true);
+        mock.Setup(x => x.CheckPasswordAsync(user, It.IsAny<string>())).ReturnsAsync(true);
 
-        mock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
-            .ReturnsAsync(IdentityResult.Success);
+        mock.Setup(x => x.UpdateAsync(It.IsAny<User>())).ReturnsAsync(IdentityResult.Success);
 
         mock.Setup(x => x.Users)
-            .Returns(new List<User> { user }.AsQueryable().BuildMock());
+            .Returns(
+                new List<User> { user }
+                    .AsQueryable()
+                    .BuildMock()
+            );
 
         return mock;
     }
@@ -44,7 +52,8 @@ public static class MockUserManager
 
 public static class QueryableMockExtensions
 {
-    public static IQueryable<T> BuildMock<T>(this IQueryable<T> data) where T : class
+    public static IQueryable<T> BuildMock<T>(this IQueryable<T> data)
+        where T : class
     {
         return new TestAsyncEnumerable<T>(data);
     }
@@ -53,14 +62,10 @@ public static class QueryableMockExtensions
 internal class TestAsyncEnumerable<T> : EnumerableQuery<T>, IAsyncEnumerable<T>, IQueryable<T>
 {
     public TestAsyncEnumerable(IEnumerable<T> enumerable)
-        : base(enumerable)
-    {
-    }
+        : base(enumerable) { }
 
     public TestAsyncEnumerable(System.Linq.Expressions.Expression expression)
-        : base(expression)
-    {
-    }
+        : base(expression) { }
 
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {

@@ -8,9 +8,7 @@ public class CreateContentReportRequestValidator : AbstractValidator<CreateConte
 {
     public CreateContentReportRequestValidator()
     {
-        RuleFor(x => x.Reason)
-            .IsInEnum()
-            .WithMessage("Invalid report reason");
+        RuleFor(x => x.Reason).IsInEnum().WithMessage("Invalid report reason");
 
         RuleFor(x => x.AdditionalDetails)
             .MaximumLength(1000)

@@ -65,17 +65,9 @@ public record PostProductExportData(
     IReadOnlyList<string> FitTags
 );
 
-public record EngagementExportData(
-    Guid PostId,
-    string Type,
-    DateTime CreatedAt
-);
+public record EngagementExportData(Guid PostId, string Type, DateTime CreatedAt);
 
-public record ClickEventExportData(
-    Guid PostId,
-    DateTime CreatedAt,
-    DateTime? ConvertedAt
-);
+public record ClickEventExportData(Guid PostId, DateTime CreatedAt, DateTime? ConvertedAt);
 
 public record EarningExportData(
     string EarningType,

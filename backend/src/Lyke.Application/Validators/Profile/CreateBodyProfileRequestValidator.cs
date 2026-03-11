@@ -15,9 +15,7 @@ public class CreateBodyProfileRequestValidator : AbstractValidator<CreateBodyPro
             .InclusiveBetween(30, 300)
             .WithMessage("Weight must be between 30kg and 300kg");
 
-        RuleFor(x => x.BodyTypeId)
-            .GreaterThan(0)
-            .WithMessage("Body type is required");
+        RuleFor(x => x.BodyTypeId).GreaterThan(0).WithMessage("Body type is required");
 
         RuleFor(x => x.FrameSizeId)
             .GreaterThan(0)

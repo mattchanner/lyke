@@ -28,14 +28,16 @@ public class CreatorServiceTests : IDisposable
     {
         _context = TestDbContextFactory.Create();
         _userManagerMock = MockUserManager.Create();
-        _creatorSettings = Options.Create(new CreatorSettings
-        {
-            MaxDraftPosts = 10,
-            MaxMediaPerPost = 10,
-            MaxProductsPerPost = 20,
-            MinPayoutThreshold = 50.00m,
-            DefaultCurrency = "GBP"
-        });
+        _creatorSettings = Options.Create(
+            new CreatorSettings
+            {
+                MaxDraftPosts = 10,
+                MaxMediaPerPost = 10,
+                MaxProductsPerPost = 20,
+                MinPayoutThreshold = 50.00m,
+                DefaultCurrency = "GBP",
+            }
+        );
         _emailServiceMock = new Mock<IEmailService>();
         _loggerMock = new Mock<ILogger<CreatorService>>();
 
@@ -44,7 +46,8 @@ public class CreatorServiceTests : IDisposable
             _userManagerMock.Object,
             _creatorSettings,
             _emailServiceMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -71,7 +74,12 @@ public class CreatorServiceTests : IDisposable
         return (user, retailer, product);
     }
 
-    private async Task<(User user, Creator creator, Retailer retailer, Product product)> SetupCreatorDataAsync()
+    private async Task<(
+        User user,
+        Creator creator,
+        Retailer retailer,
+        Product product
+    )> SetupCreatorDataAsync()
     {
         var (user, retailer, product) = await SetupBaseDataAsync();
 
@@ -92,10 +100,10 @@ public class CreatorServiceTests : IDisposable
         var (user, _, _) = await SetupBaseDataAsync();
         var request = new RegisterCreatorRequest("Test Creator", "Test bio", null);
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
-        _userManagerMock.Setup(x => x.UpdateAsync(It.IsAny<User>()))
+        _userManagerMock
+            .Setup(x => x.UpdateAsync(It.IsAny<User>()))
             .ReturnsAsync(IdentityResult.Success);
 
         // Act
@@ -118,14 +126,14 @@ public class CreatorServiceTests : IDisposable
         var (user, creator, _, _) = await SetupCreatorDataAsync();
         var request = new RegisterCreatorRequest("Another Creator", null, null);
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         // Act
         var act = () => _sut.RegisterAsCreatorAsync(user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should()
+            .ThrowAsync<ValidationException>()
             .WithMessage("*already registered as a creator*");
     }
 
@@ -136,7 +144,8 @@ public class CreatorServiceTests : IDisposable
         var nonexistentUserId = Guid.NewGuid();
         var request = new RegisterCreatorRequest("Test Creator", null, null);
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(nonexistentUserId.ToString()))
+        _userManagerMock
+            .Setup(x => x.FindByIdAsync(nonexistentUserId.ToString()))
             .ReturnsAsync((User?)null);
 
         // Act
@@ -211,7 +220,7 @@ public class CreatorServiceTests : IDisposable
             null,
             new List<PostProductRequest>
             {
-                new(product.Id, "M", FitRating.TrueToSize, "Fits well", null, null)
+                new(product.Id, "M", FitRating.TrueToSize, "Fits well", null, null),
             }
         );
 
@@ -237,7 +246,11 @@ public class CreatorServiceTests : IDisposable
         // Create max draft posts
         for (int i = 0; i < 10; i++)
         {
-            var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft, title: $"Draft {i}");
+            var post = TestDbContextFactory.CreateTestPost(
+                creatorId: creator.Id,
+                status: PostStatus.Draft,
+                title: $"Draft {i}"
+            );
             _context.Posts.Add(post);
         }
         await _context.SaveChangesAsync();
@@ -248,18 +261,14 @@ public class CreatorServiceTests : IDisposable
             MediaType.Image,
             new List<string> { "https://example.com/image.jpg" },
             null,
-            new List<PostProductRequest>
-            {
-                new(product.Id, "M", null, null, null, null)
-            }
+            new List<PostProductRequest> { new(product.Id, "M", null, null, null, null) }
         );
 
         // Act
         var act = () => _sut.CreatePostAsync(user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Maximum draft posts*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*Maximum draft posts*");
     }
 
     [Fact]
@@ -275,7 +284,7 @@ public class CreatorServiceTests : IDisposable
             null,
             new List<PostProductRequest>
             {
-                new(Guid.NewGuid(), "M", null, null, null, null) // Invalid product ID
+                new(Guid.NewGuid(), "M", null, null, null, null), // Invalid product ID
             }
         );
 
@@ -283,8 +292,7 @@ public class CreatorServiceTests : IDisposable
         var act = () => _sut.CreatePostAsync(user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*products are invalid*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*products are invalid*");
     }
 
     [Fact]
@@ -293,15 +301,28 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
         await _context.SaveChangesAsync();
 
-        var request = new UpdatePostRequest("Updated Title", "Updated description", null, null, null, null);
+        var request = new UpdatePostRequest(
+            "Updated Title",
+            "Updated description",
+            null,
+            null,
+            null,
+            null
+        );
 
         // Act
         var result = await _sut.UpdatePostAsync(user.Id, post.Id, request);
@@ -318,7 +339,10 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
@@ -328,7 +352,8 @@ public class CreatorServiceTests : IDisposable
         var act = () => _sut.UpdatePostAsync(user.Id, post.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should()
+            .ThrowAsync<ValidationException>()
             .WithMessage("*Only draft posts can be edited*");
     }
 
@@ -338,7 +363,10 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, _) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
@@ -369,10 +397,16 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
         await _context.SaveChangesAsync();
@@ -392,8 +426,14 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, _) = await SetupCreatorDataAsync();
 
-        var draftPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
-        var publishedPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var draftPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
+        var publishedPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.AddRange(draftPost, publishedPost);
         await _context.SaveChangesAsync();
 
@@ -413,10 +453,16 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
         await _context.SaveChangesAsync();
@@ -445,11 +491,14 @@ public class CreatorServiceTests : IDisposable
             Title = "Test Post",
             MediaType = MediaType.Image,
             MediaUrls = "[]", // Empty media
-            Status = PostStatus.Draft
+            Status = PostStatus.Draft,
         };
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Product = product;
         postProduct.Post = post;
         _context.PostProducts.Add(postProduct);
@@ -459,7 +508,8 @@ public class CreatorServiceTests : IDisposable
         var act = () => _sut.SubmitPostForReviewAsync(user.Id, post.Id);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should()
+            .ThrowAsync<ValidationException>()
             .WithMessage("*at least one media item*");
     }
 
@@ -469,7 +519,10 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, _) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
@@ -477,8 +530,7 @@ public class CreatorServiceTests : IDisposable
         var act = () => _sut.SubmitPostForReviewAsync(user.Id, post.Id);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*at least one product*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*at least one product*");
     }
 
     #endregion
@@ -491,7 +543,10 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, _) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
 
         var engagement = new Engagement
@@ -500,7 +555,7 @@ public class CreatorServiceTests : IDisposable
             PostId = post.Id,
             UserId = Guid.NewGuid(),
             Type = EngagementType.View,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.Engagements.Add(engagement);
         await _context.SaveChangesAsync();
@@ -525,10 +580,16 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         _context.PostProducts.Add(postProduct);
 
         var clickEvent = new ClickEvent
@@ -536,7 +597,7 @@ public class CreatorServiceTests : IDisposable
             Id = Guid.NewGuid(),
             PostId = post.Id,
             PostProductId = postProduct.Id,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.ClickEvents.Add(clickEvent);
 
@@ -549,7 +610,7 @@ public class CreatorServiceTests : IDisposable
             Amount = 10.00m,
             Currency = "GBP",
             Status = EarningStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.CreatorEarnings.Add(earning);
         await _context.SaveChangesAsync();
@@ -571,11 +632,17 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         post.Creator = creator;
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Post = post;
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
@@ -587,7 +654,7 @@ public class CreatorServiceTests : IDisposable
             PostProductId = postProduct.Id,
             CreatedAt = DateTime.UtcNow,
             Post = post,
-            PostProduct = postProduct
+            PostProduct = postProduct,
         };
         _context.ClickEvents.Add(clickEvent);
 
@@ -601,7 +668,7 @@ public class CreatorServiceTests : IDisposable
             Currency = "USD",
             Status = EarningStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            ClickEvent = clickEvent
+            ClickEvent = clickEvent,
         };
         _context.CreatorEarnings.Add(earning);
         await _context.SaveChangesAsync();
@@ -623,11 +690,17 @@ public class CreatorServiceTests : IDisposable
         // Arrange
         var (user, creator, _, product) = await SetupCreatorDataAsync();
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         post.Creator = creator;
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Post = post;
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
@@ -639,7 +712,7 @@ public class CreatorServiceTests : IDisposable
             PostProductId = postProduct.Id,
             CreatedAt = DateTime.UtcNow,
             Post = post,
-            PostProduct = postProduct
+            PostProduct = postProduct,
         };
         _context.ClickEvents.Add(clickEvent);
 
@@ -653,7 +726,7 @@ public class CreatorServiceTests : IDisposable
             Currency = "USD",
             Status = EarningStatus.Pending,
             CreatedAt = DateTime.UtcNow,
-            ClickEvent = clickEvent
+            ClickEvent = clickEvent,
         };
         _context.CreatorEarnings.Add(pendingEarning);
         await _context.SaveChangesAsync();

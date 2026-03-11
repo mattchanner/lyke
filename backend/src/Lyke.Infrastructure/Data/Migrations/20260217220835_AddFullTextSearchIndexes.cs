@@ -10,20 +10,26 @@ namespace Lyke.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 CREATE INDEX "IX_Posts_FullTextSearch" ON "Posts"
                 USING GIN (to_tsvector('english', coalesce("Title",'') || ' ' || coalesce("Description",'')));
-                """);
+                """
+            );
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 CREATE INDEX "IX_Products_FullTextSearch" ON "Products"
                 USING GIN (to_tsvector('english', coalesce("Name",'') || ' ' || coalesce("Description",'') || ' ' || coalesce("ExternalSku",'')));
-                """);
+                """
+            );
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 CREATE INDEX "IX_Creators_FullTextSearch" ON "Creators"
                 USING GIN (to_tsvector('english', coalesce("DisplayName",'') || ' ' || coalesce("Bio",'')));
-                """);
+                """
+            );
         }
 
         /// <inheritdoc />

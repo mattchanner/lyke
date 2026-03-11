@@ -26,10 +26,4 @@ public record TopPostAnalytics(
     decimal Earnings
 );
 
-public record DailyMetrics(
-    DateTime Date,
-    int Views,
-    int Likes,
-    int Clicks,
-    decimal Earnings
-);
+public record DailyMetrics(DateTime Date, int Views, int Likes, int Clicks, decimal Earnings);

@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -28,5 +27,4 @@
     <ProjectReference Include="..\..\src\Lyke.Api\Lyke.Api.csproj" />
     <ProjectReference Include="..\..\src\Lyke.Infrastructure\Lyke.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

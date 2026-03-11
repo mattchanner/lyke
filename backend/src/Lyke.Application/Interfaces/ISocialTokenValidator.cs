@@ -4,5 +4,9 @@ public record SocialUserInfo(string ProviderKey, string Email, string? FirstName
 
 public interface ISocialTokenValidator
 {
-    Task<SocialUserInfo> ValidateAsync(string provider, string idToken, CancellationToken cancellationToken = default);
+    Task<SocialUserInfo> ValidateAsync(
+        string provider,
+        string idToken,
+        CancellationToken cancellationToken = default
+    );
 }

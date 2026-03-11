@@ -24,17 +24,19 @@ public class FeedServiceTests : IDisposable
     public FeedServiceTests()
     {
         _context = TestDbContextFactory.Create();
-        _matchingSettings = Options.Create(new MatchingSettings
-        {
-            HeightWeight = 0.3,
-            WeightWeight = 0.3,
-            BodyTypeWeight = 0.4,
-            HeightToleranceCm = 5,
-            WeightToleranceKg = 5,
-            MinimumSimilarityScore = 0.3,
-            SponsoredBoostFactor = 1.2,
-            RecencyDecayDays = 30
-        });
+        _matchingSettings = Options.Create(
+            new MatchingSettings
+            {
+                HeightWeight = 0.3,
+                WeightWeight = 0.3,
+                BodyTypeWeight = 0.4,
+                HeightToleranceCm = 5,
+                WeightToleranceKg = 5,
+                MinimumSimilarityScore = 0.3,
+                SponsoredBoostFactor = 1.2,
+                RecencyDecayDays = 30,
+            }
+        );
         _loggerMock = new Mock<ILogger<FeedService>>();
 
         _sut = new FeedService(
@@ -42,7 +44,8 @@ public class FeedServiceTests : IDisposable
             _matchingSettings,
             Options.Create(new ModerationSettings()),
             new Mock<IEventTrackingService>().Object,
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -50,14 +53,24 @@ public class FeedServiceTests : IDisposable
         _context.Dispose();
     }
 
-    private async Task<(User user, Creator creator, Retailer retailer, Product product, Post post, PostProduct postProduct)> SetupTestDataAsync()
+    private async Task<(
+        User user,
+        Creator creator,
+        Retailer retailer,
+        Product product,
+        Post post,
+        PostProduct postProduct
+    )> SetupTestDataAsync()
     {
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
         var user = TestDbContextFactory.CreateTestUser(userType: UserType.Creator);
         _context.Users.Add(user);
 
-        var bodyProfile = TestDbContextFactory.CreateTestBodyProfile(userId: user.Id, bodyTypeId: 1);
+        var bodyProfile = TestDbContextFactory.CreateTestBodyProfile(
+            userId: user.Id,
+            bodyTypeId: 1
+        );
         _context.BodyProfiles.Add(bodyProfile);
 
         var creator = TestDbContextFactory.CreateTestCreator(userId: user.Id);
@@ -70,11 +83,17 @@ public class FeedServiceTests : IDisposable
         product.Retailer = retailer;
         _context.Products.Add(product);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         post.Creator = creator;
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Post = post;
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
@@ -202,7 +221,10 @@ public class FeedServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator(userId: user.Id);
         _context.Creators.Add(creator);
 
-        var draftPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
+        var draftPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
         _context.Posts.Add(draftPost);
         await _context.SaveChangesAsync();
 
@@ -229,9 +251,8 @@ public class FeedServiceTests : IDisposable
 
         // Assert
         var engagement = _context.Engagements.FirstOrDefault(e =>
-            e.PostId == post.Id &&
-            e.UserId == viewerUser.Id &&
-            e.Type == EngagementType.Like);
+            e.PostId == post.Id && e.UserId == viewerUser.Id && e.Type == EngagementType.Like
+        );
 
         engagement.Should().NotBeNull();
     }
@@ -250,7 +271,7 @@ public class FeedServiceTests : IDisposable
             PostId = post.Id,
             UserId = viewerUser.Id,
             Type = EngagementType.Like,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.Engagements.Add(existingEngagement);
         await _context.SaveChangesAsync();
@@ -262,9 +283,8 @@ public class FeedServiceTests : IDisposable
 
         // Assert
         var engagementCount = _context.Engagements.Count(e =>
-            e.PostId == post.Id &&
-            e.UserId == viewerUser.Id &&
-            e.Type == EngagementType.Like);
+            e.PostId == post.Id && e.UserId == viewerUser.Id && e.Type == EngagementType.Like
+        );
 
         engagementCount.Should().Be(1);
     }
@@ -298,7 +318,7 @@ public class FeedServiceTests : IDisposable
             PostId = post.Id,
             UserId = viewerUser.Id,
             Type = EngagementType.Like,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.Engagements.Add(engagement);
         await _context.SaveChangesAsync();
@@ -327,7 +347,7 @@ public class FeedServiceTests : IDisposable
             PostId = post.Id,
             UserId = viewerUser.Id,
             Type = EngagementType.Save,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.Engagements.Add(saveEngagement);
         await _context.SaveChangesAsync();
@@ -348,11 +368,18 @@ public class FeedServiceTests : IDisposable
         var (user, creator, retailer, product, post, _) = await SetupTestDataAsync();
 
         // Create another similar post
-        var similarPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published, title: "Similar Post");
+        var similarPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published,
+            title: "Similar Post"
+        );
         similarPost.Creator = creator;
         _context.Posts.Add(similarPost);
 
-        var similarPostProduct = TestDbContextFactory.CreateTestPostProduct(postId: similarPost.Id, productId: product.Id);
+        var similarPostProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: similarPost.Id,
+            productId: product.Id
+        );
         similarPostProduct.Post = similarPost;
         similarPostProduct.Product = product;
         _context.PostProducts.Add(similarPostProduct);

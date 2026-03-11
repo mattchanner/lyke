@@ -18,7 +18,8 @@ public class VerifyEmailModel : PageModel
     public async Task<IActionResult> OnGetAsync(
         [FromQuery] string? email,
         [FromQuery] string? token,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
         {

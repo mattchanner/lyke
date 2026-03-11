@@ -5,25 +5,59 @@ namespace Lyke.Application.Interfaces;
 public interface IProfileService
 {
     // User Profile
-    Task<UserProfileResponse> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<UserProfileResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default);
+    Task<UserProfileResponse> GetProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<UserProfileResponse> UpdateProfileAsync(
+        Guid userId,
+        UpdateProfileRequest request,
+        CancellationToken cancellationToken = default
+    );
 
     // Body Profile
-    Task<BodyProfileResponse?> GetBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<BodyProfileResponse> CreateBodyProfileAsync(Guid userId, CreateBodyProfileRequest request, CancellationToken cancellationToken = default);
-    Task<BodyProfileResponse> UpdateBodyProfileAsync(Guid userId, UpdateBodyProfileRequest request, CancellationToken cancellationToken = default);
+    Task<BodyProfileResponse?> GetBodyProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<BodyProfileResponse> CreateBodyProfileAsync(
+        Guid userId,
+        CreateBodyProfileRequest request,
+        CancellationToken cancellationToken = default
+    );
+    Task<BodyProfileResponse> UpdateBodyProfileAsync(
+        Guid userId,
+        UpdateBodyProfileRequest request,
+        CancellationToken cancellationToken = default
+    );
     Task DeleteBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default);
 
     // Profile Image
-    Task<UserProfileResponse> UploadProfileImageAsync(Guid userId, Stream imageStream, string contentType, CancellationToken cancellationToken = default);
+    Task<UserProfileResponse> UploadProfileImageAsync(
+        Guid userId,
+        Stream imageStream,
+        string contentType,
+        CancellationToken cancellationToken = default
+    );
     Task DeleteProfileImageAsync(Guid userId, CancellationToken cancellationToken = default);
 
     // Anonymized profile for display to other users
-    Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
 
     // Lookups
-    Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<DTOs.Feed.FitTagResponse>> GetFitTagsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(
+        CancellationToken cancellationToken = default
+    );
+    Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(
+        CancellationToken cancellationToken = default
+    );
+    Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(
+        CancellationToken cancellationToken = default
+    );
+    Task<IReadOnlyList<DTOs.Feed.FitTagResponse>> GetFitTagsAsync(
+        CancellationToken cancellationToken = default
+    );
 }

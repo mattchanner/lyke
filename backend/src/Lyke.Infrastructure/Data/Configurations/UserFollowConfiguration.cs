@@ -10,20 +10,20 @@ public class UserFollowConfiguration : IEntityTypeConfiguration<UserFollow>
     {
         builder.HasKey(uf => uf.Id);
 
-        builder.HasIndex(uf => new { uf.FollowerUserId, uf.FollowedUserId })
-            .IsUnique();
+        builder.HasIndex(uf => new { uf.FollowerUserId, uf.FollowedUserId }).IsUnique();
 
         builder.HasIndex(uf => uf.FollowedUserId);
 
-        builder.Property(uf => uf.CreatedAt)
-            .HasDefaultValueSql("NOW()");
+        builder.Property(uf => uf.CreatedAt).HasDefaultValueSql("NOW()");
 
-        builder.HasOne(uf => uf.Follower)
+        builder
+            .HasOne(uf => uf.Follower)
             .WithMany(u => u.Following)
             .HasForeignKey(uf => uf.FollowerUserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(uf => uf.Followed)
+        builder
+            .HasOne(uf => uf.Followed)
             .WithMany(u => u.Followers)
             .HasForeignKey(uf => uf.FollowedUserId)
             .OnDelete(DeleteBehavior.Cascade);

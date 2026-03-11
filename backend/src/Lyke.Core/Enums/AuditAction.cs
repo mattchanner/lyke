@@ -13,5 +13,5 @@ public enum AuditAction
     AdminReviewContentReport = 8,
     AdminBulkModeratePost = 9,
     AdminBulkSuspendUser = 10,
-    UserReportContent = 11
+    UserReportContent = 11,
 }

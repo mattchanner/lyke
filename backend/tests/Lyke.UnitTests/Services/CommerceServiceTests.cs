@@ -25,14 +25,16 @@ public class CommerceServiceTests : IDisposable
     public CommerceServiceTests()
     {
         _context = TestDbContextFactory.Create();
-        _commerceSettings = Options.Create(new CommerceSettings
-        {
-            CreatorCommissionShare = 0.7m,
-            DefaultAttributionWindowDays = 30,
-            ClickRateLimitPerMinute = 60,
-            EnableClickDeduplication = true,
-            DeduplicationWindowSeconds = 10
-        });
+        _commerceSettings = Options.Create(
+            new CommerceSettings
+            {
+                CreatorCommissionShare = 0.7m,
+                DefaultAttributionWindowDays = 30,
+                ClickRateLimitPerMinute = 60,
+                EnableClickDeduplication = true,
+                DeduplicationWindowSeconds = 10,
+            }
+        );
         _loggerMock = new Mock<ILogger<CommerceService>>();
 
         _sut = new CommerceService(
@@ -40,7 +42,8 @@ public class CommerceServiceTests : IDisposable
             _commerceSettings,
             new Mock<IEventTrackingService>().Object,
             new MemoryCache(new MemoryCacheOptions()),
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -48,7 +51,14 @@ public class CommerceServiceTests : IDisposable
         _context.Dispose();
     }
 
-    private async Task<(User user, Creator creator, Retailer retailer, Product product, Post post, PostProduct postProduct)> SetupTestDataAsync()
+    private async Task<(
+        User user,
+        Creator creator,
+        Retailer retailer,
+        Product product,
+        Post post,
+        PostProduct postProduct
+    )> SetupTestDataAsync()
     {
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
@@ -65,11 +75,17 @@ public class CommerceServiceTests : IDisposable
         product.Retailer = retailer;
         _context.Products.Add(product);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         post.Creator = creator;
         _context.Posts.Add(post);
 
-        var postProduct = TestDbContextFactory.CreateTestPostProduct(postId: post.Id, productId: product.Id);
+        var postProduct = TestDbContextFactory.CreateTestPostProduct(
+            postId: post.Id,
+            productId: product.Id
+        );
         postProduct.Post = post;
         postProduct.Product = product;
         _context.PostProducts.Add(postProduct);
@@ -148,7 +164,7 @@ public class CommerceServiceTests : IDisposable
             PostId = post.Id,
             PostProductId = postProduct.Id,
             SessionId = sessionId,
-            CreatedAt = DateTime.UtcNow // Within deduplication window
+            CreatedAt = DateTime.UtcNow, // Within deduplication window
         };
         _context.ClickEvents.Add(existingClick);
         await _context.SaveChangesAsync();
@@ -270,7 +286,10 @@ public class CommerceServiceTests : IDisposable
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var inactiveRetailer = TestDbContextFactory.CreateTestRetailer(name: "Inactive Retailer", isActive: false);
+        var inactiveRetailer = TestDbContextFactory.CreateTestRetailer(
+            name: "Inactive Retailer",
+            isActive: false
+        );
         _context.Retailers.Add(inactiveRetailer);
         await _context.SaveChangesAsync();
 
@@ -337,7 +356,7 @@ public class CommerceServiceTests : IDisposable
             UserId = user.Id,
             PostId = post.Id,
             PostProductId = postProduct.Id,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.ClickEvents.Add(clickEvent);
         await _context.SaveChangesAsync();
@@ -404,7 +423,7 @@ public class CommerceServiceTests : IDisposable
             PostId = post.Id,
             PostProductId = postProduct.Id,
             CreatedAt = DateTime.UtcNow,
-            ConvertedAt = DateTime.UtcNow // Already converted
+            ConvertedAt = DateTime.UtcNow, // Already converted
         };
         _context.ClickEvents.Add(clickEvent);
         await _context.SaveChangesAsync();

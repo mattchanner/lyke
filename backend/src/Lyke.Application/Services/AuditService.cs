@@ -20,7 +20,8 @@ public class AuditService : IAuditService
     public AuditService(
         DbContext dbContext,
         ILogger<AuditService> logger,
-        IOptions<PrivacySettings> settings)
+        IOptions<PrivacySettings> settings
+    )
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -34,7 +35,8 @@ public class AuditService : IAuditService
         string? entityType = null,
         Guid? entityId = null,
         object? details = null,
-        string? ipAddress = null)
+        string? ipAddress = null
+    )
     {
         if (!_settings.Audit.Enabled)
             return;
@@ -51,7 +53,7 @@ public class AuditService : IAuditService
                 EntityId = entityId,
                 Details = details != null ? JsonSerializer.Serialize(details) : null,
                 IpAddress = ipAddress,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.UtcNow,
             };
 
             _dbContext.Set<AuditLog>().Add(auditLog);
@@ -59,13 +61,22 @@ public class AuditService : IAuditService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to write audit log for action {Action} by user {UserId}", action, userId);
+            _logger.LogError(
+                ex,
+                "Failed to write audit log for action {Action} by user {UserId}",
+                action,
+                userId
+            );
         }
     }
 
-    public async Task<(IReadOnlyList<AuditLogResponse> Logs, PaginationMeta Meta)> GetAuditLogsAsync(
+    public async Task<(
+        IReadOnlyList<AuditLogResponse> Logs,
+        PaginationMeta Meta
+    )> GetAuditLogsAsync(
         AuditLogQueryRequest request,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var query = _dbContext.Set<AuditLog>().AsNoTracking().AsQueryable();
 
@@ -99,14 +110,15 @@ public class AuditService : IAuditService
                 a.EntityId,
                 a.Details,
                 a.IpAddress,
-                a.Timestamp))
+                a.Timestamp
+            ))
             .ToListAsync(cancellationToken);
 
         var meta = new PaginationMeta
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            TotalCount = totalCount
+            TotalCount = totalCount,
         };
 
         return (logs, meta);

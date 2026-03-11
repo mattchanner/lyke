@@ -12,9 +12,7 @@ public class CreatorPostsRequestValidator : AbstractValidator<CreatorPostsReques
             .When(x => x.Status.HasValue)
             .WithMessage("Invalid post status");
 
-        RuleFor(x => x.Page)
-            .GreaterThan(0)
-            .WithMessage("Page must be greater than 0");
+        RuleFor(x => x.Page).GreaterThan(0).WithMessage("Page must be greater than 0");
 
         RuleFor(x => x.PageSize)
             .InclusiveBetween(1, 100)

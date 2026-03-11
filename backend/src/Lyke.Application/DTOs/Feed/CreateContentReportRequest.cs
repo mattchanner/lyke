@@ -2,7 +2,4 @@ using Lyke.Core.Enums;
 
 namespace Lyke.Application.DTOs.Feed;
 
-public record CreateContentReportRequest(
-    ReportReason Reason,
-    string? AdditionalDetails
-);
+public record CreateContentReportRequest(ReportReason Reason, string? AdditionalDetails);

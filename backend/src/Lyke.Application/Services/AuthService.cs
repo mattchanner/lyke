@@ -33,7 +33,8 @@ public class AuthService : IAuthService
         IOptions<PrivacySettings> privacySettings,
         ISocialTokenValidator socialTokenValidator,
         IEmailService emailService,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger
+    )
     {
         _userManager = userManager;
         _dbContext = dbContext;
@@ -44,7 +45,10 @@ public class AuthService : IAuthService
         _logger = logger;
     }
 
-    public async Task<AuthResponse> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResponse> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser != null)
@@ -59,21 +63,25 @@ public class AuthService : IAuthService
             UserType = request.UserType,
             IsActive = true,
             PrivacyPolicyAcceptedAt = DateTime.UtcNow,
-            PrivacyPolicyVersion = _privacySettings.CurrentPolicyVersion
+            PrivacyPolicyVersion = _privacySettings.CurrentPolicyVersion,
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
         if (!result.Succeeded)
         {
-            var errors = result.Errors
-                .GroupBy(e => e.Code)
+            var errors = result
+                .Errors.GroupBy(e => e.Code)
                 .ToDictionary(g => g.Key, g => g.Select(e => e.Description).ToArray());
             throw new ValidationException(errors);
         }
 
         _logger.LogInformation("User {Email} registered successfully", request.Email);
 
-        _ = _emailService.SendWelcomeEmailAsync(user.Email!, user.UserType.ToString(), cancellationToken);
+        _ = _emailService.SendWelcomeEmailAsync(
+            user.Email!,
+            user.UserType.ToString(),
+            cancellationToken
+        );
 
         var emailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         _ = _emailService.SendEmailVerificationAsync(user.Email!, emailToken, cancellationToken);
@@ -81,7 +89,10 @@ public class AuthService : IAuthService
         return await GenerateAuthResponseAsync(user, cancellationToken);
     }
 
-    public async Task<AuthResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResponse> LoginAsync(
+        LoginRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
@@ -126,7 +137,10 @@ public class AuthService : IAuthService
         return await GenerateAuthResponseAsync(user, cancellationToken);
     }
 
-    public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResponse> RefreshTokenAsync(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var refreshTokens = _dbContext.Set<RefreshToken>();
 
@@ -144,7 +158,10 @@ public class AuthService : IAuthService
             // Token has been revoked or expired - revoke all tokens for this user (potential token theft)
             if (storedToken.IsRevoked)
             {
-                _logger.LogWarning("Attempted reuse of revoked refresh token for user {UserId}", storedToken.UserId);
+                _logger.LogWarning(
+                    "Attempted reuse of revoked refresh token for user {UserId}",
+                    storedToken.UserId
+                );
                 await RevokeAllUserTokensAsync(storedToken.UserId, cancellationToken);
             }
             throw new UnauthorizedException("Invalid refresh token");
@@ -171,12 +188,17 @@ public class AuthService : IAuthService
         return response;
     }
 
-    public async Task LogoutAsync(string refreshToken, CancellationToken cancellationToken = default)
+    public async Task LogoutAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default
+    )
     {
         var refreshTokens = _dbContext.Set<RefreshToken>();
 
-        var storedToken = await refreshTokens
-            .FirstOrDefaultAsync(rt => rt.Token == refreshToken, cancellationToken);
+        var storedToken = await refreshTokens.FirstOrDefaultAsync(
+            rt => rt.Token == refreshToken,
+            cancellationToken
+        );
 
         if (storedToken != null && storedToken.IsActive)
         {
@@ -186,14 +208,20 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task ForgotPasswordAsync(ForgotPasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task ForgotPasswordAsync(
+        ForgotPasswordRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
 
         // Always return success to prevent email enumeration attacks
         if (user == null || !user.IsActive)
         {
-            _logger.LogInformation("Password reset requested for non-existent or inactive email {Email}", request.Email);
+            _logger.LogInformation(
+                "Password reset requested for non-existent or inactive email {Email}",
+                request.Email
+            );
             return;
         }
 
@@ -204,7 +232,10 @@ public class AuthService : IAuthService
         _logger.LogInformation("Password reset email sent to {Email}", request.Email);
     }
 
-    public async Task ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default)
+    public async Task ResetPasswordAsync(
+        ResetPasswordRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !user.IsActive)
@@ -212,7 +243,11 @@ public class AuthService : IAuthService
             throw new ValidationException("Token", "Invalid or expired reset token");
         }
 
-        var result = await _userManager.ResetPasswordAsync(user, request.Token, request.NewPassword);
+        var result = await _userManager.ResetPasswordAsync(
+            user,
+            request.Token,
+            request.NewPassword
+        );
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToArray();
@@ -234,13 +269,15 @@ public class AuthService : IAuthService
         }
 
         // 1. Hard-delete refresh tokens
-        var refreshTokens = await _dbContext.Set<RefreshToken>()
+        var refreshTokens = await _dbContext
+            .Set<RefreshToken>()
             .Where(rt => rt.UserId == userId)
             .ToListAsync(cancellationToken);
         _dbContext.Set<RefreshToken>().RemoveRange(refreshTokens);
 
         // 2. Hard-delete body profile
-        var bodyProfile = await _dbContext.Set<BodyProfile>()
+        var bodyProfile = await _dbContext
+            .Set<BodyProfile>()
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
         if (bodyProfile != null)
         {
@@ -248,13 +285,15 @@ public class AuthService : IAuthService
         }
 
         // 3. Hard-delete engagements (likes/saves)
-        var engagements = await _dbContext.Set<Engagement>()
+        var engagements = await _dbContext
+            .Set<Engagement>()
             .Where(e => e.UserId == userId)
             .ToListAsync(cancellationToken);
         _dbContext.Set<Engagement>().RemoveRange(engagements);
 
         // 4. Anonymize click events (keep for aggregate analytics)
-        var clickEvents = await _dbContext.Set<ClickEvent>()
+        var clickEvents = await _dbContext
+            .Set<ClickEvent>()
             .Where(ce => ce.UserId == userId)
             .ToListAsync(cancellationToken);
         foreach (var ce in clickEvents)
@@ -264,7 +303,8 @@ public class AuthService : IAuthService
         }
 
         // 5. If creator: cascade delete all creator data
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .Include(c => c.Posts)
                 .ThenInclude(p => p.PostProducts)
                     .ThenInclude(pp => pp.FitTags)
@@ -320,7 +360,8 @@ public class AuthService : IAuthService
         }
 
         // 6. If retailer: deactivate and clear personal fields
-        var retailer = await _dbContext.Set<Retailer>()
+        var retailer = await _dbContext
+            .Set<Retailer>()
             .FirstOrDefaultAsync(r => r.UserId == userId, cancellationToken);
         if (retailer != null)
         {
@@ -345,12 +386,22 @@ public class AuthService : IAuthService
         _logger.LogInformation("Account {UserId} deleted with GDPR cascade", userId);
     }
 
-    public async Task<AuthResponse> SocialLoginAsync(SocialLoginRequest request, CancellationToken cancellationToken = default)
+    public async Task<AuthResponse> SocialLoginAsync(
+        SocialLoginRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
-        var socialUser = await _socialTokenValidator.ValidateAsync(request.Provider, request.IdToken, cancellationToken);
+        var socialUser = await _socialTokenValidator.ValidateAsync(
+            request.Provider,
+            request.IdToken,
+            cancellationToken
+        );
 
         // 1. Check if this social login is already linked
-        var existingUser = await _userManager.FindByLoginAsync(request.Provider, socialUser.ProviderKey);
+        var existingUser = await _userManager.FindByLoginAsync(
+            request.Provider,
+            socialUser.ProviderKey
+        );
         if (existingUser != null)
         {
             if (!existingUser.IsActive)
@@ -358,7 +409,11 @@ public class AuthService : IAuthService
                 throw new UnauthorizedException("Account is deactivated");
             }
 
-            _logger.LogInformation("Social login for existing linked user {Email} via {Provider}", existingUser.Email, request.Provider);
+            _logger.LogInformation(
+                "Social login for existing linked user {Email} via {Provider}",
+                existingUser.Email,
+                request.Provider
+            );
             return await GenerateAuthResponseAsync(existingUser, cancellationToken);
         }
 
@@ -371,15 +426,27 @@ public class AuthService : IAuthService
                 throw new UnauthorizedException("Account is deactivated");
             }
 
-            var loginInfo = new UserLoginInfo(request.Provider, socialUser.ProviderKey, request.Provider);
+            var loginInfo = new UserLoginInfo(
+                request.Provider,
+                socialUser.ProviderKey,
+                request.Provider
+            );
             var linkResult = await _userManager.AddLoginAsync(emailUser, loginInfo);
             if (!linkResult.Succeeded)
             {
-                _logger.LogWarning("Failed to link {Provider} to existing user {Email}", request.Provider, socialUser.Email);
+                _logger.LogWarning(
+                    "Failed to link {Provider} to existing user {Email}",
+                    request.Provider,
+                    socialUser.Email
+                );
                 throw new ValidationException("Provider", "Failed to link social account");
             }
 
-            _logger.LogInformation("Linked {Provider} to existing user {Email}", request.Provider, emailUser.Email);
+            _logger.LogInformation(
+                "Linked {Provider} to existing user {Email}",
+                request.Provider,
+                emailUser.Email
+            );
             return await GenerateAuthResponseAsync(emailUser, cancellationToken);
         }
 
@@ -390,7 +457,7 @@ public class AuthService : IAuthService
             UserName = socialUser.Email,
             EmailConfirmed = true,
             UserType = UserType.Shopper,
-            IsActive = true
+            IsActive = true,
         };
 
         var createResult = await _userManager.CreateAsync(newUser);
@@ -401,17 +468,31 @@ public class AuthService : IAuthService
         }
 
         var addLoginResult = await _userManager.AddLoginAsync(
-            newUser, new UserLoginInfo(request.Provider, socialUser.ProviderKey, request.Provider));
+            newUser,
+            new UserLoginInfo(request.Provider, socialUser.ProviderKey, request.Provider)
+        );
         if (!addLoginResult.Succeeded)
         {
-            _logger.LogWarning("Failed to add {Provider} login for new user {Email}", request.Provider, socialUser.Email);
+            _logger.LogWarning(
+                "Failed to add {Provider} login for new user {Email}",
+                request.Provider,
+                socialUser.Email
+            );
         }
 
-        _logger.LogInformation("Created new user {Email} via {Provider} social login", socialUser.Email, request.Provider);
+        _logger.LogInformation(
+            "Created new user {Email} via {Provider} social login",
+            socialUser.Email,
+            request.Provider
+        );
         return await GenerateAuthResponseAsync(newUser, cancellationToken);
     }
 
-    public async Task VerifyEmailAsync(string email, string token, CancellationToken cancellationToken = default)
+    public async Task VerifyEmailAsync(
+        string email,
+        string token,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null || !user.IsActive)
@@ -429,7 +510,10 @@ public class AuthService : IAuthService
         _logger.LogInformation("Email verified for {Email}", email);
     }
 
-    public async Task ResendVerificationEmailAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task ResendVerificationEmailAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null || !user.IsActive)
@@ -448,7 +532,10 @@ public class AuthService : IAuthService
         _logger.LogInformation("Verification email resent for {Email}", user.Email);
     }
 
-    private async Task<AuthResponse> GenerateAuthResponseAsync(User user, CancellationToken cancellationToken)
+    private async Task<AuthResponse> GenerateAuthResponseAsync(
+        User user,
+        CancellationToken cancellationToken
+    )
     {
         var accessToken = GenerateAccessToken(user);
         var refreshToken = await GenerateRefreshTokenAsync(user.Id, cancellationToken);
@@ -474,7 +561,7 @@ public class AuthService : IAuthService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim("user_type", user.UserType.ToString())
+            new Claim("user_type", user.UserType.ToString()),
         };
 
         var token = new JwtSecurityToken(
@@ -488,7 +575,10 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private async Task<string> GenerateRefreshTokenAsync(Guid userId, CancellationToken cancellationToken)
+    private async Task<string> GenerateRefreshTokenAsync(
+        Guid userId,
+        CancellationToken cancellationToken
+    )
     {
         var refreshTokens = _dbContext.Set<RefreshToken>();
 
@@ -500,7 +590,7 @@ public class AuthService : IAuthService
             UserId = userId,
             Token = token,
             ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         await refreshTokens.AddAsync(refreshToken, cancellationToken);
@@ -514,7 +604,9 @@ public class AuthService : IAuthService
         var refreshTokens = _dbContext.Set<RefreshToken>();
 
         var activeTokens = await refreshTokens
-            .Where(rt => rt.UserId == userId && rt.RevokedAt == null && rt.ExpiresAt > DateTime.UtcNow)
+            .Where(rt =>
+                rt.UserId == userId && rt.RevokedAt == null && rt.ExpiresAt > DateTime.UtcNow
+            )
             .ToListAsync(cancellationToken);
 
         foreach (var token in activeTokens)

@@ -17,12 +17,10 @@ public class EventTrackingService : IEventTrackingService
     [
         AnalyticsEventType.FeedFilter,
         AnalyticsEventType.SearchExecute,
-        AnalyticsEventType.ProfileComplete
+        AnalyticsEventType.ProfileComplete,
     ];
 
-    public EventTrackingService(
-        DbContext dbContext,
-        ILogger<EventTrackingService> logger)
+    public EventTrackingService(DbContext dbContext, ILogger<EventTrackingService> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -35,12 +33,18 @@ public class EventTrackingService : IEventTrackingService
         string? entityType = null,
         Dictionary<string, string>? properties = null,
         string? sessionId = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         // Structured log for ALL events (flows to AppInsights via OpenTelemetry)
         _logger.LogInformation(
             "AnalyticsEvent {EventType} User={UserId} Entity={EntityId} EntityType={EntityType} Session={SessionId}",
-            eventType, userId, entityId, entityType, sessionId);
+            eventType,
+            userId,
+            entityId,
+            entityType,
+            sessionId
+        );
 
         // Only persist behavioral events that don't already have a dedicated table
         if (PersistableEvents.Contains(eventType))
@@ -54,7 +58,7 @@ public class EventTrackingService : IEventTrackingService
                 EntityType = entityType,
                 Properties = properties != null ? JsonSerializer.Serialize(properties) : null,
                 SessionId = sessionId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             };
 
             await _dbContext.Set<AnalyticsEvent>().AddAsync(analyticsEvent, cancellationToken);
@@ -64,7 +68,8 @@ public class EventTrackingService : IEventTrackingService
 
     public async Task TrackBatchAsync(
         IEnumerable<TrackEventItem> events,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var eventsList = events.ToList();
 
@@ -72,7 +77,12 @@ public class EventTrackingService : IEventTrackingService
         {
             _logger.LogInformation(
                 "AnalyticsEvent {EventType} User={UserId} Entity={EntityId} EntityType={EntityType} Session={SessionId}",
-                evt.EventType, evt.UserId, evt.EntityId, evt.EntityType, evt.SessionId);
+                evt.EventType,
+                evt.UserId,
+                evt.EntityId,
+                evt.EntityType,
+                evt.SessionId
+            );
         }
 
         var persistable = eventsList
@@ -86,7 +96,7 @@ public class EventTrackingService : IEventTrackingService
                 EntityType = e.EntityType,
                 Properties = e.Properties != null ? JsonSerializer.Serialize(e.Properties) : null,
                 SessionId = e.SessionId,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
             })
             .ToList();
 

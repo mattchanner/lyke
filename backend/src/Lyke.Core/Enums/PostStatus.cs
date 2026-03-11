@@ -7,5 +7,5 @@ public enum PostStatus
     Published = 2,
     Rejected = 3,
     Flagged = 4,
-    Removed = 5
+    Removed = 5,
 }

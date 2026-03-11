@@ -8,7 +8,5 @@ public class ResetPasswordResultModel : PageModel
     [FromQuery]
     public bool Success { get; set; }
 
-    public void OnGet()
-    {
-    }
+    public void OnGet() { }
 }

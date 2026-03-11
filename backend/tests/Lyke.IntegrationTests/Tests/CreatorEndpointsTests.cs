@@ -29,8 +29,15 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         // Note: Using Creator user type because group-level authorization requires it
         // The endpoint should allow any authenticated user but group policy takes precedence
         var email = $"creator-register-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         var request = new RegisterCreatorRequest(
             DisplayName: "Fashion Creator",
@@ -38,7 +45,7 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             SocialLinks: new Dictionary<string, string>
             {
                 { "instagram", "https://instagram.com/fashioncreator" },
-                { "tiktok", "https://tiktok.com/@fashioncreator" }
+                { "tiktok", "https://tiktok.com/@fashioncreator" },
             }
         );
 
@@ -47,7 +54,9 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -84,22 +93,34 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-profile-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator first
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Profile Test Creator",
-            Bio: "Test bio",
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Profile Test Creator",
+                Bio: "Test bio",
+                SocialLinks: null
+            )
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/profile");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -113,22 +134,32 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-update-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator first
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Original Name",
-            Bio: "Original bio",
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Original Name",
+                Bio: "Original bio",
+                SocialLinks: null
+            )
+        );
 
         var updateRequest = new UpdateCreatorProfileRequest(
             DisplayName: "Updated Creator Name",
             Bio: "Updated creator bio",
             SocialLinks: new Dictionary<string, string>
             {
-                { "youtube", "https://youtube.com/@updatedcreator" }
+                { "youtube", "https://youtube.com/@updatedcreator" },
             }
         );
 
@@ -137,7 +168,9 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorProfileResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -157,15 +190,21 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-post-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator first
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Post Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(DisplayName: "Post Creator", Bio: null, SocialLinks: null)
+        );
 
         var request = new CreatePostRequest(
             Title: "Check out this amazing outfit!",
@@ -181,7 +220,9 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -197,32 +238,47 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-posts-list-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Posts List Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Posts List Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
         // Create a post
-        await _client.PostAsJsonAsync("/api/creators/v1/posts", new CreatePostRequest(
-            Title: "Test Post",
-            Description: "Formal look",
-            MediaType: MediaType.Image,
-            MediaUrls: new List<string> { "https://example.com/image.jpg" },
-            ThumbnailUrls: null,
-            Products: new List<PostProductRequest>()
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/posts",
+            new CreatePostRequest(
+                Title: "Test Post",
+                Description: "Formal look",
+                MediaType: MediaType.Image,
+                MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
+                Products: new List<PostProductRequest>()
+            )
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/posts");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<IReadOnlyList<CreatorPostResponse>>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<
+            ApiResponse<IReadOnlyList<CreatorPostResponse>>
+        >(LykeWebApplicationFactory.JsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -237,25 +293,40 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-update-post-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator and create post
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Update Post Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Update Post Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/creators/v1/posts", new CreatePostRequest(
-            Title: "Original Title",
-            Description: "Casual look",
-            MediaType: MediaType.Image,
-            MediaUrls: new List<string> { "https://example.com/image.jpg" },
-            ThumbnailUrls: null,
-            Products: new List<PostProductRequest>()
-        ));
-        var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/creators/v1/posts",
+            new CreatePostRequest(
+                Title: "Original Title",
+                Description: "Casual look",
+                MediaType: MediaType.Image,
+                MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
+                Products: new List<PostProductRequest>()
+            )
+        );
+        var createResult = await createResponse.Content.ReadFromJsonAsync<
+            ApiResponse<CreatorPostResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         var postId = createResult!.Data!.Id;
 
         var updateRequest = new UpdatePostRequest(
@@ -268,11 +339,16 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         // Act
-        var response = await _client.PutAsJsonAsync($"/api/creators/v1/posts/{postId}", updateRequest);
+        var response = await _client.PutAsJsonAsync(
+            $"/api/creators/v1/posts/{postId}",
+            updateRequest
+        );
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -287,25 +363,40 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-delete-post-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator and create post
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Delete Post Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Delete Post Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/creators/v1/posts", new CreatePostRequest(
-            Title: "To Be Deleted",
-            Description: "Casual look",
-            MediaType: MediaType.Image,
-            MediaUrls: new List<string> { "https://example.com/image.jpg" },
-            ThumbnailUrls: null,
-            Products: new List<PostProductRequest>()
-        ));
-        var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/creators/v1/posts",
+            new CreatePostRequest(
+                Title: "To Be Deleted",
+                Description: "Casual look",
+                MediaType: MediaType.Image,
+                MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
+                Products: new List<PostProductRequest>()
+            )
+        );
+        var createResult = await createResponse.Content.ReadFromJsonAsync<
+            ApiResponse<CreatorPostResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         var postId = createResult!.Data!.Id;
 
         // Act
@@ -323,25 +414,36 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-submit-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator and create post
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Submit Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(DisplayName: "Submit Creator", Bio: null, SocialLinks: null)
+        );
 
-        var createResponse = await _client.PostAsJsonAsync("/api/creators/v1/posts", new CreatePostRequest(
-            Title: "Ready for review",
-            Description: "Casual look",
-            MediaType: MediaType.Image,
-            MediaUrls: new List<string> { "https://example.com/image.jpg" },
-            ThumbnailUrls: null,
-            Products: new List<PostProductRequest>()
-        ));
-        var createResult = await createResponse.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var createResponse = await _client.PostAsJsonAsync(
+            "/api/creators/v1/posts",
+            new CreatePostRequest(
+                Title: "Ready for review",
+                Description: "Casual look",
+                MediaType: MediaType.Image,
+                MediaUrls: new List<string> { "https://example.com/image.jpg" },
+                ThumbnailUrls: null,
+                Products: new List<PostProductRequest>()
+            )
+        );
+        var createResult = await createResponse.Content.ReadFromJsonAsync<
+            ApiResponse<CreatorPostResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         var postId = createResult!.Data!.Id;
 
         // Act
@@ -350,7 +452,9 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         // Assert - May return 400 if post doesn't meet submission requirements (e.g., valid media needed)
         if (response.StatusCode == HttpStatusCode.OK)
         {
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(LykeWebApplicationFactory.JsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorPostResponse>>(
+                LykeWebApplicationFactory.JsonOptions
+            );
             result.Should().NotBeNull();
             result!.Success.Should().BeTrue();
             result.Data.Should().NotBeNull();
@@ -375,22 +479,34 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-analytics-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Analytics Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Analytics Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/analytics");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<CreatorAnalyticsResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<
+            ApiResponse<CreatorAnalyticsResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -404,22 +520,34 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-earnings-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Earnings Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Earnings Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/earnings");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<EarningsSummaryResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<EarningsSummaryResponse>>(
+            LykeWebApplicationFactory.JsonOptions
+        );
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -433,22 +561,30 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-history-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "History Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(DisplayName: "History Creator", Bio: null, SocialLinks: null)
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/earnings/history");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<IReadOnlyList<EarningDetailResponse>>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<
+            ApiResponse<IReadOnlyList<EarningDetailResponse>>
+        >(LykeWebApplicationFactory.JsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -466,22 +602,34 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-verification-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Verification Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Verification Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/verification");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<VerificationStatusResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<
+            ApiResponse<VerificationStatusResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -495,18 +643,32 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"creator-submit-verification-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Creator);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Creator
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Register as creator
-        await _client.PostAsJsonAsync("/api/creators/v1/register", new RegisterCreatorRequest(
-            DisplayName: "Submit Verification Creator",
-            Bio: null,
-            SocialLinks: null
-        ));
+        await _client.PostAsJsonAsync(
+            "/api/creators/v1/register",
+            new RegisterCreatorRequest(
+                DisplayName: "Submit Verification Creator",
+                Bio: null,
+                SocialLinks: null
+            )
+        );
 
         var request = new SubmitVerificationRequest(
-            DocumentUrls: new List<string> { "https://example.com/id.jpg", "https://example.com/selfie.jpg" },
+            DocumentUrls: new List<string>
+            {
+                "https://example.com/id.jpg",
+                "https://example.com/selfie.jpg",
+            },
             Notes: "Please verify my identity"
         );
 
@@ -515,7 +677,9 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var result = await response.Content.ReadFromJsonAsync<ApiResponse<VerificationStatusResponse>>(LykeWebApplicationFactory.JsonOptions);
+        var result = await response.Content.ReadFromJsonAsync<
+            ApiResponse<VerificationStatusResponse>
+        >(LykeWebApplicationFactory.JsonOptions);
         result.Should().NotBeNull();
         result!.Success.Should().BeTrue();
         result.Data.Should().NotBeNull();
@@ -534,8 +698,15 @@ public class CreatorEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     {
         // Arrange
         var email = $"shopper-forbidden-{Guid.NewGuid()}@example.com";
-        var token = await _factory.CreateTestUserAndGetTokenAsync(email, "Test123!", UserType.Shopper);
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var token = await _factory.CreateTestUserAndGetTokenAsync(
+            email,
+            "Test123!",
+            UserType.Shopper
+        );
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer",
+            token
+        );
 
         // Act
         var response = await _client.GetAsync("/api/creators/v1/profile");

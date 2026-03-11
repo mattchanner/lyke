@@ -14,14 +14,16 @@ public interface IEventTrackingService
         string? entityType = null,
         Dictionary<string, string>? properties = null,
         string? sessionId = null,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Track a batch of analytics events.
     /// </summary>
     Task TrackBatchAsync(
         IEnumerable<TrackEventItem> events,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }
 
 public record TrackEventItem(
@@ -30,4 +32,5 @@ public record TrackEventItem(
     Guid? EntityId = null,
     string? EntityType = null,
     Dictionary<string, string>? Properties = null,
-    string? SessionId = null);
+    string? SessionId = null
+);

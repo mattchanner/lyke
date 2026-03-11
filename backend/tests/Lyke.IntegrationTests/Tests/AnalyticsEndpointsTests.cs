@@ -34,12 +34,14 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var response = await _client.PostAsJsonAsync(
             "/api/analytics/v1/events",
             request,
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse>(
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
         result!.Success.Should().BeTrue();
     }
 
@@ -52,22 +54,27 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             [
                 new TrackEventRequest(
                     EventType: AnalyticsEventType.FeedFilter,
-                    Properties: new Dictionary<string, string> { ["category"] = "dresses" }),
+                    Properties: new Dictionary<string, string> { ["category"] = "dresses" }
+                ),
                 new TrackEventRequest(
                     EventType: AnalyticsEventType.SearchExecute,
-                    Properties: new Dictionary<string, string> { ["query"] = "jeans" }),
-            ]);
+                    Properties: new Dictionary<string, string> { ["query"] = "jeans" }
+                ),
+            ]
+        );
 
         // Act
         var response = await _client.PostAsJsonAsync(
             "/api/analytics/v1/events/batch",
             request,
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await response.Content.ReadFromJsonAsync<ApiResponse>(
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
         result!.Success.Should().BeTrue();
     }
 
@@ -75,15 +82,14 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task TrackEvent_IsPubliclyAccessible()
     {
         // Arrange - No authorization header
-        var request = new TrackEventRequest(
-            EventType: AnalyticsEventType.PostView
-        );
+        var request = new TrackEventRequest(EventType: AnalyticsEventType.PostView);
 
         // Act
         var response = await _client.PostAsJsonAsync(
             "/api/analytics/v1/events",
             request,
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
 
         // Assert - Should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
@@ -99,7 +105,8 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         var response = await _client.PostAsJsonAsync(
             "/api/analytics/v1/events/batch",
             request,
-            LykeWebApplicationFactory.JsonOptions);
+            LykeWebApplicationFactory.JsonOptions
+        );
 
         // Assert - Endpoint accepts empty batches (no server-side validation)
         response.StatusCode.Should().Be(HttpStatusCode.OK);

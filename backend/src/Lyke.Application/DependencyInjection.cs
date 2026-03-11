@@ -10,20 +10,37 @@ namespace Lyke.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApplication(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         // Configuration
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
-        services.Configure<MatchingSettings>(configuration.GetSection(MatchingSettings.SectionName));
-        services.Configure<CommerceSettings>(configuration.GetSection(CommerceSettings.SectionName));
+        services.Configure<MatchingSettings>(
+            configuration.GetSection(MatchingSettings.SectionName)
+        );
+        services.Configure<CommerceSettings>(
+            configuration.GetSection(CommerceSettings.SectionName)
+        );
         services.Configure<CreatorSettings>(configuration.GetSection(CreatorSettings.SectionName));
-        services.Configure<MediaUploadSettings>(configuration.GetSection(MediaUploadSettings.SectionName));
-        services.Configure<RetailerSettings>(configuration.GetSection(RetailerSettings.SectionName));
-        services.Configure<SocialAuthSettings>(configuration.GetSection(SocialAuthSettings.SectionName));
+        services.Configure<MediaUploadSettings>(
+            configuration.GetSection(MediaUploadSettings.SectionName)
+        );
+        services.Configure<RetailerSettings>(
+            configuration.GetSection(RetailerSettings.SectionName)
+        );
+        services.Configure<SocialAuthSettings>(
+            configuration.GetSection(SocialAuthSettings.SectionName)
+        );
         services.Configure<EmailSettings>(configuration.GetSection(EmailSettings.SectionName));
         services.Configure<PrivacySettings>(configuration.GetSection(PrivacySettings.SectionName));
-        services.Configure<ModerationSettings>(configuration.GetSection(ModerationSettings.SectionName));
-        services.Configure<AnalyticsSettings>(configuration.GetSection(AnalyticsSettings.SectionName));
+        services.Configure<ModerationSettings>(
+            configuration.GetSection(ModerationSettings.SectionName)
+        );
+        services.Configure<AnalyticsSettings>(
+            configuration.GetSection(AnalyticsSettings.SectionName)
+        );
 
         // Validators
         services.AddValidatorsFromAssemblyContaining<IAuthService>();

@@ -50,7 +50,9 @@ public class AuthEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         result.Data.RefreshToken.Should().NotBeNullOrEmpty();
     }
 
-    [Fact(Skip = "API validation for password confirmation is not currently enforced - needs investigation")]
+    [Fact(
+        Skip = "API validation for password confirmation is not currently enforced - needs investigation"
+    )]
     public async Task Register_WithMismatchedPasswords_ReturnsError()
     {
         // Arrange

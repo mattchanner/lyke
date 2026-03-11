@@ -1,0 +1,50 @@
+#!/bin/sh
+# Pre-commit hook to enforce CSharpier formatting on C# files
+# This hook runs CSharpier check on staged .cs files and prevents
+# commit if any files are not properly formatted.
+
+# Get list of staged C# files
+STAGED_CS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$')
+
+if [ -z "$STAGED_CS_FILES" ]; then
+    # No C# files staged, skip check
+    exit 0
+fi
+
+echo "Running CSharpier format check on staged C# files..."
+
+# Check if dotnet is available
+if ! command -v dotnet &> /dev/null; then
+    echo "Error: dotnet is not installed or not in PATH"
+    exit 1
+fi
+
+# Restore tools if needed (runs quickly if already restored)
+dotnet tool restore --verbosity quiet 2>/dev/null
+
+# Run CSharpier check on staged files
+# We need to check each file individually
+FAILED=0
+for FILE in $STAGED_CS_FILES; do
+    if [ -f "$FILE" ]; then
+        dotnet csharpier check "$FILE" 2>/dev/null
+        if [ $? -ne 0 ]; then
+            FAILED=1
+        fi
+    fi
+done
+
+if [ $FAILED -ne 0 ]; then
+    echo ""
+    echo "CSharpier formatting check failed!"
+    echo "Please format your code before committing:"
+    echo "  dotnet csharpier format ."
+    echo ""
+    echo "Or format specific files:"
+    echo "  dotnet csharpier format <file>"
+    echo ""
+    exit 1
+fi
+
+echo "CSharpier check passed."
+exit 0

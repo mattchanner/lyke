@@ -19,7 +19,8 @@ public class DataRetentionService : BackgroundService
     public DataRetentionService(
         IServiceScopeFactory scopeFactory,
         ILogger<DataRetentionService> logger,
-        IOptions<PrivacySettings> settings)
+        IOptions<PrivacySettings> settings
+    )
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -39,7 +40,8 @@ public class DataRetentionService : BackgroundService
             "Data retention service started. First run in {Delay} (at ~{Hour}:00 UTC), then every {Interval}h",
             initialDelay,
             _settings.PreferredRunHourUtc,
-            _settings.RunIntervalHours);
+            _settings.RunIntervalHours
+        );
 
         await Task.Delay(initialDelay, stoppingToken);
 
@@ -79,41 +81,48 @@ public class DataRetentionService : BackgroundService
             expiredTokens,
             anonymizedClicks,
             viewEngagements,
-            oldAuditLogs);
+            oldAuditLogs
+        );
     }
 
     private async Task<int> CleanupRefreshTokensAsync(LykeDbContext dbContext, CancellationToken ct)
     {
         var graceCutoff = DateTime.UtcNow.AddDays(-_settings.RefreshTokenGracePeriodDays);
 
-        var deleted = await dbContext.RefreshTokens
-            .Where(t =>
-                (t.ExpiresAt < graceCutoff) ||
-                (t.RevokedAt != null && t.RevokedAt < graceCutoff))
+        var deleted = await dbContext
+            .RefreshTokens.Where(t =>
+                (t.ExpiresAt < graceCutoff) || (t.RevokedAt != null && t.RevokedAt < graceCutoff)
+            )
             .Take(_settings.BatchSize)
             .ExecuteDeleteAsync(ct);
 
         return deleted;
     }
 
-    private async Task<int> CleanupAnonymizedClickEventsAsync(LykeDbContext dbContext, CancellationToken ct)
+    private async Task<int> CleanupAnonymizedClickEventsAsync(
+        LykeDbContext dbContext,
+        CancellationToken ct
+    )
     {
         var cutoff = DateTime.UtcNow.AddDays(-_settings.AnonymizedClickEventRetentionDays);
 
-        var deleted = await dbContext.ClickEvents
-            .Where(c => c.UserId == null && c.CreatedAt < cutoff)
+        var deleted = await dbContext
+            .ClickEvents.Where(c => c.UserId == null && c.CreatedAt < cutoff)
             .Take(_settings.BatchSize)
             .ExecuteDeleteAsync(ct);
 
         return deleted;
     }
 
-    private async Task<int> CleanupViewEngagementsAsync(LykeDbContext dbContext, CancellationToken ct)
+    private async Task<int> CleanupViewEngagementsAsync(
+        LykeDbContext dbContext,
+        CancellationToken ct
+    )
     {
         var cutoff = DateTime.UtcNow.AddDays(-_settings.ViewEngagementRetentionDays);
 
-        var deleted = await dbContext.Engagements
-            .Where(e => e.Type == EngagementType.View && e.CreatedAt < cutoff)
+        var deleted = await dbContext
+            .Engagements.Where(e => e.Type == EngagementType.View && e.CreatedAt < cutoff)
             .Take(_settings.BatchSize)
             .ExecuteDeleteAsync(ct);
 
@@ -124,8 +133,8 @@ public class DataRetentionService : BackgroundService
     {
         var cutoff = DateTime.UtcNow.AddDays(-_settings.AuditLogRetentionDays);
 
-        var deleted = await dbContext.AuditLogs
-            .Where(a => a.Timestamp < cutoff)
+        var deleted = await dbContext
+            .AuditLogs.Where(a => a.Timestamp < cutoff)
             .Take(_settings.BatchSize)
             .ExecuteDeleteAsync(ct);
 

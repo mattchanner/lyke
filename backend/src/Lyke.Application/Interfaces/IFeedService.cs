@@ -11,7 +11,8 @@ public interface IFeedService
     Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetFeedAsync(
         Guid userId,
         FeedRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get explore/discover feed (not personalized, shows trending content)
@@ -19,7 +20,8 @@ public interface IFeedService
     Task<(IReadOnlyList<FeedPostResponse> Posts, PaginationMeta Meta)> GetExploreFeedAsync(
         Guid? userId,
         FeedRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get detailed post by ID
@@ -27,7 +29,8 @@ public interface IFeedService
     Task<PostDetailResponse> GetPostAsync(
         Guid postId,
         Guid? userId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get posts similar to the specified post
@@ -36,7 +39,8 @@ public interface IFeedService
         Guid postId,
         Guid? userId,
         int limit = 10,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Record user engagement (view, like, save, share)
@@ -45,7 +49,8 @@ public interface IFeedService
         Guid postId,
         Guid userId,
         EngageRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Remove engagement (unlike, unsave)
@@ -54,7 +59,8 @@ public interface IFeedService
         Guid postId,
         Guid userId,
         EngageRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get user's saved posts
@@ -63,7 +69,8 @@ public interface IFeedService
         Guid userId,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get user's liked posts
@@ -72,7 +79,8 @@ public interface IFeedService
         Guid userId,
         int page,
         int pageSize,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Search posts, products, and creators
@@ -80,7 +88,8 @@ public interface IFeedService
     Task<SearchResponse> SearchAsync(
         SearchRequest request,
         Guid? userId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Report a post for content violation
@@ -89,5 +98,6 @@ public interface IFeedService
         Guid postId,
         Guid userId,
         CreateContentReportRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

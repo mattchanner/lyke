@@ -19,7 +19,8 @@ public class MetricsAggregationService : BackgroundService
     public MetricsAggregationService(
         IServiceScopeFactory scopeFactory,
         ILogger<MetricsAggregationService> logger,
-        IOptions<AnalyticsSettings> settings)
+        IOptions<AnalyticsSettings> settings
+    )
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -36,7 +37,8 @@ public class MetricsAggregationService : BackgroundService
 
         _logger.LogInformation(
             "Metrics aggregation service started. Running every {Interval}h",
-            _settings.AggregationIntervalHours);
+            _settings.AggregationIntervalHours
+        );
 
         // Run immediately on startup, then on interval
         while (!stoppingToken.IsCancellationRequested)
@@ -79,100 +81,72 @@ public class MetricsAggregationService : BackgroundService
     private async Task AggregatePlatformMetricsAsync(
         LykeDbContext dbContext,
         DateOnly date,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var dayStart = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         var dayEnd = date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
-        var views = await dbContext.Engagements
-            .CountAsync(e => e.Type == EngagementType.View && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-        var likes = await dbContext.Engagements
-            .CountAsync(e => e.Type == EngagementType.Like && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-        var saves = await dbContext.Engagements
-            .CountAsync(e => e.Type == EngagementType.Save && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-        var shares = await dbContext.Engagements
-            .CountAsync(e => e.Type == EngagementType.Share && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-        var clicks = await dbContext.ClickEvents
-            .CountAsync(c => c.CreatedAt >= dayStart && c.CreatedAt < dayEnd, ct);
-        var conversions = await dbContext.ClickEvents
-            .CountAsync(c => c.ConvertedAt >= dayStart && c.ConvertedAt < dayEnd, ct);
-        var earnings = await dbContext.CreatorEarnings
-            .Where(e => e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
-            .SumAsync(e => (decimal?)e.Amount, ct) ?? 0;
-        var newUsers = await dbContext.Users
-            .CountAsync(u => u.CreatedAt >= dayStart && u.CreatedAt < dayEnd, ct);
-        var postsPublished = await dbContext.Posts
-            .CountAsync(p => p.Status == PostStatus.Published && p.CreatedAt >= dayStart && p.CreatedAt < dayEnd, ct);
-        var searches = await dbContext.AnalyticsEvents
-            .CountAsync(a => a.EventType == AnalyticsEventType.SearchExecute && a.CreatedAt >= dayStart && a.CreatedAt < dayEnd, ct);
-        var filters = await dbContext.AnalyticsEvents
-            .CountAsync(a => a.EventType == AnalyticsEventType.FeedFilter && a.CreatedAt >= dayStart && a.CreatedAt < dayEnd, ct);
+        var views = await dbContext.Engagements.CountAsync(
+            e => e.Type == EngagementType.View && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd,
+            ct
+        );
+        var likes = await dbContext.Engagements.CountAsync(
+            e => e.Type == EngagementType.Like && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd,
+            ct
+        );
+        var saves = await dbContext.Engagements.CountAsync(
+            e => e.Type == EngagementType.Save && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd,
+            ct
+        );
+        var shares = await dbContext.Engagements.CountAsync(
+            e => e.Type == EngagementType.Share && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd,
+            ct
+        );
+        var clicks = await dbContext.ClickEvents.CountAsync(
+            c => c.CreatedAt >= dayStart && c.CreatedAt < dayEnd,
+            ct
+        );
+        var conversions = await dbContext.ClickEvents.CountAsync(
+            c => c.ConvertedAt >= dayStart && c.ConvertedAt < dayEnd,
+            ct
+        );
+        var earnings =
+            await dbContext
+                .CreatorEarnings.Where(e => e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
+                .SumAsync(e => (decimal?)e.Amount, ct)
+            ?? 0;
+        var newUsers = await dbContext.Users.CountAsync(
+            u => u.CreatedAt >= dayStart && u.CreatedAt < dayEnd,
+            ct
+        );
+        var postsPublished = await dbContext.Posts.CountAsync(
+            p =>
+                p.Status == PostStatus.Published && p.CreatedAt >= dayStart && p.CreatedAt < dayEnd,
+            ct
+        );
+        var searches = await dbContext.AnalyticsEvents.CountAsync(
+            a =>
+                a.EventType == AnalyticsEventType.SearchExecute
+                && a.CreatedAt >= dayStart
+                && a.CreatedAt < dayEnd,
+            ct
+        );
+        var filters = await dbContext.AnalyticsEvents.CountAsync(
+            a =>
+                a.EventType == AnalyticsEventType.FeedFilter
+                && a.CreatedAt >= dayStart
+                && a.CreatedAt < dayEnd,
+            ct
+        );
 
-        await UpsertSnapshotAsync(dbContext, new DailyMetricSnapshot
-        {
-            Id = Guid.NewGuid(),
-            Date = date,
-            Scope = "platform",
-            Views = views,
-            Likes = likes,
-            Saves = saves,
-            Shares = shares,
-            Clicks = clicks,
-            Conversions = conversions,
-            Revenue = 0,
-            Earnings = earnings,
-            NewUsers = newUsers,
-            PostsPublished = postsPublished,
-            SearchesExecuted = searches,
-            FiltersApplied = filters,
-            ComputedAt = DateTime.UtcNow
-        }, ct);
-    }
-
-    private async Task AggregateCreatorMetricsAsync(
-        LykeDbContext dbContext,
-        DateOnly date,
-        CancellationToken ct)
-    {
-        var dayStart = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var dayEnd = date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-
-        // Get active creator IDs that have posts with engagements today
-        var creatorIds = await dbContext.Engagements
-            .Where(e => e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
-            .Select(e => e.Post.CreatorId)
-            .Distinct()
-            .ToListAsync(ct);
-
-        foreach (var creatorId in creatorIds)
-        {
-            var creatorPostIds = await dbContext.Posts
-                .Where(p => p.CreatorId == creatorId)
-                .Select(p => p.Id)
-                .ToListAsync(ct);
-
-            var views = await dbContext.Engagements
-                .CountAsync(e => creatorPostIds.Contains(e.PostId) && e.Type == EngagementType.View && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-            var likes = await dbContext.Engagements
-                .CountAsync(e => creatorPostIds.Contains(e.PostId) && e.Type == EngagementType.Like && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-            var saves = await dbContext.Engagements
-                .CountAsync(e => creatorPostIds.Contains(e.PostId) && e.Type == EngagementType.Save && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-            var shares = await dbContext.Engagements
-                .CountAsync(e => creatorPostIds.Contains(e.PostId) && e.Type == EngagementType.Share && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd, ct);
-            var clicks = await dbContext.ClickEvents
-                .CountAsync(c => creatorPostIds.Contains(c.PostId) && c.CreatedAt >= dayStart && c.CreatedAt < dayEnd, ct);
-            var conversions = await dbContext.ClickEvents
-                .CountAsync(c => creatorPostIds.Contains(c.PostId) && c.ConvertedAt >= dayStart && c.ConvertedAt < dayEnd, ct);
-            var earnings = await dbContext.CreatorEarnings
-                .Where(e => e.CreatorId == creatorId && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
-                .SumAsync(e => (decimal?)e.Amount, ct) ?? 0;
-
-            await UpsertSnapshotAsync(dbContext, new DailyMetricSnapshot
+        await UpsertSnapshotAsync(
+            dbContext,
+            new DailyMetricSnapshot
             {
                 Id = Guid.NewGuid(),
                 Date = date,
-                Scope = $"creator:{creatorId}",
-                ScopeEntityId = creatorId,
+                Scope = "platform",
                 Views = views,
                 Likes = likes,
                 Saves = saves,
@@ -181,22 +155,130 @@ public class MetricsAggregationService : BackgroundService
                 Conversions = conversions,
                 Revenue = 0,
                 Earnings = earnings,
-                NewUsers = 0,
-                PostsPublished = 0,
-                SearchesExecuted = 0,
-                FiltersApplied = 0,
-                ComputedAt = DateTime.UtcNow
-            }, ct);
+                NewUsers = newUsers,
+                PostsPublished = postsPublished,
+                SearchesExecuted = searches,
+                FiltersApplied = filters,
+                ComputedAt = DateTime.UtcNow,
+            },
+            ct
+        );
+    }
+
+    private async Task AggregateCreatorMetricsAsync(
+        LykeDbContext dbContext,
+        DateOnly date,
+        CancellationToken ct
+    )
+    {
+        var dayStart = date.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var dayEnd = date.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+        // Get active creator IDs that have posts with engagements today
+        var creatorIds = await dbContext
+            .Engagements.Where(e => e.CreatedAt >= dayStart && e.CreatedAt < dayEnd)
+            .Select(e => e.Post.CreatorId)
+            .Distinct()
+            .ToListAsync(ct);
+
+        foreach (var creatorId in creatorIds)
+        {
+            var creatorPostIds = await dbContext
+                .Posts.Where(p => p.CreatorId == creatorId)
+                .Select(p => p.Id)
+                .ToListAsync(ct);
+
+            var views = await dbContext.Engagements.CountAsync(
+                e =>
+                    creatorPostIds.Contains(e.PostId)
+                    && e.Type == EngagementType.View
+                    && e.CreatedAt >= dayStart
+                    && e.CreatedAt < dayEnd,
+                ct
+            );
+            var likes = await dbContext.Engagements.CountAsync(
+                e =>
+                    creatorPostIds.Contains(e.PostId)
+                    && e.Type == EngagementType.Like
+                    && e.CreatedAt >= dayStart
+                    && e.CreatedAt < dayEnd,
+                ct
+            );
+            var saves = await dbContext.Engagements.CountAsync(
+                e =>
+                    creatorPostIds.Contains(e.PostId)
+                    && e.Type == EngagementType.Save
+                    && e.CreatedAt >= dayStart
+                    && e.CreatedAt < dayEnd,
+                ct
+            );
+            var shares = await dbContext.Engagements.CountAsync(
+                e =>
+                    creatorPostIds.Contains(e.PostId)
+                    && e.Type == EngagementType.Share
+                    && e.CreatedAt >= dayStart
+                    && e.CreatedAt < dayEnd,
+                ct
+            );
+            var clicks = await dbContext.ClickEvents.CountAsync(
+                c =>
+                    creatorPostIds.Contains(c.PostId)
+                    && c.CreatedAt >= dayStart
+                    && c.CreatedAt < dayEnd,
+                ct
+            );
+            var conversions = await dbContext.ClickEvents.CountAsync(
+                c =>
+                    creatorPostIds.Contains(c.PostId)
+                    && c.ConvertedAt >= dayStart
+                    && c.ConvertedAt < dayEnd,
+                ct
+            );
+            var earnings =
+                await dbContext
+                    .CreatorEarnings.Where(e =>
+                        e.CreatorId == creatorId && e.CreatedAt >= dayStart && e.CreatedAt < dayEnd
+                    )
+                    .SumAsync(e => (decimal?)e.Amount, ct)
+                ?? 0;
+
+            await UpsertSnapshotAsync(
+                dbContext,
+                new DailyMetricSnapshot
+                {
+                    Id = Guid.NewGuid(),
+                    Date = date,
+                    Scope = $"creator:{creatorId}",
+                    ScopeEntityId = creatorId,
+                    Views = views,
+                    Likes = likes,
+                    Saves = saves,
+                    Shares = shares,
+                    Clicks = clicks,
+                    Conversions = conversions,
+                    Revenue = 0,
+                    Earnings = earnings,
+                    NewUsers = 0,
+                    PostsPublished = 0,
+                    SearchesExecuted = 0,
+                    FiltersApplied = 0,
+                    ComputedAt = DateTime.UtcNow,
+                },
+                ct
+            );
         }
     }
 
     private static async Task UpsertSnapshotAsync(
         LykeDbContext dbContext,
         DailyMetricSnapshot snapshot,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
-        var existing = await dbContext.DailyMetricSnapshots
-            .FirstOrDefaultAsync(s => s.Date == snapshot.Date && s.Scope == snapshot.Scope, ct);
+        var existing = await dbContext.DailyMetricSnapshots.FirstOrDefaultAsync(
+            s => s.Date == snapshot.Date && s.Scope == snapshot.Scope,
+            ct
+        );
 
         if (existing != null)
         {

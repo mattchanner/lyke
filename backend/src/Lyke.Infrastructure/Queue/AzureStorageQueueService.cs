@@ -14,19 +14,18 @@ public class AzureStorageQueueService<T> : IMessageQueue<T>
     public AzureStorageQueueService(
         AzureBlobSettings blobSettings,
         AzureQueueSettings queueSettings,
-        ILogger<AzureStorageQueueService<T>> logger)
+        ILogger<AzureStorageQueueService<T>> logger
+    )
     {
         _logger = logger;
 
-        var options = new QueueClientOptions
-        {
-            MessageEncoding = QueueMessageEncoding.None
-        };
+        var options = new QueueClientOptions { MessageEncoding = QueueMessageEncoding.None };
 
         _queueClient = new QueueClient(
             blobSettings.ConnectionString,
             queueSettings.MediaProcessingQueueName,
-            options);
+            options
+        );
     }
 
     public async Task EnqueueAsync(T message, CancellationToken cancellationToken = default)
@@ -39,6 +38,7 @@ public class AzureStorageQueueService<T> : IMessageQueue<T>
         _logger.LogDebug(
             "Enqueued message of type {Type} to queue {Queue}",
             typeof(T).Name,
-            _queueClient.Name);
+            _queueClient.Name
+        );
     }
 }

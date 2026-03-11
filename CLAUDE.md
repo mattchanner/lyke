@@ -58,6 +58,28 @@ dotnet ef migrations add <name> --project src/Lyke.Infrastructure --startup-proj
 dotnet ef database update --project src/Lyke.Infrastructure --startup-project src/Lyke.Api
 ```
 
+## Code Formatting
+
+All C# code must be formatted with [CSharpier](https://csharpier.com/). A pre-commit hook enforces this automatically.
+
+```bash
+# Initial setup (run once after cloning)
+dotnet tool restore
+git config core.hooksPath .githooks
+
+# Or use the setup script
+./scripts/setup-hooks.ps1  # Windows
+./scripts/setup-hooks.sh   # macOS/Linux
+
+# Format all files
+dotnet csharpier format .
+
+# Check formatting without modifying
+dotnet csharpier check .
+```
+
+The pre-commit hook will block commits containing unformatted C# files.
+
 ## Key Domain Entities
 
 - **User** - Extends IdentityUser with UserType (Shopper, Creator, Retailer, Admin)

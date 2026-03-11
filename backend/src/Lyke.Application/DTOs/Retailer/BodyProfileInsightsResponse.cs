@@ -6,9 +6,7 @@ public record BodyProfileInsightsResponse(
     List<InsightBand> BodyTypes,
     List<InsightBand> FitPreferences,
     int MinimumGroupSize,
-    int TotalEngagedUsers);
+    int TotalEngagedUsers
+);
 
-public record InsightBand(
-    string Label,
-    int Count,
-    decimal Percentage);
+public record InsightBand(string Label, int Count, decimal Percentage);

@@ -232,7 +232,9 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailerProducts_WhenRetailerNotExists_ReturnsNotFound()
     {
         // Act
-        var response = await _client.GetAsync($"/api/commerce/v1/retailers/{Guid.NewGuid()}/products");
+        var response = await _client.GetAsync(
+            $"/api/commerce/v1/retailers/{Guid.NewGuid()}/products"
+        );
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -242,7 +244,9 @@ public class CommerceEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task GetRetailerProducts_IsPubliclyAccessible()
     {
         // Act - No authorization header
-        var response = await _client.GetAsync($"/api/commerce/v1/retailers/{Guid.NewGuid()}/products");
+        var response = await _client.GetAsync(
+            $"/api/commerce/v1/retailers/{Guid.NewGuid()}/products"
+        );
 
         // Assert - Should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);

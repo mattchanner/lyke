@@ -10,17 +10,14 @@ public class DailyMetricSnapshotConfiguration : IEntityTypeConfiguration<DailyMe
     {
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Scope)
-            .HasMaxLength(100)
-            .IsRequired();
+        builder.Property(e => e.Scope).HasMaxLength(100).IsRequired();
 
-        builder.Property(e => e.Revenue)
-            .HasPrecision(18, 2);
+        builder.Property(e => e.Revenue).HasPrecision(18, 2);
 
-        builder.Property(e => e.Earnings)
-            .HasPrecision(18, 2);
+        builder.Property(e => e.Earnings).HasPrecision(18, 2);
 
-        builder.HasIndex(e => new { e.Date, e.Scope })
+        builder
+            .HasIndex(e => new { e.Date, e.Scope })
             .IsUnique()
             .HasDatabaseName("IX_DailyMetricSnapshots_Date_Scope");
     }

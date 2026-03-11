@@ -32,7 +32,8 @@ public class ProfileService : IProfileService
         IStorageService storageService,
         IEventTrackingService eventTracking,
         IMemoryCache cache,
-        ILogger<ProfileService> logger)
+        ILogger<ProfileService> logger
+    )
     {
         _userManager = userManager;
         _dbContext = dbContext;
@@ -42,11 +43,14 @@ public class ProfileService : IProfileService
         _logger = logger;
     }
 
-    public async Task<UserProfileResponse> GetProfileAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<UserProfileResponse> GetProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
-        var user = await _userManager.Users
-            .Include(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.FitPreferences)
+        var user = await _userManager
+            .Users.Include(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -68,11 +72,15 @@ public class ProfileService : IProfileService
         );
     }
 
-    public async Task<UserProfileResponse> UpdateProfileAsync(Guid userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
+    public async Task<UserProfileResponse> UpdateProfileAsync(
+        Guid userId,
+        UpdateProfileRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
-        var user = await _userManager.Users
-            .Include(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.FitPreferences)
+        var user = await _userManager
+            .Users.Include(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -101,11 +109,16 @@ public class ProfileService : IProfileService
         return await GetProfileAsync(userId, cancellationToken);
     }
 
-    public async Task<UserProfileResponse> UploadProfileImageAsync(Guid userId, Stream imageStream, string contentType, CancellationToken cancellationToken = default)
+    public async Task<UserProfileResponse> UploadProfileImageAsync(
+        Guid userId,
+        Stream imageStream,
+        string contentType,
+        CancellationToken cancellationToken = default
+    )
     {
-        var user = await _userManager.Users
-            .Include(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.FitPreferences)
+        var user = await _userManager
+            .Users.Include(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.FitPreferences)
             .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
         if (user == null)
@@ -119,7 +132,10 @@ public class ProfileService : IProfileService
             "image/jpeg" => "jpg",
             "image/png" => "png",
             "image/webp" => "webp",
-            _ => throw new ValidationException("ContentType", "Unsupported image type. Use JPEG, PNG, or WebP.")
+            _ => throw new ValidationException(
+                "ContentType",
+                "Unsupported image type. Use JPEG, PNG, or WebP."
+            ),
         };
 
         var blobPath = $"profile-images/{userId}.{ext}";
@@ -134,11 +150,20 @@ public class ProfileService : IProfileService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to delete old profile image for user {UserId}", userId);
+                _logger.LogWarning(
+                    ex,
+                    "Failed to delete old profile image for user {UserId}",
+                    userId
+                );
             }
         }
 
-        var result = await _storageService.UploadAsync(imageStream, blobPath, contentType, cancellationToken);
+        var result = await _storageService.UploadAsync(
+            imageStream,
+            blobPath,
+            contentType,
+            cancellationToken
+        );
         user.ProfileImageUrl = result.Url;
         user.UpdatedAt = DateTime.UtcNow;
         await _userManager.UpdateAsync(user);
@@ -158,7 +183,10 @@ public class ProfileService : IProfileService
         );
     }
 
-    public async Task DeleteProfileImageAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task DeleteProfileImageAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -176,7 +204,11 @@ public class ProfileService : IProfileService
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to delete profile image blob for user {UserId}", userId);
+                _logger.LogWarning(
+                    ex,
+                    "Failed to delete profile image blob for user {UserId}",
+                    userId
+                );
             }
 
             user.ProfileImageUrl = null;
@@ -187,7 +219,10 @@ public class ProfileService : IProfileService
         }
     }
 
-    public async Task<BodyProfileResponse?> GetBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<BodyProfileResponse?> GetBodyProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var bodyProfiles = _dbContext.Set<BodyProfile>();
 
@@ -205,20 +240,33 @@ public class ProfileService : IProfileService
         return MapToBodyProfileResponse(profile);
     }
 
-    public async Task<BodyProfileResponse> CreateBodyProfileAsync(Guid userId, CreateBodyProfileRequest request, CancellationToken cancellationToken = default)
+    public async Task<BodyProfileResponse> CreateBodyProfileAsync(
+        Guid userId,
+        CreateBodyProfileRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var bodyProfiles = _dbContext.Set<BodyProfile>();
         var bodyTypes = _dbContext.Set<BodyType>();
 
         // Check if profile already exists
-        var existingProfile = await bodyProfiles.FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
+        var existingProfile = await bodyProfiles.FirstOrDefaultAsync(
+            bp => bp.UserId == userId,
+            cancellationToken
+        );
         if (existingProfile != null)
         {
-            throw new ValidationException("BodyProfile", "Body profile already exists. Use update instead.");
+            throw new ValidationException(
+                "BodyProfile",
+                "Body profile already exists. Use update instead."
+            );
         }
 
         // Validate body type exists
-        var bodyType = await bodyTypes.FindAsync(new object[] { request.BodyTypeId }, cancellationToken);
+        var bodyType = await bodyTypes.FindAsync(
+            new object[] { request.BodyTypeId },
+            cancellationToken
+        );
         if (bodyType == null)
         {
             throw new ValidationException("BodyTypeId", "Invalid body type");
@@ -228,7 +276,9 @@ public class ProfileService : IProfileService
         FrameSize? frameSize = null;
         if (request.FrameSizeId.HasValue)
         {
-            frameSize = await _dbContext.Set<FrameSize>().FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
+            frameSize = await _dbContext
+                .Set<FrameSize>()
+                .FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
             if (frameSize == null)
             {
                 throw new ValidationException("FrameSizeId", "Invalid frame size");
@@ -253,11 +303,14 @@ public class ProfileService : IProfileService
         // Add fit preferences
         if (request.FitPreferences != null && request.FitPreferences.Count > 0)
         {
-            var fitPrefs = request.FitPreferences.Distinct().Select(fp => new BodyProfileFitPreference
-            {
-                BodyProfileId = profile.Id,
-                FitPreference = fp,
-            }).ToList();
+            var fitPrefs = request
+                .FitPreferences.Distinct()
+                .Select(fp => new BodyProfileFitPreference
+                {
+                    BodyProfileId = profile.Id,
+                    FitPreference = fp,
+                })
+                .ToList();
             _dbContext.Set<BodyProfileFitPreference>().AddRange(fitPrefs);
             await _dbContext.SaveChangesAsync(cancellationToken);
             profile.FitPreferences = fitPrefs;
@@ -270,7 +323,8 @@ public class ProfileService : IProfileService
             userId,
             profile.Id,
             nameof(BodyProfile),
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         // Set navigation properties for response mapping
         profile.BodyType = bodyType;
@@ -278,7 +332,11 @@ public class ProfileService : IProfileService
         return MapToBodyProfileResponse(profile);
     }
 
-    public async Task<BodyProfileResponse> UpdateBodyProfileAsync(Guid userId, UpdateBodyProfileRequest request, CancellationToken cancellationToken = default)
+    public async Task<BodyProfileResponse> UpdateBodyProfileAsync(
+        Guid userId,
+        UpdateBodyProfileRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var bodyProfiles = _dbContext.Set<BodyProfile>();
         var bodyTypes = _dbContext.Set<BodyType>();
@@ -306,7 +364,10 @@ public class ProfileService : IProfileService
 
         if (request.BodyTypeId.HasValue)
         {
-            var bodyType = await bodyTypes.FindAsync(new object[] { request.BodyTypeId.Value }, cancellationToken);
+            var bodyType = await bodyTypes.FindAsync(
+                new object[] { request.BodyTypeId.Value },
+                cancellationToken
+            );
             if (bodyType == null)
             {
                 throw new ValidationException("BodyTypeId", "Invalid body type");
@@ -317,7 +378,9 @@ public class ProfileService : IProfileService
 
         if (request.FrameSizeId.HasValue)
         {
-            var frameSize = await _dbContext.Set<FrameSize>().FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
+            var frameSize = await _dbContext
+                .Set<FrameSize>()
+                .FindAsync(new object[] { request.FrameSizeId.Value }, cancellationToken);
             if (frameSize == null)
             {
                 throw new ValidationException("FrameSizeId", "Invalid frame size");
@@ -339,15 +402,19 @@ public class ProfileService : IProfileService
         if (request.FitPreferences != null)
         {
             // Replace all fit preferences
-            var existingPrefs = _dbContext.Set<BodyProfileFitPreference>()
+            var existingPrefs = _dbContext
+                .Set<BodyProfileFitPreference>()
                 .Where(bpfp => bpfp.BodyProfileId == profile.Id);
             _dbContext.Set<BodyProfileFitPreference>().RemoveRange(existingPrefs);
 
-            var newPrefs = request.FitPreferences.Distinct().Select(fp => new BodyProfileFitPreference
-            {
-                BodyProfileId = profile.Id,
-                FitPreference = fp,
-            }).ToList();
+            var newPrefs = request
+                .FitPreferences.Distinct()
+                .Select(fp => new BodyProfileFitPreference
+                {
+                    BodyProfileId = profile.Id,
+                    FitPreference = fp,
+                })
+                .ToList();
             _dbContext.Set<BodyProfileFitPreference>().AddRange(newPrefs);
             profile.FitPreferences = newPrefs;
         }
@@ -359,11 +426,17 @@ public class ProfileService : IProfileService
         return MapToBodyProfileResponse(profile);
     }
 
-    public async Task DeleteBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task DeleteBodyProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var bodyProfiles = _dbContext.Set<BodyProfile>();
 
-        var profile = await bodyProfiles.FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
+        var profile = await bodyProfiles.FirstOrDefaultAsync(
+            bp => bp.UserId == userId,
+            cancellationToken
+        );
 
         if (profile == null)
         {
@@ -376,7 +449,10 @@ public class ProfileService : IProfileService
         _logger.LogInformation("Body profile deleted for user {UserId}", userId);
     }
 
-    public async Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var bodyProfiles = _dbContext.Set<BodyProfile>();
 
@@ -398,84 +474,98 @@ public class ProfileService : IProfileService
             FrameSizeName: profile.FrameSize?.Name,
             Stature: profile.Stature,
             Build: profile.Build,
-            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(profile.Stature, profile.Build, profile.BodyType.Name),
+            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(
+                profile.Stature,
+                profile.Build,
+                profile.BodyType.Name
+            ),
             FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList()
         );
     }
 
-    public async Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<BodyTypeResponse>> GetBodyTypesAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        if (_cache.TryGetValue(BodyTypesCacheKey, out IReadOnlyList<BodyTypeResponse>? cached) && cached != null)
+        if (
+            _cache.TryGetValue(BodyTypesCacheKey, out IReadOnlyList<BodyTypeResponse>? cached)
+            && cached != null
+        )
         {
             return cached;
         }
 
-        var types = await _dbContext.Set<BodyType>()
+        var types = await _dbContext
+            .Set<BodyType>()
             .AsNoTracking()
             .OrderBy(bt => bt.DisplayOrder)
-            .Select(bt => new BodyTypeResponse(
-                bt.Id,
-                bt.Name,
-                bt.Description,
-                bt.DisplayOrder
-            ))
+            .Select(bt => new BodyTypeResponse(bt.Id, bt.Name, bt.Description, bt.DisplayOrder))
             .ToListAsync(cancellationToken);
 
         _cache.Set(BodyTypesCacheKey, (IReadOnlyList<BodyTypeResponse>)types, LookupCacheDuration);
         return types;
     }
 
-    public async Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FrameSizeResponse>> GetFrameSizesAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        if (_cache.TryGetValue(FrameSizesCacheKey, out IReadOnlyList<FrameSizeResponse>? cached) && cached != null)
+        if (
+            _cache.TryGetValue(FrameSizesCacheKey, out IReadOnlyList<FrameSizeResponse>? cached)
+            && cached != null
+        )
         {
             return cached;
         }
 
-        var sizes = await _dbContext.Set<FrameSize>()
+        var sizes = await _dbContext
+            .Set<FrameSize>()
             .AsNoTracking()
             .OrderBy(fs => fs.DisplayOrder)
-            .Select(fs => new FrameSizeResponse(
-                fs.Id,
-                fs.Name,
-                fs.Description,
-                fs.DisplayOrder
-            ))
+            .Select(fs => new FrameSizeResponse(fs.Id, fs.Name, fs.Description, fs.DisplayOrder))
             .ToListAsync(cancellationToken);
 
-        _cache.Set(FrameSizesCacheKey, (IReadOnlyList<FrameSizeResponse>)sizes, LookupCacheDuration);
+        _cache.Set(
+            FrameSizesCacheKey,
+            (IReadOnlyList<FrameSizeResponse>)sizes,
+            LookupCacheDuration
+        );
         return sizes;
     }
 
-    public Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<FitPreferenceResponse>> GetFitPreferencesAsync(
+        CancellationToken cancellationToken = default
+    )
     {
         var preferences = new List<FitPreferenceResponse>
         {
             new((int)FitPreference.Fitted, "Fitted", "Prefer clothes that fit close to the body"),
             new((int)FitPreference.Regular, "Regular", "Prefer standard fit clothes"),
-            new((int)FitPreference.Relaxed, "Relaxed", "Prefer loose, comfortable fit clothes")
+            new((int)FitPreference.Relaxed, "Relaxed", "Prefer loose, comfortable fit clothes"),
         };
 
         return Task.FromResult<IReadOnlyList<FitPreferenceResponse>>(preferences);
     }
 
-    public async Task<IReadOnlyList<FitTagResponse>> GetFitTagsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FitTagResponse>> GetFitTagsAsync(
+        CancellationToken cancellationToken = default
+    )
     {
-        if (_cache.TryGetValue(FitTagsCacheKey, out IReadOnlyList<FitTagResponse>? cached) && cached != null)
+        if (
+            _cache.TryGetValue(FitTagsCacheKey, out IReadOnlyList<FitTagResponse>? cached)
+            && cached != null
+        )
         {
             return cached;
         }
 
-        var tags = await _dbContext.Set<FitTag>()
+        var tags = await _dbContext
+            .Set<FitTag>()
             .AsNoTracking()
             .Where(ft => ft.IsActive)
             .OrderBy(ft => ft.Category)
             .ThenBy(ft => ft.Name)
-            .Select(ft => new FitTagResponse(
-                ft.Id,
-                ft.Name,
-                ft.Category
-            ))
+            .Select(ft => new FitTagResponse(ft.Id, ft.Name, ft.Category))
             .ToListAsync(cancellationToken);
 
         _cache.Set(FitTagsCacheKey, (IReadOnlyList<FitTagResponse>)tags, LookupCacheDuration);
@@ -496,7 +586,11 @@ public class ProfileService : IProfileService
             FrameSizeName: profile.FrameSize?.Name,
             Stature: profile.Stature,
             Build: profile.Build,
-            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(profile.Stature, profile.Build, profile.BodyType.Name),
+            BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(
+                profile.Stature,
+                profile.Build,
+                profile.BodyType.Name
+            ),
             FitPreferences: profile.FitPreferences.Select(fp => fp.FitPreference).ToList(),
             NeedsProfileUpdate: profile.FrameSizeId == null && profile.Stature == null,
             CreatedAt: profile.CreatedAt,
@@ -510,7 +604,8 @@ public class ProfileService : IProfileService
         var total = 5;
 
         // Email verified (assuming it's always set for now)
-        if (!string.IsNullOrEmpty(user.Email)) score++;
+        if (!string.IsNullOrEmpty(user.Email))
+            score++;
 
         // Has body profile
         if (user.BodyProfile != null)
@@ -518,14 +613,17 @@ public class ProfileService : IProfileService
             score++;
 
             // Has fit preferences
-            if (user.BodyProfile.FitPreferences.Count > 0) score++;
+            if (user.BodyProfile.FitPreferences.Count > 0)
+                score++;
         }
 
         // Account is active
-        if (user.IsActive) score++;
+        if (user.IsActive)
+            score++;
 
         // Has profile image
-        if (!string.IsNullOrEmpty(user.ProfileImageUrl)) score++;
+        if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+            score++;
 
         return (int)Math.Round((double)score / total * 100);
     }

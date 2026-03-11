@@ -1,8 +1,8 @@
 using FluentAssertions;
+using Lyke.Application.Interfaces;
 using Lyke.Application.Services;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
-using Lyke.Application.Interfaces;
 using Lyke.Infrastructure.Data;
 using Lyke.UnitTests.Fixtures;
 using Microsoft.Extensions.Logging;
@@ -39,7 +39,13 @@ public class EventTrackingServiceTests : IDisposable
         var entityId = Guid.NewGuid();
 
         // Act
-        await _sut.TrackAsync(eventType, userId, entityId, "Test", new Dictionary<string, string> { ["key"] = "value" });
+        await _sut.TrackAsync(
+            eventType,
+            userId,
+            entityId,
+            "Test",
+            new Dictionary<string, string> { ["key"] = "value" }
+        );
 
         // Assert
         var events = _context.AnalyticsEvents.ToList();
@@ -57,7 +63,9 @@ public class EventTrackingServiceTests : IDisposable
     [InlineData(AnalyticsEventType.PostShare)]
     [InlineData(AnalyticsEventType.ProductClick)]
     [InlineData(AnalyticsEventType.ProductConvert)]
-    public async Task TrackAsync_EngagementEvent_DoesNotPersistToDatabase(AnalyticsEventType eventType)
+    public async Task TrackAsync_EngagementEvent_DoesNotPersistToDatabase(
+        AnalyticsEventType eventType
+    )
     {
         // Act
         await _sut.TrackAsync(eventType, Guid.NewGuid(), Guid.NewGuid(), "Post");
@@ -85,12 +93,17 @@ public class EventTrackingServiceTests : IDisposable
         // Assert
         var persisted = _context.AnalyticsEvents.ToList();
         persisted.Should().HaveCount(3);
-        persisted.Select(e => e.EventType).Should().BeEquivalentTo(new[]
-        {
-            AnalyticsEventType.SearchExecute,
-            AnalyticsEventType.FeedFilter,
-            AnalyticsEventType.ProfileComplete
-        });
+        persisted
+            .Select(e => e.EventType)
+            .Should()
+            .BeEquivalentTo(
+                new[]
+                {
+                    AnalyticsEventType.SearchExecute,
+                    AnalyticsEventType.FeedFilter,
+                    AnalyticsEventType.ProfileComplete,
+                }
+            );
     }
 
     [Fact]

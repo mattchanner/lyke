@@ -7,27 +7,13 @@ public enum BulkPostAction
     Approve,
     Reject,
     Remove,
-    Flag
+    Flag,
 }
 
-public record BulkModeratePostsRequest(
-    List<Guid> PostIds,
-    BulkPostAction Action,
-    string? Reason
-);
+public record BulkModeratePostsRequest(List<Guid> PostIds, BulkPostAction Action, string? Reason);
 
-public record BulkSuspendUsersRequest(
-    List<Guid> UserIds,
-    string Reason
-);
+public record BulkSuspendUsersRequest(List<Guid> UserIds, string Reason);
 
-public record BulkActionResult(
-    int SuccessCount,
-    int FailureCount,
-    List<BulkActionError> Errors
-);
+public record BulkActionResult(int SuccessCount, int FailureCount, List<BulkActionError> Errors);
 
-public record BulkActionError(
-    Guid Id,
-    string Error
-);
+public record BulkActionError(Guid Id, string Error);

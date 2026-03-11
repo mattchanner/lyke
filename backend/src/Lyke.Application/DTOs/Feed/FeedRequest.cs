@@ -15,5 +15,5 @@ public enum FeedSortBy
     Relevance = 0,
     Recent = 1,
     MostLiked = 2,
-    Following = 3
+    Following = 3,
 }

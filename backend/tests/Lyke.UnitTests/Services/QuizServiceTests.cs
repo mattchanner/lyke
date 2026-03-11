@@ -39,13 +39,15 @@ public class QuizServiceTests : IDisposable
         // Q4: Same everywhere - index 3
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Same width
-            new(2, 0), // Very defined waist
-            new(3, 3), // Evenly distributed
-            new(4, 3)  // Same everywhere
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Same width
+                new(2, 0), // Very defined waist
+                new(3, 3), // Evenly distributed
+                new(4, 3), // Same everywhere
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -65,13 +67,15 @@ public class QuizServiceTests : IDisposable
         // Q4: Tight hips - index 2
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 2), // Hips wider
-            new(2, 0), // Very defined waist
-            new(3, 2), // Lower body
-            new(4, 2)  // Tight hips
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 2), // Hips wider
+                new(2, 0), // Very defined waist
+                new(3, 2), // Lower body
+                new(4, 2), // Tight hips
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -91,13 +95,15 @@ public class QuizServiceTests : IDisposable
         // Q4: Tight middle - index 1
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 0), // Shoulders wider
-            new(2, 2), // Minimal waist definition
-            new(3, 1), // Midsection
-            new(4, 1)  // Tight middle
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 0), // Shoulders wider
+                new(2, 2), // Minimal waist definition
+                new(3, 1), // Midsection
+                new(4, 1), // Tight middle
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -117,13 +123,15 @@ public class QuizServiceTests : IDisposable
         // Q4: Same everywhere - index 3
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Same width
-            new(2, 2), // Minimal waist definition
-            new(3, 3), // Evenly distributed
-            new(4, 3)  // Same everywhere
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Same width
+                new(2, 2), // Minimal waist definition
+                new(3, 3), // Evenly distributed
+                new(4, 3), // Same everywhere
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -143,13 +151,15 @@ public class QuizServiceTests : IDisposable
         // Q4: Tight shoulders - index 0
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 0), // Shoulders wider
-            new(2, 1), // Moderate waist
-            new(3, 0), // Upper body
-            new(4, 0)  // Tight shoulders
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 0), // Shoulders wider
+                new(2, 1), // Moderate waist
+                new(3, 0), // Upper body
+                new(4, 0), // Tight shoulders
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -167,19 +177,24 @@ public class QuizServiceTests : IDisposable
     [InlineData(0, Stature.Petite)]
     [InlineData(1, Stature.Average)]
     [InlineData(2, Stature.Tall)]
-    public async Task CalculateResultAsync_StatureQuestion_MapsCorrectly(int answerIndex, Stature expectedStature)
+    public async Task CalculateResultAsync_StatureQuestion_MapsCorrectly(
+        int answerIndex,
+        Stature expectedStature
+    )
     {
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Body shape questions
-            new(2, 0),
-            new(3, 3),
-            new(4, 3),
-            new(5, answerIndex) // Stature question
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Body shape questions
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+                new(5, answerIndex), // Stature question
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -191,19 +206,24 @@ public class QuizServiceTests : IDisposable
     [Theory]
     [InlineData(0, Build.Standard)]
     [InlineData(1, Build.Plus)]
-    public async Task CalculateResultAsync_BuildQuestion_MapsCorrectly(int answerIndex, Build expectedBuild)
+    public async Task CalculateResultAsync_BuildQuestion_MapsCorrectly(
+        int answerIndex,
+        Build expectedBuild
+    )
     {
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Body shape questions
-            new(2, 0),
-            new(3, 3),
-            new(4, 3),
-            new(6, answerIndex) // Build question
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Body shape questions
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+                new(6, answerIndex), // Build question
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -218,13 +238,9 @@ public class QuizServiceTests : IDisposable
         // Arrange - Only body shape questions, no stature/build
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1),
-            new(2, 0),
-            new(3, 3),
-            new(4, 3)
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer> { new(1, 1), new(2, 0), new(3, 3), new(4, 3) }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -244,15 +260,17 @@ public class QuizServiceTests : IDisposable
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Hourglass indicators
-            new(2, 0),
-            new(3, 3),
-            new(4, 3),
-            new(5, 0), // Petite
-            new(6, 1)  // Plus
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Hourglass indicators
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+                new(5, 0), // Petite
+                new(6, 1), // Plus
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -267,15 +285,17 @@ public class QuizServiceTests : IDisposable
         // Arrange - Standard build should be omitted from label
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 2), // Pear indicators
-            new(2, 0),
-            new(3, 2),
-            new(4, 2),
-            new(5, 2), // Tall
-            new(6, 0)  // Standard
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 2), // Pear indicators
+                new(2, 0),
+                new(3, 2),
+                new(4, 2),
+                new(5, 2), // Tall
+                new(6, 0), // Standard
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -291,15 +311,17 @@ public class QuizServiceTests : IDisposable
         // Arrange - Average stature with Standard build = just body type (both are defaults, omitted)
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1),
-            new(2, 2),
-            new(3, 3),
-            new(4, 3),
-            new(5, 1), // Average (omitted from label)
-            new(6, 0)  // Standard (omitted from label)
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1),
+                new(2, 2),
+                new(3, 3),
+                new(4, 3),
+                new(5, 1), // Average (omitted from label)
+                new(6, 0), // Standard (omitted from label)
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -337,14 +359,16 @@ public class QuizServiceTests : IDisposable
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(99, 0), // Invalid question ID
-            new(1, 1),
-            new(2, 0),
-            new(3, 3),
-            new(4, 3)
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(99, 0), // Invalid question ID
+                new(1, 1),
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -360,13 +384,15 @@ public class QuizServiceTests : IDisposable
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 99), // Invalid answer index
-            new(2, 0),
-            new(3, 3),
-            new(4, 3)
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 99), // Invalid answer index
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -382,13 +408,15 @@ public class QuizServiceTests : IDisposable
         // The tie-breaker priority is: Hourglass > Pear > Rectangle > Apple > Inverted Triangle
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1), // Same width - gives points to multiple shapes
-            new(2, 1), // Moderate waist - gives 1 point to all shapes
-            new(3, 3), // Evenly - gives points to multiple shapes
-            new(4, 3)  // Same everywhere
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1), // Same width - gives points to multiple shapes
+                new(2, 1), // Moderate waist - gives 1 point to all shapes
+                new(3, 3), // Evenly - gives points to multiple shapes
+                new(4, 3), // Same everywhere
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);
@@ -407,15 +435,17 @@ public class QuizServiceTests : IDisposable
         // Arrange
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new QuizResultRequest(new List<QuizAnswer>
-        {
-            new(1, 1),
-            new(2, 0),
-            new(3, 3),
-            new(4, 3),
-            new(5, 0),
-            new(6, 1)
-        });
+        var request = new QuizResultRequest(
+            new List<QuizAnswer>
+            {
+                new(1, 1),
+                new(2, 0),
+                new(3, 3),
+                new(4, 3),
+                new(5, 0),
+                new(6, 1),
+            }
+        );
 
         // Act
         var result = await _sut.CalculateResultAsync(request);

@@ -23,7 +23,8 @@ public class PrivacyService : IPrivacyService
         DbContext dbContext,
         IOptions<PrivacySettings> privacySettings,
         IEmailService emailService,
-        ILogger<PrivacyService> logger)
+        ILogger<PrivacyService> logger
+    )
     {
         _userManager = userManager;
         _dbContext = dbContext;
@@ -32,7 +33,10 @@ public class PrivacyService : IPrivacyService
         _logger = logger;
     }
 
-    public async Task<DataExportResponse> ExportUserDataAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<DataExportResponse> ExportUserDataAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -55,24 +59,31 @@ public class PrivacyService : IPrivacyService
         );
 
         // Body profile
-        var bodyProfile = await _dbContext.Set<BodyProfile>()
+        var bodyProfile = await _dbContext
+            .Set<BodyProfile>()
             .Include(bp => bp.BodyType)
             .Include(bp => bp.FrameSize)
             .Include(bp => bp.FitPreferences)
             .FirstOrDefaultAsync(bp => bp.UserId == userId, cancellationToken);
 
-        BodyProfileExportData? bodyProfileData = bodyProfile != null
-            ? new BodyProfileExportData(
-                HeightCm: bodyProfile.HeightCm,
-                WeightKg: bodyProfile.WeightKg,
-                BodyTypeName: bodyProfile.BodyType.Name,
-                FrameSizeName: bodyProfile.FrameSize?.Name,
-                FitPreferences: string.Join(", ", bodyProfile.FitPreferences.Select(fp => fp.FitPreference.ToString())),
-                CreatedAt: bodyProfile.CreatedAt)
-            : null;
+        BodyProfileExportData? bodyProfileData =
+            bodyProfile != null
+                ? new BodyProfileExportData(
+                    HeightCm: bodyProfile.HeightCm,
+                    WeightKg: bodyProfile.WeightKg,
+                    BodyTypeName: bodyProfile.BodyType.Name,
+                    FrameSizeName: bodyProfile.FrameSize?.Name,
+                    FitPreferences: string.Join(
+                        ", ",
+                        bodyProfile.FitPreferences.Select(fp => fp.FitPreference.ToString())
+                    ),
+                    CreatedAt: bodyProfile.CreatedAt
+                )
+                : null;
 
         // Creator + Posts
-        var creator = await _dbContext.Set<Creator>()
+        var creator = await _dbContext
+            .Set<Creator>()
             .Include(c => c.Posts)
                 .ThenInclude(p => p.PostProducts)
                     .ThenInclude(pp => pp.Product)
@@ -98,38 +109,50 @@ public class PrivacyService : IPrivacyService
                 SocialLinks: creator.SocialLinks,
                 VerificationStatus: creator.VerificationStatus.ToString(),
                 CreatedAt: creator.CreatedAt,
-                Posts: postsData);
+                Posts: postsData
+            );
 
-            earningsData = creator.Earnings.Select(e => new EarningExportData(
-                EarningType: e.EarningType.ToString(),
-                Amount: e.Amount,
-                Currency: e.Currency,
-                Status: e.Status.ToString(),
-                PaidAt: e.PaidAt,
-                CreatedAt: e.CreatedAt)).ToList();
+            earningsData = creator
+                .Earnings.Select(e => new EarningExportData(
+                    EarningType: e.EarningType.ToString(),
+                    Amount: e.Amount,
+                    Currency: e.Currency,
+                    Status: e.Status.ToString(),
+                    PaidAt: e.PaidAt,
+                    CreatedAt: e.CreatedAt
+                ))
+                .ToList();
         }
 
         // Engagements
-        var engagements = await _dbContext.Set<Engagement>()
+        var engagements = await _dbContext
+            .Set<Engagement>()
             .Where(e => e.UserId == userId)
             .Select(e => new EngagementExportData(
                 PostId: e.PostId,
                 Type: e.Type.ToString(),
-                CreatedAt: e.CreatedAt))
+                CreatedAt: e.CreatedAt
+            ))
             .ToListAsync(cancellationToken);
 
         // Click events
-        var clickEvents = await _dbContext.Set<ClickEvent>()
+        var clickEvents = await _dbContext
+            .Set<ClickEvent>()
             .Where(ce => ce.UserId == userId)
             .Select(ce => new ClickEventExportData(
                 PostId: ce.PostId,
                 CreatedAt: ce.CreatedAt,
-                ConvertedAt: ce.ConvertedAt))
+                ConvertedAt: ce.ConvertedAt
+            ))
             .ToListAsync(cancellationToken);
 
         _logger.LogInformation("Data export generated for user {UserId}", userId);
 
-        _ = _emailService.SendDataExportNotificationAsync(user.Email!, creator != null, cancellationToken);
+        _ = _emailService.SendDataExportNotificationAsync(
+            user.Email!,
+            creator != null,
+            cancellationToken
+        );
 
         return new DataExportResponse(
             User: userData,
@@ -139,10 +162,14 @@ public class PrivacyService : IPrivacyService
             Engagements: engagements,
             ClickEvents: clickEvents,
             Earnings: earningsData,
-            ExportedAt: DateTime.UtcNow);
+            ExportedAt: DateTime.UtcNow
+        );
     }
 
-    public async Task<ConsentStatusResponse> GetConsentStatusAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<ConsentStatusResponse> GetConsentStatusAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -155,10 +182,15 @@ public class PrivacyService : IPrivacyService
             PrivacyPolicyVersion: user.PrivacyPolicyVersion,
             PrivacyPolicyAcceptedAt: user.PrivacyPolicyAcceptedAt,
             CurrentPolicyVersion: _privacySettings.CurrentPolicyVersion,
-            NeedsReconsent: user.PrivacyPolicyVersion != _privacySettings.CurrentPolicyVersion);
+            NeedsReconsent: user.PrivacyPolicyVersion != _privacySettings.CurrentPolicyVersion
+        );
     }
 
-    public async Task UpdateConsentAsync(Guid userId, UpdateConsentRequest request, CancellationToken cancellationToken = default)
+    public async Task UpdateConsentAsync(
+        Guid userId,
+        UpdateConsentRequest request,
+        CancellationToken cancellationToken = default
+    )
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user == null)
@@ -179,26 +211,32 @@ public class PrivacyService : IPrivacyService
 
         await _userManager.UpdateAsync(user);
 
-        _logger.LogInformation("Consent updated for user {UserId}: Marketing={Marketing}, PolicyAccepted={Policy}",
-            userId, request.MarketingOptIn, request.AcceptPrivacyPolicy);
+        _logger.LogInformation(
+            "Consent updated for user {UserId}: Marketing={Marketing}, PolicyAccepted={Policy}",
+            userId,
+            request.MarketingOptIn,
+            request.AcceptPrivacyPolicy
+        );
     }
 
-    private static PostExportData MapPostExport(Post post) => new(
-        Id: post.Id,
-        Title: post.Title,
-        Description: post.Description,
-        MediaType: post.MediaType.ToString(),
-        MediaUrls: post.MediaUrls,
-        Status: post.Status.ToString(),
-        PublishedAt: post.PublishedAt,
-        CreatedAt: post.CreatedAt,
-        Products: post.PostProducts.Select(pp => new PostProductExportData(
-            ProductName: pp.Product.Name,
-            SizeWorn: pp.SizeWorn,
-            FitNotes: pp.FitNotes,
-            FitRating: pp.FitRating?.ToString(),
-            StylingNotes: pp.StylingNotes,
-            FitTags: pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
-        )).ToList()
-    );
+    private static PostExportData MapPostExport(Post post) =>
+        new(
+            Id: post.Id,
+            Title: post.Title,
+            Description: post.Description,
+            MediaType: post.MediaType.ToString(),
+            MediaUrls: post.MediaUrls,
+            Status: post.Status.ToString(),
+            PublishedAt: post.PublishedAt,
+            CreatedAt: post.CreatedAt,
+            Products: post.PostProducts.Select(pp => new PostProductExportData(
+                    ProductName: pp.Product.Name,
+                    SizeWorn: pp.SizeWorn,
+                    FitNotes: pp.FitNotes,
+                    FitRating: pp.FitRating?.ToString(),
+                    StylingNotes: pp.StylingNotes,
+                    FitTags: pp.FitTags.Select(ft => ft.FitTag.Name).ToList()
+                ))
+                .ToList()
+        );
 }

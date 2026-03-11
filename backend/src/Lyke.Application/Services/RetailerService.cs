@@ -120,7 +120,9 @@ public class RetailerService : IRetailerService
         if (!string.IsNullOrEmpty(retailer.AffiliateConfig))
         {
             affiliateConfig = JsonSerializer.Deserialize<AffiliateConfigDto>(
-                retailer.AffiliateConfig, JsonOptions);
+                retailer.AffiliateConfig,
+                JsonOptions
+            );
         }
 
         return new RetailerProfileResponse(
@@ -378,7 +380,7 @@ public class RetailerService : IRetailerService
         var products = await query
             .AsNoTracking()
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.ClickEvents)
+                .ThenInclude(pp => pp.ClickEvents)
             .AsSplitQuery()
             .OrderByDescending(p => p.CreatedAt)
             .Skip((request.Page - 1) * request.PageSize)
@@ -409,7 +411,7 @@ public class RetailerService : IRetailerService
         var product = await _dbContext
             .Set<Product>()
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.ClickEvents)
+                .ThenInclude(pp => pp.ClickEvents)
             .FirstOrDefaultAsync(
                 p => p.Id == productId && p.RetailerId == retailer.Id,
                 cancellationToken
@@ -760,7 +762,7 @@ public class RetailerService : IRetailerService
             .Set<Product>()
             .Where(p => p.RetailerId == retailer.Id)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.ClickEvents)
+                .ThenInclude(pp => pp.ClickEvents)
             .ToListAsync(cancellationToken);
 
         var topProducts = products
@@ -1062,9 +1064,7 @@ public class RetailerService : IRetailerService
         CancellationToken cancellationToken = default
     )
     {
-        var query = _dbContext
-            .Set<Retailer>()
-            .Where(r => r.IsActive);
+        var query = _dbContext.Set<Retailer>().Where(r => r.IsActive);
 
         if (!string.IsNullOrWhiteSpace(request.Search))
         {

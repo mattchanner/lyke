@@ -7,30 +7,102 @@ namespace Lyke.Application.Interfaces;
 public interface ICreatorService
 {
     // Registration & Profile
-    Task<CreatorProfileResponse> RegisterAsCreatorAsync(Guid userId, RegisterCreatorRequest request, CancellationToken cancellationToken = default);
-    Task<CreatorProfileResponse> GetCreatorProfileAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<PublicCreatorProfileResponse> GetPublicCreatorProfileAsync(Guid creatorId, CancellationToken cancellationToken = default);
-    Task<CreatorProfileResponse> UpdateCreatorProfileAsync(Guid userId, UpdateCreatorProfileRequest request, CancellationToken cancellationToken = default);
+    Task<CreatorProfileResponse> RegisterAsCreatorAsync(
+        Guid userId,
+        RegisterCreatorRequest request,
+        CancellationToken cancellationToken = default
+    );
+    Task<CreatorProfileResponse> GetCreatorProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<PublicCreatorProfileResponse> GetPublicCreatorProfileAsync(
+        Guid creatorId,
+        CancellationToken cancellationToken = default
+    );
+    Task<CreatorProfileResponse> UpdateCreatorProfileAsync(
+        Guid userId,
+        UpdateCreatorProfileRequest request,
+        CancellationToken cancellationToken = default
+    );
 
     // Verification (Creator)
-    Task<VerificationStatusResponse> GetVerificationStatusAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<VerificationStatusResponse> SubmitVerificationAsync(Guid userId, SubmitVerificationRequest request, CancellationToken cancellationToken = default);
+    Task<VerificationStatusResponse> GetVerificationStatusAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<VerificationStatusResponse> SubmitVerificationAsync(
+        Guid userId,
+        SubmitVerificationRequest request,
+        CancellationToken cancellationToken = default
+    );
 
     // Verification (Admin)
-    Task<(IReadOnlyList<PendingVerificationResponse> Verifications, PaginationMeta Meta)> GetPendingVerificationsAsync(VerificationStatus? status, int page, int pageSize, CancellationToken cancellationToken = default);
-    Task<PendingVerificationResponse> GetVerificationDetailsAsync(Guid creatorId, CancellationToken cancellationToken = default);
-    Task<VerificationStatusResponse> ReviewVerificationAsync(Guid adminUserId, Guid creatorId, ReviewVerificationRequest request, CancellationToken cancellationToken = default);
+    Task<(
+        IReadOnlyList<PendingVerificationResponse> Verifications,
+        PaginationMeta Meta
+    )> GetPendingVerificationsAsync(
+        VerificationStatus? status,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
+    Task<PendingVerificationResponse> GetVerificationDetailsAsync(
+        Guid creatorId,
+        CancellationToken cancellationToken = default
+    );
+    Task<VerificationStatusResponse> ReviewVerificationAsync(
+        Guid adminUserId,
+        Guid creatorId,
+        ReviewVerificationRequest request,
+        CancellationToken cancellationToken = default
+    );
 
     // Post Management
-    Task<CreatorPostResponse> CreatePostAsync(Guid userId, CreatePostRequest request, CancellationToken cancellationToken = default);
-    Task<CreatorPostResponse> UpdatePostAsync(Guid userId, Guid postId, UpdatePostRequest request, CancellationToken cancellationToken = default);
+    Task<CreatorPostResponse> CreatePostAsync(
+        Guid userId,
+        CreatePostRequest request,
+        CancellationToken cancellationToken = default
+    );
+    Task<CreatorPostResponse> UpdatePostAsync(
+        Guid userId,
+        Guid postId,
+        UpdatePostRequest request,
+        CancellationToken cancellationToken = default
+    );
     Task DeletePostAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
-    Task<CreatorPostResponse> GetPostAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
-    Task<(IReadOnlyList<CreatorPostResponse> Posts, PaginationMeta Meta)> GetPostsAsync(Guid userId, CreatorPostsRequest request, CancellationToken cancellationToken = default);
-    Task<CreatorPostResponse> SubmitPostForReviewAsync(Guid userId, Guid postId, CancellationToken cancellationToken = default);
+    Task<CreatorPostResponse> GetPostAsync(
+        Guid userId,
+        Guid postId,
+        CancellationToken cancellationToken = default
+    );
+    Task<(IReadOnlyList<CreatorPostResponse> Posts, PaginationMeta Meta)> GetPostsAsync(
+        Guid userId,
+        CreatorPostsRequest request,
+        CancellationToken cancellationToken = default
+    );
+    Task<CreatorPostResponse> SubmitPostForReviewAsync(
+        Guid userId,
+        Guid postId,
+        CancellationToken cancellationToken = default
+    );
 
     // Analytics & Earnings
-    Task<CreatorAnalyticsResponse> GetAnalyticsAsync(Guid userId, CreatorAnalyticsRequest request, CancellationToken cancellationToken = default);
-    Task<EarningsSummaryResponse> GetEarningsSummaryAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task<(IReadOnlyList<EarningDetailResponse> Earnings, PaginationMeta Meta)> GetEarningsHistoryAsync(Guid userId, EarningsHistoryRequest request, CancellationToken cancellationToken = default);
+    Task<CreatorAnalyticsResponse> GetAnalyticsAsync(
+        Guid userId,
+        CreatorAnalyticsRequest request,
+        CancellationToken cancellationToken = default
+    );
+    Task<EarningsSummaryResponse> GetEarningsSummaryAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<(
+        IReadOnlyList<EarningDetailResponse> Earnings,
+        PaginationMeta Meta
+    )> GetEarningsHistoryAsync(
+        Guid userId,
+        EarningsHistoryRequest request,
+        CancellationToken cancellationToken = default
+    );
 }

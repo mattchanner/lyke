@@ -14,15 +14,14 @@ namespace Lyke.Infrastructure.Data.Migrations
                 name: "ProfileImageUrl",
                 table: "AspNetUsers",
                 type: "text",
-                nullable: true);
+                nullable: true
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "ProfileImageUrl",
-                table: "AspNetUsers");
+            migrationBuilder.DropColumn(name: "ProfileImageUrl", table: "AspNetUsers");
         }
     }
 }

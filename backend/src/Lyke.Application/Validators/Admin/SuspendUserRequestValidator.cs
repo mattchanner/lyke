@@ -7,9 +7,7 @@ public class SuspendUserRequestValidator : AbstractValidator<SuspendUserRequest>
 {
     public SuspendUserRequestValidator()
     {
-        RuleFor(x => x.Reason)
-            .NotEmpty()
-            .WithMessage("Suspension reason is required");
+        RuleFor(x => x.Reason).NotEmpty().WithMessage("Suspension reason is required");
 
         RuleFor(x => x.Reason)
             .MaximumLength(500)

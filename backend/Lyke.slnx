@@ -1,6 +1,9 @@
 <Solution>
   <Folder Name="/aspire/">
-    <Project Path="../aspire/Lyke.AppHost/Lyke.AppHost.csproj" Id="98726864-7b3f-4f59-90fa-59b457dcaf98" />
+    <Project
+      Path="../aspire/Lyke.AppHost/Lyke.AppHost.csproj"
+      Id="98726864-7b3f-4f59-90fa-59b457dcaf98"
+    />
     <Project Path="../aspire/Lyke.ServiceDefaults/Lyke.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/backend/" />

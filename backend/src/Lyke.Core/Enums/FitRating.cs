@@ -6,5 +6,5 @@ public enum FitRating
     SlightlySmall = 1,
     TrueToSize = 2,
     SlightlyLarge = 3,
-    TooLarge = 4
+    TooLarge = 4,
 }

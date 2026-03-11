@@ -1,5 +1,3 @@
 namespace Lyke.Application.DTOs.Auth;
 
-public record RefreshTokenRequest(
-    string RefreshToken
-);
+public record RefreshTokenRequest(string RefreshToken);

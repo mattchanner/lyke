@@ -36,14 +36,14 @@ public class ProfileServiceTests : IDisposable
             _storageServiceMock.Object,
             new Mock<IEventTrackingService>().Object,
             new MemoryCache(new MemoryCacheOptions()),
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
     {
         _context.Dispose();
     }
-
 
     [Fact]
     public async Task GetBodyProfileAsync_WithExistingProfile_ReturnsProfile()
@@ -85,7 +85,15 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, null, null, null, new List<FitPreference> { FitPreference.Regular });
+        var request = new CreateBodyProfileRequest(
+            175,
+            70m,
+            1,
+            null,
+            null,
+            null,
+            new List<FitPreference> { FitPreference.Regular }
+        );
 
         // Act
         var result = await _sut.CreateBodyProfileAsync(userId, request);
@@ -97,7 +105,9 @@ public class ProfileServiceTests : IDisposable
         result.BodyTypeId.Should().Be(1);
         result.FitPreferences.Should().Contain(FitPreference.Regular);
 
-        var savedProfile = await _context.BodyProfiles.FirstOrDefaultAsync(bp => bp.UserId == userId);
+        var savedProfile = await _context.BodyProfiles.FirstOrDefaultAsync(bp =>
+            bp.UserId == userId
+        );
         savedProfile.Should().NotBeNull();
     }
 
@@ -108,18 +118,28 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(userId: userId, bodyTypeId: 1);
+        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(
+            userId: userId,
+            bodyTypeId: 1
+        );
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new CreateBodyProfileRequest(175, 70m, 1, null, null, null, new List<FitPreference> { FitPreference.Regular });
+        var request = new CreateBodyProfileRequest(
+            175,
+            70m,
+            1,
+            null,
+            null,
+            null,
+            new List<FitPreference> { FitPreference.Regular }
+        );
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*already exists*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*already exists*");
     }
 
     [Fact]
@@ -129,14 +149,21 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var request = new CreateBodyProfileRequest(175, 70m, 999, null, null, null, new List<FitPreference> { FitPreference.Regular }); // Invalid body type
+        var request = new CreateBodyProfileRequest(
+            175,
+            70m,
+            999,
+            null,
+            null,
+            null,
+            new List<FitPreference> { FitPreference.Regular }
+        ); // Invalid body type
 
         // Act
         var act = () => _sut.CreateBodyProfileAsync(userId, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*Invalid body type*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*Invalid body type*");
     }
 
     [Fact]
@@ -146,11 +173,24 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(userId: userId, heightCm: 170, weightKg: 65m, bodyTypeId: 1);
+        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(
+            userId: userId,
+            heightCm: 170,
+            weightKg: 65m,
+            bodyTypeId: 1
+        );
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
-        var request = new UpdateBodyProfileRequest(180, 75m, null, null, null, null, new List<FitPreference> { FitPreference.Fitted });
+        var request = new UpdateBodyProfileRequest(
+            180,
+            75m,
+            null,
+            null,
+            null,
+            null,
+            new List<FitPreference> { FitPreference.Fitted }
+        );
 
         // Act
         var result = await _sut.UpdateBodyProfileAsync(userId, request);
@@ -167,7 +207,15 @@ public class ProfileServiceTests : IDisposable
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new UpdateBodyProfileRequest(180, 75m, null, null, null, null, new List<FitPreference> { FitPreference.Fitted });
+        var request = new UpdateBodyProfileRequest(
+            180,
+            75m,
+            null,
+            null,
+            null,
+            null,
+            new List<FitPreference> { FitPreference.Fitted }
+        );
 
         // Act
         var act = () => _sut.UpdateBodyProfileAsync(userId, request);
@@ -183,7 +231,10 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(userId: userId, bodyTypeId: 1);
+        var existingProfile = TestDbContextFactory.CreateTestBodyProfile(
+            userId: userId,
+            bodyTypeId: 1
+        );
         _context.BodyProfiles.Add(existingProfile);
         await _context.SaveChangesAsync();
 
@@ -191,7 +242,9 @@ public class ProfileServiceTests : IDisposable
         await _sut.DeleteBodyProfileAsync(userId);
 
         // Assert
-        var deletedProfile = await _context.BodyProfiles.FirstOrDefaultAsync(bp => bp.UserId == userId);
+        var deletedProfile = await _context.BodyProfiles.FirstOrDefaultAsync(bp =>
+            bp.UserId == userId
+        );
         deletedProfile.Should().BeNull();
     }
 
@@ -244,7 +297,12 @@ public class ProfileServiceTests : IDisposable
         var userId = Guid.NewGuid();
         await TestDbContextFactory.SeedTestDataAsync(_context);
 
-        var bodyProfile = TestDbContextFactory.CreateTestBodyProfile(userId: userId, heightCm: 175, weightKg: 70m, bodyTypeId: 1);
+        var bodyProfile = TestDbContextFactory.CreateTestBodyProfile(
+            userId: userId,
+            heightCm: 175,
+            weightKg: 70m,
+            bodyTypeId: 1
+        );
         _context.BodyProfiles.Add(bodyProfile);
         await _context.SaveChangesAsync();
 

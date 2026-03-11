@@ -10,31 +10,32 @@ public class ClickEventConfiguration : IEntityTypeConfiguration<ClickEvent>
     {
         builder.HasKey(ce => ce.Id);
 
-        builder.Property(ce => ce.SessionId)
-            .HasMaxLength(100);
+        builder.Property(ce => ce.SessionId).HasMaxLength(100);
 
-        builder.Property(ce => ce.AttributionData)
-            .HasColumnType("jsonb");
+        builder.Property(ce => ce.AttributionData).HasColumnType("jsonb");
 
-        builder.HasOne(ce => ce.User)
+        builder
+            .HasOne(ce => ce.User)
             .WithMany(u => u.ClickEvents)
             .HasForeignKey(ce => ce.UserId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne(ce => ce.Post)
+        builder
+            .HasOne(ce => ce.Post)
             .WithMany(p => p.ClickEvents)
             .HasForeignKey(ce => ce.PostId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(ce => ce.PostProduct)
+        builder
+            .HasOne(ce => ce.PostProduct)
             .WithMany(pp => pp.ClickEvents)
             .HasForeignKey(ce => ce.PostProductId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(ce => new { ce.PostId, ce.CreatedAt })
+        builder
+            .HasIndex(ce => new { ce.PostId, ce.CreatedAt })
             .HasDatabaseName("IX_ClickEvents_PostId_CreatedAt");
 
-        builder.HasIndex(ce => ce.SessionId)
-            .HasDatabaseName("IX_ClickEvents_SessionId");
+        builder.HasIndex(ce => ce.SessionId).HasDatabaseName("IX_ClickEvents_SessionId");
     }
 }

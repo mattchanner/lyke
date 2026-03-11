@@ -65,9 +65,10 @@ public static class DependencyInjection
             configuration.GetConnectionString("DefaultConnection")
             ?? configuration["DefaultConnection"]
             ?? throw new InvalidOperationException(
-                "DefaultConnection is not configured. " +
-                "Set ConnectionStrings:DefaultConnection (Aspire) or the " +
-                "ConnectionStrings__DefaultConnection app setting (Azure).");
+                "DefaultConnection is not configured. "
+                    + "Set ConnectionStrings:DefaultConnection (Aspire) or the "
+                    + "ConnectionStrings__DefaultConnection app setting (Azure)."
+            );
 
         services.AddDbContext<LykeDbContext>(options =>
         {
@@ -79,7 +80,8 @@ public static class DependencyInjection
                     b.EnableRetryOnFailure(
                         maxRetryCount: 3,
                         maxRetryDelay: TimeSpan.FromSeconds(5),
-                        errorCodesToAdd: null);
+                        errorCodesToAdd: null
+                    );
                     b.CommandTimeout(30);
                 }
             );
@@ -104,9 +106,11 @@ public static class DependencyInjection
             configuration.GetConnectionString("AzureStorage")
             ?? configuration["AzureStorage"]
             ?? throw new InvalidOperationException(
-                "AzureStorage connection string is not configured. " +
-                "Set ConnectionStrings:AzureStorage (Aspire) or the AzureStorage app setting (Azure).");
-        var containerName = configuration.GetSection(AzureBlobSettings.SectionName)
+                "AzureStorage connection string is not configured. "
+                    + "Set ConnectionStrings:AzureStorage (Aspire) or the AzureStorage app setting (Azure)."
+            );
+        var containerName = configuration
+            .GetSection(AzureBlobSettings.SectionName)
             .GetValue("ContainerName", "media");
 
         var parts = rawConnectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
@@ -128,7 +132,7 @@ public static class DependencyInjection
         AzureBlobSettings blobSettings = new()
         {
             ConnectionString = cleanConnectionString,
-            ContainerName = containerName
+            ContainerName = containerName,
         };
 
         services.AddSingleton(blobSettings);
@@ -144,7 +148,10 @@ public static class DependencyInjection
         services.AddSingleton(queueSettings);
 
         // Queue service
-        services.AddSingleton<IMessageQueue<MediaProcessingMessage>, AzureStorageQueueService<MediaProcessingMessage>>();
+        services.AddSingleton<
+            IMessageQueue<MediaProcessingMessage>,
+            AzureStorageQueueService<MediaProcessingMessage>
+        >();
 
         return services;
     }

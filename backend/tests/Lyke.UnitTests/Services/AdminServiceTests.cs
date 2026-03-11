@@ -32,7 +32,8 @@ public class AdminServiceTests : IDisposable
             _context,
             _emailServiceMock.Object,
             _userManagerMock.Object,
-            _loggerMock.Object);
+            _loggerMock.Object
+        );
     }
 
     public void Dispose()
@@ -58,12 +59,14 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator(userId: user.Id);
         _context.Creators.Add(creator);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.PendingReview);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.PendingReview
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         var adminUserId = Guid.NewGuid();
         var request = new ModeratePostRequest(Approve: true, RejectionReason: null);
@@ -93,15 +96,20 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator(userId: user.Id);
         _context.Creators.Add(creator);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.PendingReview);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.PendingReview
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
-        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString()))
-            .ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.FindByIdAsync(user.Id.ToString())).ReturnsAsync(user);
 
         var adminUserId = Guid.NewGuid();
-        var request = new ModeratePostRequest(Approve: false, RejectionReason: "Inappropriate content");
+        var request = new ModeratePostRequest(
+            Approve: false,
+            RejectionReason: "Inappropriate content"
+        );
 
         // Act
         var result = await _sut.ModeratePostAsync(adminUserId, post.Id, request);
@@ -134,7 +142,10 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator();
         _context.Creators.Add(creator);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
         await _context.SaveChangesAsync();
 
@@ -145,7 +156,8 @@ public class AdminServiceTests : IDisposable
         var act = () => _sut.ModeratePostAsync(adminUserId, post.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
+        await act.Should()
+            .ThrowAsync<ValidationException>()
             .WithMessage("*Only posts pending review can be moderated*");
     }
 
@@ -175,8 +187,15 @@ public class AdminServiceTests : IDisposable
         result.SuspendedByUserId.Should().Be(adminUserId);
         result.SuspensionReason.Should().Be("Violation of terms");
 
-        _emailServiceMock.Verify(x => x.SendAccountSuspensionNotificationAsync(
-            user.Email!, "Violation of terms", It.IsAny<CancellationToken>()), Times.Once);
+        _emailServiceMock.Verify(
+            x =>
+                x.SendAccountSuspensionNotificationAsync(
+                    user.Email!,
+                    "Violation of terms",
+                    It.IsAny<CancellationToken>()
+                ),
+            Times.Once
+        );
     }
 
     [Fact]
@@ -195,8 +214,7 @@ public class AdminServiceTests : IDisposable
         var act = () => _sut.SuspendUserAsync(adminUserId, user.Id, request);
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>()
-            .WithMessage("*already suspended*");
+        await act.Should().ThrowAsync<ValidationException>().WithMessage("*already suspended*");
     }
 
     [Fact]
@@ -263,9 +281,18 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator(userId: creatorUser.Id);
         _context.Creators.Add(creator);
 
-        var draftPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Draft);
-        var publishedPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
-        var pendingPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.PendingReview);
+        var draftPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Draft
+        );
+        var publishedPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
+        var pendingPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.PendingReview
+        );
         _context.Posts.AddRange(draftPost, publishedPost, pendingPost);
         await _context.SaveChangesAsync();
 
@@ -295,8 +322,14 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator();
         _context.Creators.Add(creator);
 
-        var pendingPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.PendingReview);
-        var publishedPost = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var pendingPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.PendingReview
+        );
+        var publishedPost = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.AddRange(pendingPost, publishedPost);
         await _context.SaveChangesAsync();
 
@@ -305,7 +338,8 @@ public class AdminServiceTests : IDisposable
         var request = new BulkModeratePostsRequest(
             PostIds: new List<Guid> { pendingPost.Id, publishedPost.Id, nonExistentId },
             Action: BulkPostAction.Approve,
-            Reason: null);
+            Reason: null
+        );
 
         // Act
         var result = await _sut.BulkModeratePostsAsync(adminUserId, request);
@@ -329,7 +363,10 @@ public class AdminServiceTests : IDisposable
         var creator = TestDbContextFactory.CreateTestCreator();
         _context.Creators.Add(creator);
 
-        var post = TestDbContextFactory.CreateTestPost(creatorId: creator.Id, status: PostStatus.Published);
+        var post = TestDbContextFactory.CreateTestPost(
+            creatorId: creator.Id,
+            status: PostStatus.Published
+        );
         _context.Posts.Add(post);
 
         var report = new ContentReport
@@ -339,7 +376,7 @@ public class AdminServiceTests : IDisposable
             ReportedByUserId = Guid.NewGuid(),
             Reason = ReportReason.Spam,
             Status = ReportStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
         _context.Set<ContentReport>().Add(report);
         await _context.SaveChangesAsync();
@@ -348,7 +385,8 @@ public class AdminServiceTests : IDisposable
         var request = new ReviewContentReportRequest(
             NewStatus: ReportStatus.Dismissed,
             ReviewNotes: "Not spam, legitimate content",
-            PostAction: null);
+            PostAction: null
+        );
 
         // Act
         var result = await _sut.ReviewContentReportAsync(adminUserId, report.Id, request);
@@ -383,14 +421,15 @@ public class AdminServiceTests : IDisposable
             Likes = 20,
             Saves = 10,
             Clicks = 15,
-            ComputedAt = DateTime.UtcNow
+            ComputedAt = DateTime.UtcNow,
         };
         _context.Set<DailyMetricSnapshot>().Add(snapshot);
         await _context.SaveChangesAsync();
 
         var request = new AdminAnalyticsRequest(
             StartDate: DateTime.UtcNow.AddDays(-1),
-            EndDate: DateTime.UtcNow);
+            EndDate: DateTime.UtcNow
+        );
 
         // Act
         var result = await _sut.GetPlatformAnalyticsAsync(request);

@@ -4,4 +4,5 @@ public record RegisterRetailerRequest(
     string Name,
     string? LogoUrl,
     string? WebsiteUrl,
-    string? ContactEmail);
+    string? ContactEmail
+);

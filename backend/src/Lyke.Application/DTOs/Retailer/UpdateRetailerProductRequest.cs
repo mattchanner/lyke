@@ -8,4 +8,5 @@ public record UpdateRetailerProductRequest(
     string? ProductUrl,
     decimal? Price,
     string? Currency,
-    bool? IsActive);
+    bool? IsActive
+);

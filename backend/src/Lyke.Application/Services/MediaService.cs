@@ -30,7 +30,8 @@ public class MediaService : IMediaService
         DbContext dbContext,
         MediaUploadValidator validator,
         IOptions<MediaUploadSettings> settings,
-        ILogger<MediaService> logger)
+        ILogger<MediaService> logger
+    )
     {
         _storageService = storageService;
         _imageProcessingService = imageProcessingService;
@@ -45,7 +46,8 @@ public class MediaService : IMediaService
     public async Task<MediaUploadResponse> UploadMediaAsync(
         Guid userId,
         IFormFile file,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         _logger.LogInformation("Upload media called with file {FileName}", file.FileName);
 
@@ -53,7 +55,9 @@ public class MediaService : IMediaService
         if (!validation.IsValid)
         {
             _logger.LogWarning("Invalid file detected for file {FileName}", file.FileName);
-            throw new InvalidOperationException($"{validation.ErrorCode}: {validation.ErrorMessage}");
+            throw new InvalidOperationException(
+                $"{validation.ErrorCode}: {validation.ErrorMessage}"
+            );
         }
 
         var mediaId = Guid.NewGuid().ToString("N");
@@ -70,22 +74,38 @@ public class MediaService : IMediaService
         if (isVideo)
         {
             _logger.LogDebug("Video upload path...");
-            return await EnqueueVideoUploadAsync(userId, mediaId, basePath, inputStream, contentType, cancellationToken);
+            return await EnqueueVideoUploadAsync(
+                userId,
+                mediaId,
+                basePath,
+                inputStream,
+                contentType,
+                cancellationToken
+            );
         }
 
         _logger.LogDebug("Image upload path...");
-        return await EnqueueImageUploadAsync(userId, mediaId, basePath, inputStream, contentType, cancellationToken);
+        return await EnqueueImageUploadAsync(
+            userId,
+            mediaId,
+            basePath,
+            inputStream,
+            contentType,
+            cancellationToken
+        );
     }
 
     public async Task<BulkMediaUploadResponse> UploadMediaBulkAsync(
         Guid userId,
         IFormFileCollection files,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         if (files.Count > _settings.MaxMediaPerPost)
         {
             throw new InvalidOperationException(
-                $"Maximum {_settings.MaxMediaPerPost} files can be uploaded at once");
+                $"Maximum {_settings.MaxMediaPerPost} files can be uploaded at once"
+            );
         }
 
         var succeeded = new List<MediaUploadResponse>();
@@ -101,26 +121,25 @@ public class MediaService : IMediaService
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to upload file {FileName}", file.FileName);
-                failed.Add(new MediaUploadError
-                {
-                    FileName = file.FileName,
-                    ErrorCode = "UPLOAD_FAILED",
-                    ErrorMessage = ex.Message
-                });
+                failed.Add(
+                    new MediaUploadError
+                    {
+                        FileName = file.FileName,
+                        ErrorCode = "UPLOAD_FAILED",
+                        ErrorMessage = ex.Message,
+                    }
+                );
             }
         }
 
-        return new BulkMediaUploadResponse
-        {
-            Succeeded = succeeded,
-            Failed = failed
-        };
+        return new BulkMediaUploadResponse { Succeeded = succeeded, Failed = failed };
     }
 
     public async Task DeleteMediaAsync(
         Guid userId,
         IEnumerable<string> mediaIds,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var blobPaths = new List<string>();
 
@@ -143,12 +162,14 @@ public class MediaService : IMediaService
         _logger.LogInformation(
             "Deleted media for user {UserId}: {MediaIds}",
             userId,
-            string.Join(", ", mediaIds));
+            string.Join(", ", mediaIds)
+        );
     }
 
     public async Task<string> GetSecureUrlAsync(
         string mediaUrl,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var uri = new Uri(mediaUrl);
         var blobPath = uri.AbsolutePath.TrimStart('/');
@@ -166,10 +187,15 @@ public class MediaService : IMediaService
     public async Task<MediaUploadResponse?> GetMediaStatusAsync(
         string mediaId,
         Guid userId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
-        var job = await _dbContext.Set<MediaProcessingJob>()
-            .FirstOrDefaultAsync(j => j.MediaId == mediaId && j.UserId == userId, cancellationToken);
+        var job = await _dbContext
+            .Set<MediaProcessingJob>()
+            .FirstOrDefaultAsync(
+                j => j.MediaId == mediaId && j.UserId == userId,
+                cancellationToken
+            );
 
         if (job == null)
             return null;
@@ -183,13 +209,17 @@ public class MediaService : IMediaService
         string basePath,
         MemoryStream inputStream,
         string contentType,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var extension = GetExtensionFromContentType(contentType);
         var originalPath = $"{basePath}_original{extension}";
 
         // Get image dimensions (fast — reads headers only)
-        var dimensions = await _imageProcessingService.GetImageDimensionsAsync(inputStream, cancellationToken);
+        var dimensions = await _imageProcessingService.GetImageDimensionsAsync(
+            inputStream,
+            cancellationToken
+        );
 
         // Upload original
         inputStream.Position = 0;
@@ -198,7 +228,8 @@ public class MediaService : IMediaService
             inputStream,
             originalPath,
             contentType,
-            cancellationToken);
+            cancellationToken
+        );
 
         // Persist job
         var job = new MediaProcessingJob
@@ -211,30 +242,35 @@ public class MediaService : IMediaService
             OriginalUrl = originalResult.Url,
             Width = dimensions.Width,
             Height = dimensions.Height,
-            SizeBytes = originalResult.SizeBytes
+            SizeBytes = originalResult.SizeBytes,
         };
         _dbContext.Set<MediaProcessingJob>().Add(job);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         // Enqueue processing
-        await _messageQueue.EnqueueAsync(new MediaProcessingMessage
-        {
-            MediaId = mediaId,
-            UserId = userId,
-            OriginalBlobPath = originalPath,
-            BaseBlobPath = basePath,
-            ContentType = contentType,
-            IsVideo = false,
-            StandardWidth = _settings.StandardWidth,
-            StandardHeight = _settings.StandardHeight,
-            ThumbnailWidth = _settings.ThumbnailWidth,
-            ThumbnailHeight = _settings.ThumbnailHeight,
-            ImageQuality = _settings.ImageQuality
-        }, cancellationToken);
+        await _messageQueue.EnqueueAsync(
+            new MediaProcessingMessage
+            {
+                MediaId = mediaId,
+                UserId = userId,
+                OriginalBlobPath = originalPath,
+                BaseBlobPath = basePath,
+                ContentType = contentType,
+                IsVideo = false,
+                StandardWidth = _settings.StandardWidth,
+                StandardHeight = _settings.StandardHeight,
+                ThumbnailWidth = _settings.ThumbnailWidth,
+                ThumbnailHeight = _settings.ThumbnailHeight,
+                ImageQuality = _settings.ImageQuality,
+            },
+            cancellationToken
+        );
 
         _logger.LogInformation(
             "Enqueued image processing for user {UserId}, mediaId {MediaId}",
-            userId, mediaId);
+            userId,
+            mediaId
+        );
 
         return MapJobToResponse(job);
     }
@@ -245,7 +281,8 @@ public class MediaService : IMediaService
         string basePath,
         MemoryStream inputStream,
         string contentType,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var extension = GetExtensionFromContentType(contentType);
         var originalPath = $"{basePath}{extension}";
@@ -261,7 +298,10 @@ public class MediaService : IMediaService
             }
 
             // Get video info (FFprobe — fast metadata read)
-            var videoInfo = await _videoProcessingService.GetVideoInfoAsync(tempPath, cancellationToken);
+            var videoInfo = await _videoProcessingService.GetVideoInfoAsync(
+                tempPath,
+                cancellationToken
+            );
 
             // Upload original
             inputStream.Position = 0;
@@ -270,7 +310,8 @@ public class MediaService : IMediaService
                 inputStream,
                 originalPath,
                 contentType,
-                cancellationToken);
+                cancellationToken
+            );
 
             // Persist job
             var job = new MediaProcessingJob
@@ -284,30 +325,36 @@ public class MediaService : IMediaService
                 Width = videoInfo.Width,
                 Height = videoInfo.Height,
                 DurationSeconds = videoInfo.DurationSeconds,
-                SizeBytes = originalResult.SizeBytes
+                SizeBytes = originalResult.SizeBytes,
             };
             _dbContext.Set<MediaProcessingJob>().Add(job);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
             // Enqueue processing
-            await _messageQueue.EnqueueAsync(new MediaProcessingMessage
-            {
-                MediaId = mediaId,
-                UserId = userId,
-                OriginalBlobPath = originalPath,
-                BaseBlobPath = basePath,
-                ContentType = contentType,
-                IsVideo = true,
-                StandardWidth = _settings.StandardWidth,
-                StandardHeight = _settings.StandardHeight,
-                ThumbnailWidth = _settings.ThumbnailWidth,
-                ThumbnailHeight = _settings.ThumbnailHeight,
-                ImageQuality = _settings.ImageQuality
-            }, cancellationToken);
+            await _messageQueue.EnqueueAsync(
+                new MediaProcessingMessage
+                {
+                    MediaId = mediaId,
+                    UserId = userId,
+                    OriginalBlobPath = originalPath,
+                    BaseBlobPath = basePath,
+                    ContentType = contentType,
+                    IsVideo = true,
+                    StandardWidth = _settings.StandardWidth,
+                    StandardHeight = _settings.StandardHeight,
+                    ThumbnailWidth = _settings.ThumbnailWidth,
+                    ThumbnailHeight = _settings.ThumbnailHeight,
+                    ImageQuality = _settings.ImageQuality,
+                },
+                cancellationToken
+            );
 
             _logger.LogInformation(
                 "Enqueued video processing for user {UserId}, mediaId {MediaId}, duration {Duration}s",
-                userId, mediaId, videoInfo.DurationSeconds);
+                userId,
+                mediaId,
+                videoInfo.DurationSeconds
+            );
 
             return MapJobToResponse(job);
         }
@@ -318,29 +365,31 @@ public class MediaService : IMediaService
         }
     }
 
-    private static MediaUploadResponse MapJobToResponse(MediaProcessingJob job) => new()
-    {
-        MediaId = job.MediaId,
-        OriginalUrl = job.OriginalUrl!,
-        StandardUrl = job.StandardUrl,
-        ThumbnailUrl = job.ThumbnailUrl,
-        Status = job.Status,
-        ContentType = job.ContentType,
-        SizeBytes = job.SizeBytes,
-        Width = job.Width,
-        Height = job.Height,
-        DurationSeconds = job.DurationSeconds,
-        IsVideo = job.IsVideo
-    };
+    private static MediaUploadResponse MapJobToResponse(MediaProcessingJob job) =>
+        new()
+        {
+            MediaId = job.MediaId,
+            OriginalUrl = job.OriginalUrl!,
+            StandardUrl = job.StandardUrl,
+            ThumbnailUrl = job.ThumbnailUrl,
+            Status = job.Status,
+            ContentType = job.ContentType,
+            SizeBytes = job.SizeBytes,
+            Width = job.Width,
+            Height = job.Height,
+            DurationSeconds = job.DurationSeconds,
+            IsVideo = job.IsVideo,
+        };
 
-    private static string GetExtensionFromContentType(string contentType) => contentType switch
-    {
-        "image/jpeg" => ".jpg",
-        "image/png" => ".png",
-        "image/webp" => ".webp",
-        "video/mp4" => ".mp4",
-        "video/quicktime" => ".mov",
-        "video/webm" => ".webm",
-        _ => ".bin"
-    };
+    private static string GetExtensionFromContentType(string contentType) =>
+        contentType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            "video/mp4" => ".mp4",
+            "video/quicktime" => ".mov",
+            "video/webm" => ".webm",
+            _ => ".bin",
+        };
 }

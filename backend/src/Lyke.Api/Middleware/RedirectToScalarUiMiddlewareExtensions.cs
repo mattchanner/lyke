@@ -3,7 +3,8 @@
 public static class RedirectToScalarUiMiddlewareExtensions
 {
     public static IServiceCollection AddRedirectToScalarUiMiddleware(
-        this IServiceCollection services)
+        this IServiceCollection services
+    )
     {
         services.AddScoped<RedirectToScalarUiMiddleware>();
         return services;

@@ -12,9 +12,11 @@ public interface IAuditService
         string? entityType = null,
         Guid? entityId = null,
         object? details = null,
-        string? ipAddress = null);
+        string? ipAddress = null
+    );
 
     Task<(IReadOnlyList<AuditLogResponse> Logs, DTOs.PaginationMeta Meta)> GetAuditLogsAsync(
         AuditLogQueryRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

@@ -25,11 +25,7 @@ public class ResetPasswordModel : PageModel
             return RedirectToPage("ResetPasswordResult", new { success = false });
         }
 
-        Input = new ResetPasswordInput
-        {
-            Email = email,
-            Token = token
-        };
+        Input = new ResetPasswordInput { Email = email, Token = token };
 
         return Page();
     }
@@ -47,7 +43,8 @@ public class ResetPasswordModel : PageModel
                 Input.Email,
                 Input.Token,
                 Input.NewPassword,
-                Input.ConfirmPassword);
+                Input.ConfirmPassword
+            );
 
             await _authService.ResetPasswordAsync(request, cancellationToken);
             return RedirectToPage("ResetPasswordResult", new { success = true });
@@ -70,8 +67,10 @@ public class ResetPasswordInput
 
     [Required(ErrorMessage = "Password is required.")]
     [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$",
-        ErrorMessage = "Password must contain uppercase, lowercase, and a digit.")]
+    [RegularExpression(
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$",
+        ErrorMessage = "Password must contain uppercase, lowercase, and a digit."
+    )]
     [Display(Name = "New Password")]
     public string NewPassword { get; set; } = string.Empty;
 

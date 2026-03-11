@@ -7,9 +7,7 @@ public class TrackEventRequestValidator : AbstractValidator<TrackEventRequest>
 {
     public TrackEventRequestValidator()
     {
-        RuleFor(x => x.EventType)
-            .IsInEnum()
-            .WithMessage("Invalid event type");
+        RuleFor(x => x.EventType).IsInEnum().WithMessage("Invalid event type");
 
         RuleFor(x => x.EntityType)
             .MaximumLength(50)
@@ -27,16 +25,13 @@ public class TrackEventBatchRequestValidator : AbstractValidator<TrackEventBatch
 {
     public TrackEventBatchRequestValidator()
     {
-        RuleFor(x => x.Events)
-            .NotEmpty()
-            .WithMessage("Events list cannot be empty");
+        RuleFor(x => x.Events).NotEmpty().WithMessage("Events list cannot be empty");
 
         RuleFor(x => x.Events.Count)
             .LessThanOrEqualTo(100)
             .When(x => x.Events != null)
             .WithMessage("Batch cannot exceed 100 events");
 
-        RuleForEach(x => x.Events)
-            .SetValidator(new TrackEventRequestValidator());
+        RuleForEach(x => x.Events).SetValidator(new TrackEventRequestValidator());
     }
 }

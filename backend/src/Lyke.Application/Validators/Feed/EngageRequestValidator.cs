@@ -7,8 +7,6 @@ public class EngageRequestValidator : AbstractValidator<EngageRequest>
 {
     public EngageRequestValidator()
     {
-        RuleFor(x => x.Type)
-            .IsInEnum()
-            .WithMessage("Invalid engagement type");
+        RuleFor(x => x.Type).IsInEnum().WithMessage("Invalid engagement type");
     }
 }

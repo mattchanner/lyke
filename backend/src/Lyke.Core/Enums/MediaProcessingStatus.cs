@@ -5,5 +5,5 @@ public enum MediaProcessingStatus
     Pending,
     Processing,
     Completed,
-    Failed
+    Failed,
 }

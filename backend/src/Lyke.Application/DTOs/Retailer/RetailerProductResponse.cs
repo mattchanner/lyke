@@ -16,4 +16,5 @@ public record RetailerProductResponse(
     int ClickCount,
     int ConversionCount,
     DateTime? LastSyncedAt,
-    DateTime CreatedAt);
+    DateTime CreatedAt
+);

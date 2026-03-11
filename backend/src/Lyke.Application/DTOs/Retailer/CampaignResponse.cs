@@ -14,7 +14,8 @@ public record CampaignResponse(
     DateTime StartDate,
     DateTime EndDate,
     bool IsActive,
-    DateTime CreatedAt);
+    DateTime CreatedAt
+);
 
 public class CampaignListRequest
 {

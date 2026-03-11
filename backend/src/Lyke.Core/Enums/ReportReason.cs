@@ -7,5 +7,5 @@ public enum ReportReason
     MisleadingProductTag = 2,
     Copyright = 3,
     HateSpeech = 4,
-    Other = 5
+    Other = 5,
 }

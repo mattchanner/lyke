@@ -6,19 +6,19 @@ namespace Lyke.Application.Validators.Commerce;
 public class TrackClickRequestValidator : AbstractValidator<TrackClickRequest>
 {
     private static readonly string[] ValidSources =
-        ["feed", "post_detail", "search", "similar_posts"];
-    private static readonly string[] ValidPlatforms =
-        ["ios", "android", "web"];
+    [
+        "feed",
+        "post_detail",
+        "search",
+        "similar_posts",
+    ];
+    private static readonly string[] ValidPlatforms = ["ios", "android", "web"];
 
     public TrackClickRequestValidator()
     {
-        RuleFor(x => x.PostId)
-            .NotEmpty()
-            .WithMessage("PostId is required");
+        RuleFor(x => x.PostId).NotEmpty().WithMessage("PostId is required");
 
-        RuleFor(x => x.PostProductId)
-            .NotEmpty()
-            .WithMessage("PostProductId is required");
+        RuleFor(x => x.PostProductId).NotEmpty().WithMessage("PostProductId is required");
 
         RuleFor(x => x.SessionId)
             .MaximumLength(100)

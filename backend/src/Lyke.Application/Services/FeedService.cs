@@ -21,7 +21,8 @@ public class FeedService : IFeedService
     private readonly ModerationSettings _moderationSettings;
     private readonly IEventTrackingService _eventTracking;
     private readonly ILogger<FeedService> _logger;
-    private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+    private bool UseFullTextSearch =>
+        _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     public FeedService(
         DbContext dbContext,
@@ -56,7 +57,8 @@ public class FeedService : IFeedService
         // Filter to followed creators only when sorting by Following
         if (request.SortBy == FeedSortBy.Following)
         {
-            var followedUserIds = await _dbContext.Set<UserFollow>()
+            var followedUserIds = await _dbContext
+                .Set<UserFollow>()
                 .AsNoTracking()
                 .Where(uf => uf.FollowerUserId == userId)
                 .Select(uf => uf.FollowedUserId)
@@ -66,36 +68,44 @@ public class FeedService : IFeedService
         }
 
         // For Recent, MostLiked, and Following, push sorting + pagination to DB
-        if (request.SortBy == FeedSortBy.Recent || request.SortBy == FeedSortBy.MostLiked || request.SortBy == FeedSortBy.Following)
+        if (
+            request.SortBy == FeedSortBy.Recent
+            || request.SortBy == FeedSortBy.MostLiked
+            || request.SortBy == FeedSortBy.Following
+        )
         {
             var totalCount = await query.CountAsync(cancellationToken);
 
-            var orderedQuery = request.SortBy == FeedSortBy.MostLiked
-                ? query.OrderByDescending(p => p.Engagements.Count(e => e.Type == EngagementType.Like))
-                    .ThenByDescending(p => p.PublishedAt)
-                : query.OrderByDescending(p => p.PublishedAt) as IOrderedQueryable<Post>;
+            var orderedQuery =
+                request.SortBy == FeedSortBy.MostLiked
+                    ? query
+                        .OrderByDescending(p =>
+                            p.Engagements.Count(e => e.Type == EngagementType.Like)
+                        )
+                        .ThenByDescending(p => p.PublishedAt)
+                    : query.OrderByDescending(p => p.PublishedAt) as IOrderedQueryable<Post>;
 
             var posts = await orderedQuery
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile)
-                .ThenInclude(bp => bp!.BodyType)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile)
+                            .ThenInclude(bp => bp!.BodyType)
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile!)
-                .ThenInclude(bp => bp.FrameSize)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile!)
+                            .ThenInclude(bp => bp.FrameSize)
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile!)
-                .ThenInclude(bp => bp.FitPreferences)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile!)
+                            .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                .ThenInclude(prod => prod.Retailer)
+                    .ThenInclude(pp => pp.Product)
+                        .ThenInclude(prod => prod.Retailer)
                 .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                .ThenInclude(pft => pft.FitTag)
+                    .ThenInclude(pp => pp.FitTags)
+                        .ThenInclude(pft => pft.FitTag)
                 .Include(p => p.Engagements)
                 .AsSplitQuery()
                 .ToListAsync(cancellationToken);
@@ -104,11 +114,14 @@ public class FeedService : IFeedService
             var userEngagements = await GetUserEngagementsAsync(userId, postIds, cancellationToken);
 
             var feedPosts = posts
-                .Select(p => MapToFeedPostResponse(
-                    p,
-                    CalculateSimilarityScore(userBodyProfile, p.Creator.User.BodyProfile),
-                    userEngagements,
-                    followedCreatorIds))
+                .Select(p =>
+                    MapToFeedPostResponse(
+                        p,
+                        CalculateSimilarityScore(userBodyProfile, p.Creator.User.BodyProfile),
+                        userEngagements,
+                        followedCreatorIds
+                    )
+                )
                 .ToList();
 
             var meta = new PaginationMeta
@@ -124,8 +137,8 @@ public class FeedService : IFeedService
         // Relevance sort: lightweight projection to score, then fetch full data for page only
         var lightweightPosts = await query
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
             .Select(p => new
             {
                 p.Id,
@@ -154,24 +167,29 @@ public class FeedService : IFeedService
         var scoreLookup = pagedIds.ToDictionary(x => x.Id, x => x.Score);
 
         // Fetch full data only for the page
-        var fullPosts = await _dbContext.Set<Post>()
+        var fullPosts = await _dbContext
+            .Set<Post>()
             .AsNoTracking()
             .Where(p => pagedPostIds.Contains(p.Id))
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
 
-        var relevanceUserEngagements = await GetUserEngagementsAsync(userId, pagedPostIds, cancellationToken);
+        var relevanceUserEngagements = await GetUserEngagementsAsync(
+            userId,
+            pagedPostIds,
+            cancellationToken
+        );
 
         // Maintain score ordering
         var orderedFullPosts = pagedPostIds
@@ -180,11 +198,14 @@ public class FeedService : IFeedService
             .ToList();
 
         var relevanceFeedPosts = orderedFullPosts
-            .Select(p => MapToFeedPostResponse(
-                p!,
-                scoreLookup.GetValueOrDefault(p!.Id, 0),
-                relevanceUserEngagements,
-                followedCreatorIds))
+            .Select(p =>
+                MapToFeedPostResponse(
+                    p!,
+                    scoreLookup.GetValueOrDefault(p!.Id, 0),
+                    relevanceUserEngagements,
+                    followedCreatorIds
+                )
+            )
             .ToList();
 
         var relevanceMeta = new PaginationMeta
@@ -223,15 +244,15 @@ public class FeedService : IFeedService
             .Skip((request.Page - 1) * request.PageSize)
             .Take(request.PageSize)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -245,7 +266,9 @@ public class FeedService : IFeedService
             ? await GetFollowedCreatorIdsAsync(userId.Value, cancellationToken)
             : null;
 
-        var feedPosts = posts.Select(p => MapToFeedPostResponse(p, 0, userEngagements, followedCreatorIds)).ToList();
+        var feedPosts = posts
+            .Select(p => MapToFeedPostResponse(p, 0, userEngagements, followedCreatorIds))
+            .ToList();
 
         var meta = new PaginationMeta
         {
@@ -267,15 +290,15 @@ public class FeedService : IFeedService
             .Set<Post>()
             .AsNoTracking()
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .FirstOrDefaultAsync(
@@ -313,7 +336,12 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, new[] { postId }, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        return MapToPostDetailResponse(post, similarityScore, userEngagements, creatorPublishedPostCount);
+        return MapToPostDetailResponse(
+            post,
+            similarityScore,
+            userEngagements,
+            creatorPublishedPostCount
+        );
     }
 
     public async Task<IReadOnlyList<FeedPostResponse>> GetSimilarPostsAsync(
@@ -327,10 +355,10 @@ public class FeedService : IFeedService
             .Set<Post>()
             .AsNoTracking()
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
+                .ThenInclude(pp => pp.Product)
             .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == postId, cancellationToken);
 
@@ -351,15 +379,17 @@ public class FeedService : IFeedService
             .AsNoTracking()
             .Where(p => p.Id != postId && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
+                .ThenInclude(pp => pp.Product)
             .Select(p => new
             {
                 p.Id,
                 CreatorBodyProfile = p.Creator.User.BodyProfile,
-                HasMatchingCategory = p.PostProducts.Any(pp => productCategories.Contains(pp.Product.Category)),
+                HasMatchingCategory = p.PostProducts.Any(pp =>
+                    productCategories.Contains(pp.Product.Category)
+                ),
             })
             .ToListAsync(cancellationToken);
 
@@ -383,15 +413,15 @@ public class FeedService : IFeedService
             .AsNoTracking()
             .Where(p => topPostIds.Contains(p.Id))
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -408,7 +438,14 @@ public class FeedService : IFeedService
         return topPostIds
             .Select(id => fullPosts.FirstOrDefault(p => p.Id == id))
             .Where(p => p != null)
-            .Select(p => MapToFeedPostResponse(p!, scoreLookup.GetValueOrDefault(p!.Id, 0), userEngagements, followedCreatorIds))
+            .Select(p =>
+                MapToFeedPostResponse(
+                    p!,
+                    scoreLookup.GetValueOrDefault(p!.Id, 0),
+                    userEngagements,
+                    followedCreatorIds
+                )
+            )
             .ToList();
     }
 
@@ -465,9 +502,15 @@ public class FeedService : IFeedService
             EngagementType.Like => AnalyticsEventType.PostLike,
             EngagementType.Save => AnalyticsEventType.PostSave,
             EngagementType.Share => AnalyticsEventType.PostShare,
-            _ => AnalyticsEventType.PostView
+            _ => AnalyticsEventType.PostView,
         };
-        _ = _eventTracking.TrackAsync(analyticsType, userId, postId, nameof(Post), cancellationToken: cancellationToken);
+        _ = _eventTracking.TrackAsync(
+            analyticsType,
+            userId,
+            postId,
+            nameof(Post),
+            cancellationToken: cancellationToken
+        );
 
         _logger.LogInformation(
             "User {UserId} engaged with post {PostId}: {Type}",
@@ -533,15 +576,15 @@ public class FeedService : IFeedService
             .AsNoTracking()
             .Where(p => pagedPostIds.Contains(p.Id) && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -603,15 +646,15 @@ public class FeedService : IFeedService
             .AsNoTracking()
             .Where(p => pagedPostIds.Contains(p.Id) && p.Status == PostStatus.Published)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .ToListAsync(cancellationToken);
@@ -661,50 +704,61 @@ public class FeedService : IFeedService
             || request.Type == SearchType.Posts
         )
         {
-            var postBaseQuery = _dbContext
-                .Set<Post>()
-                .Where(p => p.Status == PostStatus.Published);
+            var postBaseQuery = _dbContext.Set<Post>().Where(p => p.Status == PostStatus.Published);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 postBaseQuery = UseFullTextSearch
                     ? postBaseQuery.Where(p =>
-                        EF.Functions.ToTsVector("english", (p.Title ?? "") + " " + (p.Description ?? ""))
-                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                        EF.Functions.ToTsVector(
+                                "english",
+                                (p.Title ?? "") + " " + (p.Description ?? "")
+                            )
+                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm))
+                    )
                     : postBaseQuery.Where(p =>
                         (p.Title != null && p.Title.ToLower().Contains(searchTerm.ToLower()))
-                        || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower())));
+                        || (
+                            p.Description != null
+                            && p.Description.ToLower().Contains(searchTerm.ToLower())
+                        )
+                    );
             }
 
             var postQuery = postBaseQuery
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile)
-                .ThenInclude(bp => bp!.BodyType)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile)
+                            .ThenInclude(bp => bp!.BodyType)
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile!)
-                .ThenInclude(bp => bp.FrameSize)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile!)
+                            .ThenInclude(bp => bp.FrameSize)
                 .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                .ThenInclude(u => u.BodyProfile!)
-                .ThenInclude(bp => bp.FitPreferences)
+                    .ThenInclude(c => c.User)
+                        .ThenInclude(u => u.BodyProfile!)
+                            .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.Product)
-                .ThenInclude(prod => prod.Retailer)
+                    .ThenInclude(pp => pp.Product)
+                        .ThenInclude(prod => prod.Retailer)
                 .Include(p => p.PostProducts)
-                .ThenInclude(pp => pp.FitTags)
-                .ThenInclude(pft => pft.FitTag)
+                    .ThenInclude(pp => pp.FitTags)
+                        .ThenInclude(pft => pft.FitTag)
                 .Include(p => p.Engagements)
                 .AsSplitQuery();
 
-            var postOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
-                ? postQuery
-                    .OrderByDescending(p =>
-                        EF.Functions.ToTsVector("english", (p.Title ?? "") + " " + (p.Description ?? ""))
-                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
-                    .ThenByDescending(p => p.PublishedAt)
-                : postQuery.OrderByDescending(p => p.PublishedAt);
+            var postOrdered =
+                UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
+                    ? postQuery
+                        .OrderByDescending(p =>
+                            EF.Functions.ToTsVector(
+                                    "english",
+                                    (p.Title ?? "") + " " + (p.Description ?? "")
+                                )
+                                .Rank(EF.Functions.PlainToTsQuery("english", searchTerm))
+                        )
+                        .ThenByDescending(p => p.PublishedAt)
+                    : postQuery.OrderByDescending(p => p.PublishedAt);
 
             var finalPostQuery = postOrdered.Take(request.PageSize);
 
@@ -718,7 +772,9 @@ public class FeedService : IFeedService
                 ? await GetFollowedCreatorIdsAsync(userId.Value, cancellationToken)
                 : null;
 
-            posts = foundPosts.Select(p => MapToFeedPostResponse(p, 0, userEngagements, searchFollowedCreatorIds)).ToList();
+            posts = foundPosts
+                .Select(p => MapToFeedPostResponse(p, 0, userEngagements, searchFollowedCreatorIds))
+                .ToList();
         }
 
         // Search products
@@ -728,32 +784,37 @@ public class FeedService : IFeedService
             || request.Type == SearchType.Products
         )
         {
-            var productBaseQuery = _dbContext
-                .Set<Product>()
-                .Where(p => p.IsActive);
+            var productBaseQuery = _dbContext.Set<Product>().Where(p => p.IsActive);
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
                 productBaseQuery = UseFullTextSearch
                     ? productBaseQuery.Where(p =>
                         EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? ""))
-                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm))
+                    )
                     : productBaseQuery.Where(p =>
                         p.Name.ToLower().Contains(searchTerm.ToLower())
-                        || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower())));
+                        || (
+                            p.Description != null
+                            && p.Description.ToLower().Contains(searchTerm.ToLower())
+                        )
+                    );
             }
 
             var productIncluded = productBaseQuery
                 .Include(p => p.Retailer)
                 .Include(p => p.PostProducts.Where(pp => pp.Post.Status == PostStatus.Published));
 
-            var productOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
-                ? productIncluded
-                    .OrderByDescending(p =>
-                        EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? ""))
-                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
-                    .ThenBy(p => p.Name)
-                : productIncluded.OrderBy(p => p.Name);
+            var productOrdered =
+                UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
+                    ? productIncluded
+                        .OrderByDescending(p =>
+                            EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? ""))
+                                .Rank(EF.Functions.PlainToTsQuery("english", searchTerm))
+                        )
+                        .ThenBy(p => p.Name)
+                    : productIncluded.OrderBy(p => p.Name);
 
             var productQuery = productOrdered.Take(request.PageSize);
 
@@ -785,23 +846,25 @@ public class FeedService : IFeedService
                 creatorBaseQuery = UseFullTextSearch
                     ? creatorBaseQuery.Where(c =>
                         EF.Functions.ToTsVector("english", c.DisplayName + " " + (c.Bio ?? ""))
-                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                            .Matches(EF.Functions.PlainToTsQuery("english", searchTerm))
+                    )
                     : creatorBaseQuery.Where(c =>
                         c.DisplayName.ToLower().Contains(searchTerm.ToLower())
-                        || (c.Bio != null && c.Bio.ToLower().Contains(searchTerm.ToLower())));
+                        || (c.Bio != null && c.Bio.ToLower().Contains(searchTerm.ToLower()))
+                    );
             }
 
-            var creatorIncluded = creatorBaseQuery
-                .Include(c => c.User)
-                .Include(c => c.Posts);
+            var creatorIncluded = creatorBaseQuery.Include(c => c.User).Include(c => c.Posts);
 
-            var creatorOrdered = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
-                ? creatorIncluded
-                    .OrderByDescending(c =>
-                        EF.Functions.ToTsVector("english", c.DisplayName + " " + (c.Bio ?? ""))
-                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
-                    .ThenBy(c => c.DisplayName)
-                : creatorIncluded.OrderBy(c => c.DisplayName);
+            var creatorOrdered =
+                UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
+                    ? creatorIncluded
+                        .OrderByDescending(c =>
+                            EF.Functions.ToTsVector("english", c.DisplayName + " " + (c.Bio ?? ""))
+                                .Rank(EF.Functions.PlainToTsQuery("english", searchTerm))
+                        )
+                        .ThenBy(c => c.DisplayName)
+                    : creatorIncluded.OrderBy(c => c.DisplayName);
 
             var creatorQuery = creatorOrdered.Take(request.PageSize);
 
@@ -824,9 +887,10 @@ public class FeedService : IFeedService
             {
                 ["query"] = request.Query ?? "",
                 ["type"] = request.Type?.ToString() ?? "All",
-                ["resultCount"] = (posts.Count + products.Count + creators.Count).ToString()
+                ["resultCount"] = (posts.Count + products.Count + creators.Count).ToString(),
             },
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         return new SearchResponse(
             posts,
@@ -846,7 +910,9 @@ public class FeedService : IFeedService
         var post = await _dbContext
             .Set<Post>()
             .FirstOrDefaultAsync(
-                p => p.Id == postId && (p.Status == PostStatus.Published || p.Status == PostStatus.Flagged),
+                p =>
+                    p.Id == postId
+                    && (p.Status == PostStatus.Published || p.Status == PostStatus.Flagged),
                 cancellationToken
             );
 
@@ -881,11 +947,15 @@ public class FeedService : IFeedService
         await _dbContext.Set<ContentReport>().AddAsync(report, cancellationToken);
 
         // Auto-flag if threshold reached
-        var reportCount = await _dbContext
-            .Set<ContentReport>()
-            .CountAsync(cr => cr.PostId == postId, cancellationToken) + 1; // +1 for the new report
+        var reportCount =
+            await _dbContext
+                .Set<ContentReport>()
+                .CountAsync(cr => cr.PostId == postId, cancellationToken) + 1; // +1 for the new report
 
-        if (reportCount >= _moderationSettings.AutoFlagThreshold && post.Status == PostStatus.Published)
+        if (
+            reportCount >= _moderationSettings.AutoFlagThreshold
+            && post.Status == PostStatus.Published
+        )
         {
             post.Status = PostStatus.Flagged;
             _logger.LogInformation(
@@ -909,7 +979,10 @@ public class FeedService : IFeedService
 
     private IQueryable<Post> BuildFeedQuery(FeedRequest request)
     {
-        var query = _dbContext.Set<Post>().AsNoTracking().Where(p => p.Status == PostStatus.Published);
+        var query = _dbContext
+            .Set<Post>()
+            .AsNoTracking()
+            .Where(p => p.Status == PostStatus.Published);
 
         if (!string.IsNullOrEmpty(request.Category))
         {
@@ -1048,7 +1121,11 @@ public class FeedService : IFeedService
                 creatorBodyProfile.FrameSize?.Name,
                 creatorBodyProfile.Stature,
                 creatorBodyProfile.Build,
-                BodyProfileHelper.FormatBodyTypeLabel(creatorBodyProfile.Stature, creatorBodyProfile.Build, creatorBodyProfile.BodyType.Name),
+                BodyProfileHelper.FormatBodyTypeLabel(
+                    creatorBodyProfile.Stature,
+                    creatorBodyProfile.Build,
+                    creatorBodyProfile.BodyType.Name
+                ),
                 creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
@@ -1124,7 +1201,11 @@ public class FeedService : IFeedService
                 creatorBodyProfile.FrameSize?.Name,
                 creatorBodyProfile.Stature,
                 creatorBodyProfile.Build,
-                BodyProfileHelper.FormatBodyTypeLabel(creatorBodyProfile.Stature, creatorBodyProfile.Build, creatorBodyProfile.BodyType.Name),
+                BodyProfileHelper.FormatBodyTypeLabel(
+                    creatorBodyProfile.Stature,
+                    creatorBodyProfile.Build,
+                    creatorBodyProfile.BodyType.Name
+                ),
                 creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
@@ -1135,7 +1216,9 @@ public class FeedService : IFeedService
             post.Creator.Bio,
             post.Creator.IsVerified,
             anonymizedProfile,
-            creatorPublishedPostCount ?? post.Creator.Posts?.Count(p => p.Status == PostStatus.Published) ?? 0,
+            creatorPublishedPostCount
+                ?? post.Creator.Posts?.Count(p => p.Status == PostStatus.Published)
+                ?? 0,
             post.Creator.User.ProfileImageUrl
         );
 
@@ -1233,15 +1316,20 @@ public class FeedService : IFeedService
         };
     }
 
-    private async Task<HashSet<Guid>> GetFollowedCreatorIdsAsync(Guid userId, CancellationToken cancellationToken)
+    private async Task<HashSet<Guid>> GetFollowedCreatorIdsAsync(
+        Guid userId,
+        CancellationToken cancellationToken
+    )
     {
-        var followedUserIds = await _dbContext.Set<UserFollow>()
+        var followedUserIds = await _dbContext
+            .Set<UserFollow>()
             .AsNoTracking()
             .Where(uf => uf.FollowerUserId == userId)
             .Select(uf => uf.FollowedUserId)
             .ToListAsync(cancellationToken);
 
-        var creatorIds = await _dbContext.Set<Creator>()
+        var creatorIds = await _dbContext
+            .Set<Creator>()
             .AsNoTracking()
             .Where(c => followedUserIds.Contains(c.UserId))
             .Select(c => c.Id)

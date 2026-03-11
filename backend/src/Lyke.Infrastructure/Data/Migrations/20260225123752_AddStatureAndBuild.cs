@@ -15,21 +15,24 @@ namespace Lyke.Infrastructure.Data.Migrations
                 table: "BodyProfiles",
                 type: "character varying(20)",
                 maxLength: 20,
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<string>(
                 name: "Stature",
                 table: "BodyProfiles",
                 type: "character varying(20)",
                 maxLength: 20,
-                nullable: true);
+                nullable: true
+            );
 
             // Data migration: map existing FrameSizeId values to new Stature and Build columns
             // FrameSizeId 1 (Petite)  → Stature=Petite, Build=Standard
             // FrameSizeId 2 (Average) → Stature=Average, Build=Standard
             // FrameSizeId 3 (Tall)    → Stature=Tall, Build=Standard
             // FrameSizeId 4 (Plus)    → Stature=Average, Build=Plus
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 UPDATE "BodyProfiles" SET
                     "Stature" = CASE "FrameSizeId"
                         WHEN 1 THEN 'Petite'
@@ -46,19 +49,16 @@ namespace Lyke.Infrastructure.Data.Migrations
                         ELSE NULL
                     END
                 WHERE "FrameSizeId" IS NOT NULL;
-                """);
+                """
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Build",
-                table: "BodyProfiles");
+            migrationBuilder.DropColumn(name: "Build", table: "BodyProfiles");
 
-            migrationBuilder.DropColumn(
-                name: "Stature",
-                table: "BodyProfiles");
+            migrationBuilder.DropColumn(name: "Stature", table: "BodyProfiles");
         }
     }
 }

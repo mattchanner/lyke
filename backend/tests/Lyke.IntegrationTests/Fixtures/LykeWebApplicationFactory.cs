@@ -1,3 +1,6 @@
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Lyke.Application.DTOs.Media;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
@@ -9,9 +12,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Lyke.IntegrationTests.Fixtures;
 
@@ -22,11 +22,12 @@ public class LykeWebApplicationFactory : WebApplicationFactory<Program>
     /// <summary>
     /// JSON serializer options matching the API configuration (uses string enums).
     /// </summary>
-    public static JsonSerializerOptions JsonOptions { get; } = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        Converters = { new JsonStringEnumConverter() }
-    };
+    public static JsonSerializerOptions JsonOptions { get; } =
+        new()
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() },
+        };
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -36,21 +37,23 @@ public class LykeWebApplicationFactory : WebApplicationFactory<Program>
         {
             // Remove the MigrateDatabaseBackgroundWorker as it requires relational database
             var backgroundWorkerDescriptor = services.FirstOrDefault(d =>
-                d.ImplementationType?.Name == "MigrateDatabaseBackgroundWorker");
+                d.ImplementationType?.Name == "MigrateDatabaseBackgroundWorker"
+            );
             if (backgroundWorkerDescriptor != null)
             {
                 services.Remove(backgroundWorkerDescriptor);
             }
 
-
             // Remove ALL DbContext-related registrations to avoid provider conflicts
-            var descriptorsToRemove = services.Where(d =>
-                d.ServiceType == typeof(DbContextOptions<LykeDbContext>) ||
-                d.ServiceType == typeof(DbContextOptions) ||
-                d.ServiceType.FullName?.Contains("Npgsql") == true ||
-                d.ImplementationType?.FullName?.Contains("Npgsql") == true ||
-                d.ServiceType.FullName?.Contains("EntityFrameworkCore") == true
-            ).ToList();
+            var descriptorsToRemove = services
+                .Where(d =>
+                    d.ServiceType == typeof(DbContextOptions<LykeDbContext>)
+                    || d.ServiceType == typeof(DbContextOptions)
+                    || d.ServiceType.FullName?.Contains("Npgsql") == true
+                    || d.ImplementationType?.FullName?.Contains("Npgsql") == true
+                    || d.ServiceType.FullName?.Contains("EntityFrameworkCore") == true
+                )
+                .ToList();
 
             foreach (var descriptor in descriptorsToRemove)
             {
@@ -61,10 +64,12 @@ public class LykeWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<LykeDbContext>();
 
             // Add in-memory database for testing
-            services.AddDbContext<LykeDbContext>((sp, options) =>
-            {
-                options.UseInMemoryDatabase(_databaseName);
-            });
+            services.AddDbContext<LykeDbContext>(
+                (sp, options) =>
+                {
+                    options.UseInMemoryDatabase(_databaseName);
+                }
+            );
 
             // Register DbContext as an alias for LykeDbContext (some services depend on the base type)
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<LykeDbContext>());
@@ -303,15 +308,18 @@ internal class MockStorageService : IStorageService
         Stream content,
         string blobPath,
         string contentType,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         _uploadedFiles.Add(blobPath);
-        return Task.FromResult(new StorageUploadResult(
-            Url: $"https://mockstorage.example.com/{blobPath}",
-            BlobName: blobPath,
-            SizeBytes: content.Length,
-            ContentType: contentType
-        ));
+        return Task.FromResult(
+            new StorageUploadResult(
+                Url: $"https://mockstorage.example.com/{blobPath}",
+                BlobName: blobPath,
+                SizeBytes: content.Length,
+                ContentType: contentType
+            )
+        );
     }
 
     public Task DeleteAsync(string blobPath, CancellationToken cancellationToken = default)
@@ -320,7 +328,10 @@ internal class MockStorageService : IStorageService
         return Task.CompletedTask;
     }
 
-    public Task DeleteManyAsync(IEnumerable<string> blobPaths, CancellationToken cancellationToken = default)
+    public Task DeleteManyAsync(
+        IEnumerable<string> blobPaths,
+        CancellationToken cancellationToken = default
+    )
     {
         foreach (var path in blobPaths)
         {
@@ -332,12 +343,16 @@ internal class MockStorageService : IStorageService
     public Task<string> GenerateSasUrlAsync(
         string blobPath,
         TimeSpan? expiry = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return Task.FromResult($"https://mockstorage.example.com/{blobPath}?sas=mock-token");
     }
 
-    public Task<Stream> DownloadAsync(string blobPath, CancellationToken cancellationToken = default)
+    public Task<Stream> DownloadAsync(
+        string blobPath,
+        CancellationToken cancellationToken = default
+    )
     {
         Stream ms = new MemoryStream();
         return Task.FromResult(ms);

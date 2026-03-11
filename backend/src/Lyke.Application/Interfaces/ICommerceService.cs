@@ -14,27 +14,31 @@ public interface ICommerceService
         TrackClickRequest request,
         string? userAgent,
         string? ipAddress,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get product details by ID
     /// </summary>
     Task<ProductResponse> GetProductAsync(
         Guid productId,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Search products (for creators tagging posts)
     /// </summary>
     Task<(IReadOnlyList<ProductResponse> Products, PaginationMeta Meta)> SearchProductsAsync(
         ProductSearchRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get all active retailers
     /// </summary>
     Task<IReadOnlyList<RetailerResponse>> GetRetailersAsync(
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get retailer products (paginated)
@@ -44,7 +48,8 @@ public interface ICommerceService
         int page,
         int pageSize,
         string? category,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Get published posts linked to a product via PostProduct records
@@ -53,7 +58,8 @@ public interface ICommerceService
         Guid productId,
         Guid? userId,
         int limit = 10,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 
     /// <summary>
     /// Process conversion webhook from affiliate network/retailer
@@ -61,5 +67,6 @@ public interface ICommerceService
     Task<bool> ProcessConversionAsync(
         Guid retailerId,
         ConversionWebhookRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default
+    );
 }

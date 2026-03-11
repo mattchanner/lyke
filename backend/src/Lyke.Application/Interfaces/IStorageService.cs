@@ -11,10 +11,7 @@ public interface IStorageService
         CancellationToken cancellationToken = default
     );
 
-    Task<Stream> DownloadAsync(
-        string blobPath,
-        CancellationToken cancellationToken = default
-    );
+    Task<Stream> DownloadAsync(string blobPath, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(string blobPath, CancellationToken cancellationToken = default);
 

@@ -9,30 +9,48 @@ public class ApiResponse<T>
 
     public static ApiResponse<T> Ok(T data) => new() { Success = true, Data = data };
 
-    public static ApiResponse<T> Ok(T data, PaginationMeta meta) => new() { Success = true, Data = data, Meta = meta };
+    public static ApiResponse<T> Ok(T data, PaginationMeta meta) =>
+        new()
+        {
+            Success = true,
+            Data = data,
+            Meta = meta,
+        };
 
-    public static ApiResponse<T> Fail(string code, string message) => new()
-    {
-        Success = false,
-        Error = new ApiError { Code = code, Message = message }
-    };
+    public static ApiResponse<T> Fail(string code, string message) =>
+        new()
+        {
+            Success = false,
+            Error = new ApiError { Code = code, Message = message },
+        };
 
-    public static ApiResponse<T> Fail(string code, string message, IDictionary<string, string[]> details) => new()
-    {
-        Success = false,
-        Error = new ApiError { Code = code, Message = message, Details = details }
-    };
+    public static ApiResponse<T> Fail(
+        string code,
+        string message,
+        IDictionary<string, string[]> details
+    ) =>
+        new()
+        {
+            Success = false,
+            Error = new ApiError
+            {
+                Code = code,
+                Message = message,
+                Details = details,
+            },
+        };
 }
 
 public class ApiResponse : ApiResponse<object>
 {
     public static ApiResponse Ok() => new() { Success = true };
 
-    public static new ApiResponse Fail(string code, string message) => new()
-    {
-        Success = false,
-        Error = new ApiError { Code = code, Message = message }
-    };
+    public static new ApiResponse Fail(string code, string message) =>
+        new()
+        {
+            Success = false,
+            Error = new ApiError { Code = code, Message = message },
+        };
 }
 
 public class ApiError

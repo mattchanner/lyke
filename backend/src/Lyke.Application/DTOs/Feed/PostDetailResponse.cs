@@ -47,8 +47,4 @@ public record PostProductDetailResponse(
     List<FitTagResponse> FitTags
 );
 
-public record FitTagResponse(
-    int Id,
-    string Name,
-    string? Category
-);
+public record FitTagResponse(int Id, string Name, string? Category);

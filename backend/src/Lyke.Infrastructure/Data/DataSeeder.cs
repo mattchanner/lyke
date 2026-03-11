@@ -23,10 +23,18 @@ public static class DataSeeder
     private static readonly Guid Shopper5Id = Guid.Parse("00000000-0000-0000-0000-000000000014");
 
     // Creator users
-    private static readonly Guid CreatorUser1Id = Guid.Parse("00000000-0000-0000-0000-000000000020");
-    private static readonly Guid CreatorUser2Id = Guid.Parse("00000000-0000-0000-0000-000000000021");
-    private static readonly Guid CreatorUser3Id = Guid.Parse("00000000-0000-0000-0000-000000000022");
-    private static readonly Guid CreatorUser4Id = Guid.Parse("00000000-0000-0000-0000-000000000023");
+    private static readonly Guid CreatorUser1Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000020"
+    );
+    private static readonly Guid CreatorUser2Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000021"
+    );
+    private static readonly Guid CreatorUser3Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000022"
+    );
+    private static readonly Guid CreatorUser4Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000023"
+    );
 
     // Creator entities
     private static readonly Guid Creator1Id = Guid.Parse("00000000-0000-0000-0000-000000000030");
@@ -35,9 +43,15 @@ public static class DataSeeder
     private static readonly Guid Creator4Id = Guid.Parse("00000000-0000-0000-0000-000000000033");
 
     // Retailer users
-    private static readonly Guid RetailerUser1Id = Guid.Parse("00000000-0000-0000-0000-000000000040");
-    private static readonly Guid RetailerUser2Id = Guid.Parse("00000000-0000-0000-0000-000000000041");
-    private static readonly Guid RetailerUser3Id = Guid.Parse("00000000-0000-0000-0000-000000000042");
+    private static readonly Guid RetailerUser1Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000040"
+    );
+    private static readonly Guid RetailerUser2Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000041"
+    );
+    private static readonly Guid RetailerUser3Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000042"
+    );
 
     // Retailer entities
     private static readonly Guid Retailer1Id = Guid.Parse("00000000-0000-0000-0000-000000000050");
@@ -79,30 +93,78 @@ public static class DataSeeder
     private static readonly Guid Post12Id = Guid.Parse("00000000-0000-0000-0000-000000000211");
 
     // PostProducts (2 per post = 24 total)
-    private static readonly Guid PostProduct1Id = Guid.Parse("00000000-0000-0000-0000-000000000300");
-    private static readonly Guid PostProduct2Id = Guid.Parse("00000000-0000-0000-0000-000000000301");
-    private static readonly Guid PostProduct3Id = Guid.Parse("00000000-0000-0000-0000-000000000302");
-    private static readonly Guid PostProduct4Id = Guid.Parse("00000000-0000-0000-0000-000000000303");
-    private static readonly Guid PostProduct5Id = Guid.Parse("00000000-0000-0000-0000-000000000304");
-    private static readonly Guid PostProduct6Id = Guid.Parse("00000000-0000-0000-0000-000000000305");
-    private static readonly Guid PostProduct7Id = Guid.Parse("00000000-0000-0000-0000-000000000306");
-    private static readonly Guid PostProduct8Id = Guid.Parse("00000000-0000-0000-0000-000000000307");
-    private static readonly Guid PostProduct9Id = Guid.Parse("00000000-0000-0000-0000-000000000308");
-    private static readonly Guid PostProduct10Id = Guid.Parse("00000000-0000-0000-0000-000000000309");
-    private static readonly Guid PostProduct11Id = Guid.Parse("00000000-0000-0000-0000-000000000310");
-    private static readonly Guid PostProduct12Id = Guid.Parse("00000000-0000-0000-0000-000000000311");
-    private static readonly Guid PostProduct13Id = Guid.Parse("00000000-0000-0000-0000-000000000312");
-    private static readonly Guid PostProduct14Id = Guid.Parse("00000000-0000-0000-0000-000000000313");
-    private static readonly Guid PostProduct15Id = Guid.Parse("00000000-0000-0000-0000-000000000314");
-    private static readonly Guid PostProduct16Id = Guid.Parse("00000000-0000-0000-0000-000000000315");
-    private static readonly Guid PostProduct17Id = Guid.Parse("00000000-0000-0000-0000-000000000316");
-    private static readonly Guid PostProduct18Id = Guid.Parse("00000000-0000-0000-0000-000000000317");
-    private static readonly Guid PostProduct19Id = Guid.Parse("00000000-0000-0000-0000-000000000318");
-    private static readonly Guid PostProduct20Id = Guid.Parse("00000000-0000-0000-0000-000000000319");
-    private static readonly Guid PostProduct21Id = Guid.Parse("00000000-0000-0000-0000-000000000320");
-    private static readonly Guid PostProduct22Id = Guid.Parse("00000000-0000-0000-0000-000000000321");
-    private static readonly Guid PostProduct23Id = Guid.Parse("00000000-0000-0000-0000-000000000322");
-    private static readonly Guid PostProduct24Id = Guid.Parse("00000000-0000-0000-0000-000000000323");
+    private static readonly Guid PostProduct1Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000300"
+    );
+    private static readonly Guid PostProduct2Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000301"
+    );
+    private static readonly Guid PostProduct3Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000302"
+    );
+    private static readonly Guid PostProduct4Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000303"
+    );
+    private static readonly Guid PostProduct5Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000304"
+    );
+    private static readonly Guid PostProduct6Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000305"
+    );
+    private static readonly Guid PostProduct7Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000306"
+    );
+    private static readonly Guid PostProduct8Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000307"
+    );
+    private static readonly Guid PostProduct9Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000308"
+    );
+    private static readonly Guid PostProduct10Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000309"
+    );
+    private static readonly Guid PostProduct11Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000310"
+    );
+    private static readonly Guid PostProduct12Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000311"
+    );
+    private static readonly Guid PostProduct13Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000312"
+    );
+    private static readonly Guid PostProduct14Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000313"
+    );
+    private static readonly Guid PostProduct15Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000314"
+    );
+    private static readonly Guid PostProduct16Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000315"
+    );
+    private static readonly Guid PostProduct17Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000316"
+    );
+    private static readonly Guid PostProduct18Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000317"
+    );
+    private static readonly Guid PostProduct19Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000318"
+    );
+    private static readonly Guid PostProduct20Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000319"
+    );
+    private static readonly Guid PostProduct21Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000320"
+    );
+    private static readonly Guid PostProduct22Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000321"
+    );
+    private static readonly Guid PostProduct23Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000322"
+    );
+    private static readonly Guid PostProduct24Id = Guid.Parse(
+        "00000000-0000-0000-0000-000000000323"
+    );
 
     public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
@@ -158,10 +220,14 @@ public static class DataSeeder
         // Profile images for creator accounts
         var profileImages = new Dictionary<Guid, string>
         {
-            [CreatorUser1Id] = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop", // Jessica Style
-            [CreatorUser2Id] = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop", // Maya Fits
-            [CreatorUser3Id] = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop", // Taylor Petite
-            [CreatorUser4Id] = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop", // Priya Looks
+            [CreatorUser1Id] =
+                "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop", // Jessica Style
+            [CreatorUser2Id] =
+                "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&h=200&fit=crop", // Maya Fits
+            [CreatorUser3Id] =
+                "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop", // Taylor Petite
+            [CreatorUser4Id] =
+                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop", // Priya Looks
         };
 
         foreach (var (id, userName, email, userType) in users)
@@ -284,17 +350,61 @@ public static class DataSeeder
         // Seed fit preferences (multi-select)
         var fitPreferences = new BodyProfileFitPreference[]
         {
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000060"), FitPreference = FitPreference.Regular },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000061"), FitPreference = FitPreference.Relaxed },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000062"), FitPreference = FitPreference.Fitted },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"), FitPreference = FitPreference.Regular },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"), FitPreference = FitPreference.Relaxed },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"), FitPreference = FitPreference.Fitted },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"), FitPreference = FitPreference.Regular },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000065"), FitPreference = FitPreference.Regular },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000066"), FitPreference = FitPreference.Relaxed },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000067"), FitPreference = FitPreference.Fitted },
-            new() { BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000068"), FitPreference = FitPreference.Regular },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000060"),
+                FitPreference = FitPreference.Regular,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000061"),
+                FitPreference = FitPreference.Relaxed,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000062"),
+                FitPreference = FitPreference.Fitted,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"),
+                FitPreference = FitPreference.Regular,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000063"),
+                FitPreference = FitPreference.Relaxed,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"),
+                FitPreference = FitPreference.Fitted,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000064"),
+                FitPreference = FitPreference.Regular,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000065"),
+                FitPreference = FitPreference.Regular,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000066"),
+                FitPreference = FitPreference.Relaxed,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000067"),
+                FitPreference = FitPreference.Fitted,
+            },
+            new()
+            {
+                BodyProfileId = Guid.Parse("00000000-0000-0000-0000-000000000068"),
+                FitPreference = FitPreference.Regular,
+            },
         };
 
         context.BodyProfileFitPreferences.AddRange(fitPreferences);
@@ -363,7 +473,8 @@ public static class DataSeeder
                 Id = Retailer1Id,
                 UserId = RetailerUser1Id,
                 Name = "Zara",
-                LogoUrl = "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=200&fit=crop",
+                LogoUrl =
+                    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.zara.com",
                 ContactEmail = "partners@zara-example.com",
                 AffiliateConfig =
@@ -375,7 +486,8 @@ public static class DataSeeder
                 Id = Retailer2Id,
                 UserId = RetailerUser2Id,
                 Name = "H&M",
-                LogoUrl = "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=200&h=200&fit=crop",
+                LogoUrl =
+                    "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.hm.com",
                 ContactEmail = "partners@hm-example.com",
                 AffiliateConfig =
@@ -387,7 +499,8 @@ public static class DataSeeder
                 Id = Retailer3Id,
                 UserId = RetailerUser3Id,
                 Name = "ASOS",
-                LogoUrl = "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&h=200&fit=crop",
+                LogoUrl =
+                    "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&h=200&fit=crop",
                 WebsiteUrl = "https://www.asos.com",
                 ContactEmail = "partners@asos-example.com",
                 AffiliateConfig =
@@ -414,7 +527,8 @@ public static class DataSeeder
                 Description = "Structured single-breasted blazer with padded shoulders",
                 Category = "Outerwear",
                 SubCategory = "Blazers",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/blazer",
                 Price = 89.99m,
                 Currency = "GBP",
@@ -429,7 +543,8 @@ public static class DataSeeder
                 Description = "Flowing wide-leg trousers with front pleats",
                 Category = "Bottoms",
                 SubCategory = "Trousers",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/trousers",
                 Price = 49.99m,
                 Currency = "GBP",
@@ -444,7 +559,8 @@ public static class DataSeeder
                 Description = "A-line satin skirt with elastic waistband",
                 Category = "Bottoms",
                 SubCategory = "Skirts",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0uj7h?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0uj7h?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/skirt",
                 Price = 35.99m,
                 Currency = "GBP",
@@ -459,7 +575,8 @@ public static class DataSeeder
                 Description = "Slim fit ribbed knit top with round neck",
                 Category = "Tops",
                 SubCategory = "Knitwear",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/knit",
                 Price = 25.99m,
                 Currency = "GBP",
@@ -474,7 +591,8 @@ public static class DataSeeder
                 Description = "V-neck midi dress with floral print and ruched detail",
                 Category = "Dresses",
                 SubCategory = "Midi",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/dress",
                 Price = 59.99m,
                 Currency = "GBP",
@@ -489,7 +607,8 @@ public static class DataSeeder
                 Description = "Compact leather belt bag with adjustable strap",
                 Category = "Accessories",
                 SubCategory = "Bags",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.zara.com/example/bag",
                 Price = 29.99m,
                 Currency = "GBP",
@@ -505,7 +624,8 @@ public static class DataSeeder
                 Description = "Relaxed fit cotton hoodie with kangaroo pocket",
                 Category = "Tops",
                 SubCategory = "Hoodies",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/hoodie",
                 Price = 24.99m,
                 Currency = "GBP",
@@ -520,7 +640,8 @@ public static class DataSeeder
                 Description = "Classic straight leg jeans in medium wash",
                 Category = "Bottoms",
                 SubCategory = "Jeans",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/jeans",
                 Price = 34.99m,
                 Currency = "GBP",
@@ -535,7 +656,8 @@ public static class DataSeeder
                 Description = "Soft-knit cropped cardigan with pearl buttons",
                 Category = "Tops",
                 SubCategory = "Knitwear",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1434389677669-e08b4cda3a41?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/cardigan",
                 Price = 19.99m,
                 Currency = "GBP",
@@ -550,7 +672,8 @@ public static class DataSeeder
                 Description = "Lightweight quilted puffer jacket with stand collar",
                 Category = "Outerwear",
                 SubCategory = "Jackets",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1544923246-77307dd270cb?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/puffer",
                 Price = 44.99m,
                 Currency = "GBP",
@@ -565,7 +688,8 @@ public static class DataSeeder
                 Description = "High-waist linen blend shorts with belt",
                 Category = "Bottoms",
                 SubCategory = "Shorts",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/shorts",
                 Price = 22.99m,
                 Currency = "GBP",
@@ -580,7 +704,8 @@ public static class DataSeeder
                 Description = "Relaxed t-shirt dress in organic cotton",
                 Category = "Dresses",
                 SubCategory = "Mini",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.hm.com/example/tshirtdress",
                 Price = 17.99m,
                 Currency = "GBP",
@@ -596,7 +721,8 @@ public static class DataSeeder
                 Description = "Jersey wrap maxi dress with long sleeves",
                 Category = "Dresses",
                 SubCategory = "Maxi",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1495385794356-15371f348c31?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/maxidress",
                 Price = 42.00m,
                 Currency = "GBP",
@@ -611,7 +737,8 @@ public static class DataSeeder
                 Description = "Slim-fit tailored trousers with pressed crease",
                 Category = "Bottoms",
                 SubCategory = "Trousers",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/trousers",
                 Price = 36.00m,
                 Currency = "GBP",
@@ -626,7 +753,8 @@ public static class DataSeeder
                 Description = "Fitted mesh bodysuit with high neck",
                 Category = "Tops",
                 SubCategory = "Bodysuits",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/bodysuit",
                 Price = 18.00m,
                 Currency = "GBP",
@@ -641,7 +769,8 @@ public static class DataSeeder
                 Description = "Classic denim jacket in mid-wash blue",
                 Category = "Outerwear",
                 SubCategory = "Jackets",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/denim",
                 Price = 45.00m,
                 Currency = "GBP",
@@ -656,7 +785,8 @@ public static class DataSeeder
                 Description = "Satin pleated midi skirt in emerald green",
                 Category = "Bottoms",
                 SubCategory = "Skirts",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0aaef?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1583496661160-fb5886a0aaef?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/pleated",
                 Price = 32.00m,
                 Currency = "GBP",
@@ -671,7 +801,8 @@ public static class DataSeeder
                 Description = "Platform chunky trainers in white leather",
                 Category = "Footwear",
                 SubCategory = "Trainers",
-                ImageUrls = "[\"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=500&fit=crop\"]",
+                ImageUrls =
+                    "[\"https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&h=500&fit=crop\"]",
                 ProductUrl = "https://www.asos.com/example/trainers",
                 Price = 55.00m,
                 Currency = "GBP",
@@ -1018,7 +1149,8 @@ public static class DataSeeder
                 PostId = Post9Id,
                 ProductId = Product17Id, // ASOS Pleated Skirt
                 SizeWorn = "XS",
-                FitNotes = "Hits right above the knee on my petite frame — midi on me is like a maxi",
+                FitNotes =
+                    "Hits right above the knee on my petite frame — midi on me is like a maxi",
                 FitRating = FitRating.TrueToSize,
             },
             new()
@@ -1099,20 +1231,94 @@ public static class DataSeeder
             return;
 
         // FitTags are normally seeded via HasData in the migration, but if missing we insert them here
-        context.Set<FitTag>().AddRange(
-            new FitTag { Id = 1, Name = "True to size", Category = "General", IsActive = true },
-            new FitTag { Id = 2, Name = "Runs small", Category = "General", IsActive = true },
-            new FitTag { Id = 3, Name = "Runs large", Category = "General", IsActive = true },
-            new FitTag { Id = 4, Name = "Tight on hips", Category = "Fit", IsActive = true },
-            new FitTag { Id = 5, Name = "Tight on bust", Category = "Fit", IsActive = true },
-            new FitTag { Id = 6, Name = "Loose on waist", Category = "Fit", IsActive = true },
-            new FitTag { Id = 7, Name = "Long in arms", Category = "Length", IsActive = true },
-            new FitTag { Id = 8, Name = "Short in arms", Category = "Length", IsActive = true },
-            new FitTag { Id = 9, Name = "Long in torso", Category = "Length", IsActive = true },
-            new FitTag { Id = 10, Name = "Short in torso", Category = "Length", IsActive = true },
-            new FitTag { Id = 11, Name = "Stretchy material", Category = "Material", IsActive = true },
-            new FitTag { Id = 12, Name = "Not stretchy", Category = "Material", IsActive = true }
-        );
+        context
+            .Set<FitTag>()
+            .AddRange(
+                new FitTag
+                {
+                    Id = 1,
+                    Name = "True to size",
+                    Category = "General",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 2,
+                    Name = "Runs small",
+                    Category = "General",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 3,
+                    Name = "Runs large",
+                    Category = "General",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 4,
+                    Name = "Tight on hips",
+                    Category = "Fit",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 5,
+                    Name = "Tight on bust",
+                    Category = "Fit",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 6,
+                    Name = "Loose on waist",
+                    Category = "Fit",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 7,
+                    Name = "Long in arms",
+                    Category = "Length",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 8,
+                    Name = "Short in arms",
+                    Category = "Length",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 9,
+                    Name = "Long in torso",
+                    Category = "Length",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 10,
+                    Name = "Short in torso",
+                    Category = "Length",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 11,
+                    Name = "Stretchy material",
+                    Category = "Material",
+                    IsActive = true,
+                },
+                new FitTag
+                {
+                    Id = 12,
+                    Name = "Not stretchy",
+                    Category = "Material",
+                    IsActive = true,
+                }
+            );
         await context.SaveChangesAsync();
     }
 
@@ -1188,8 +1394,18 @@ public static class DataSeeder
         var shopperIds = new[] { Shopper1Id, Shopper2Id, Shopper3Id, Shopper4Id, Shopper5Id };
         var postIds = new[]
         {
-            Post1Id, Post2Id, Post3Id, Post4Id, Post5Id, Post6Id,
-            Post7Id, Post8Id, Post9Id, Post10Id, Post11Id, Post12Id,
+            Post1Id,
+            Post2Id,
+            Post3Id,
+            Post4Id,
+            Post5Id,
+            Post6Id,
+            Post7Id,
+            Post8Id,
+            Post9Id,
+            Post10Id,
+            Post11Id,
+            Post12Id,
         };
 
         var guidCounter = 0x400;
@@ -1199,64 +1415,70 @@ public static class DataSeeder
         {
             foreach (var postId in postIds)
             {
-                engagements.Add(new Engagement
-                {
-                    Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
-                    UserId = shopperId,
-                    PostId = postId,
-                    Type = EngagementType.View,
-                    CreatedAt = baseDate.AddHours(guidCounter % 48),
-                });
+                engagements.Add(
+                    new Engagement
+                    {
+                        Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
+                        UserId = shopperId,
+                        PostId = postId,
+                        Type = EngagementType.View,
+                        CreatedAt = baseDate.AddHours(guidCounter % 48),
+                    }
+                );
             }
         }
 
         // Likes — each shopper likes ~4-6 random posts
         var likePatterns = new (int shopperIdx, int[] postIndices)[]
         {
-            (0, [0, 1, 2, 4, 6]),   // Emma likes Jessica's + Maya's + Taylor's
-            (1, [3, 4, 5, 9, 10]),  // Olivia likes Maya's + Priya's
+            (0, [0, 1, 2, 4, 6]), // Emma likes Jessica's + Maya's + Taylor's
+            (1, [3, 4, 5, 9, 10]), // Olivia likes Maya's + Priya's
             (2, [0, 6, 7, 8, 11]), // Ava likes Jessica's + Taylor's + Priya's
             (3, [1, 3, 7, 10, 11]), // Mia likes mixed
-            (4, [2, 5, 8, 9]),      // Sophia likes mixed
+            (4, [2, 5, 8, 9]), // Sophia likes mixed
         };
 
         foreach (var (shopperIdx, postIndices) in likePatterns)
         {
             foreach (var postIdx in postIndices)
             {
-                engagements.Add(new Engagement
-                {
-                    Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
-                    UserId = shopperIds[shopperIdx],
-                    PostId = postIds[postIdx],
-                    Type = EngagementType.Like,
-                    CreatedAt = baseDate.AddDays(1).AddHours(guidCounter % 24),
-                });
+                engagements.Add(
+                    new Engagement
+                    {
+                        Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
+                        UserId = shopperIds[shopperIdx],
+                        PostId = postIds[postIdx],
+                        Type = EngagementType.Like,
+                        CreatedAt = baseDate.AddDays(1).AddHours(guidCounter % 24),
+                    }
+                );
             }
         }
 
         // Saves — fewer than likes
         var savePatterns = new (int shopperIdx, int[] postIndices)[]
         {
-            (0, [0, 6]),    // Emma saves office look + petite maxi
-            (1, [3, 4]),    // Olivia saves athleisure + gym
-            (2, [7, 8]),    // Ava saves cropped + mini skirt
-            (3, [1, 10]),   // Mia saves date night + denim
-            (4, [9, 11]),   // Sophia saves colour blocking + chunky shoes
+            (0, [0, 6]), // Emma saves office look + petite maxi
+            (1, [3, 4]), // Olivia saves athleisure + gym
+            (2, [7, 8]), // Ava saves cropped + mini skirt
+            (3, [1, 10]), // Mia saves date night + denim
+            (4, [9, 11]), // Sophia saves colour blocking + chunky shoes
         };
 
         foreach (var (shopperIdx, postIndices) in savePatterns)
         {
             foreach (var postIdx in postIndices)
             {
-                engagements.Add(new Engagement
-                {
-                    Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
-                    UserId = shopperIds[shopperIdx],
-                    PostId = postIds[postIdx],
-                    Type = EngagementType.Save,
-                    CreatedAt = baseDate.AddDays(2).AddHours(guidCounter % 24),
-                });
+                engagements.Add(
+                    new Engagement
+                    {
+                        Id = Guid.Parse($"00000000-0000-0000-0000-000000000{guidCounter++:X3}"),
+                        UserId = shopperIds[shopperIdx],
+                        PostId = postIds[postIdx],
+                        Type = EngagementType.Save,
+                        CreatedAt = baseDate.AddDays(2).AddHours(guidCounter % 24),
+                    }
+                );
             }
         }
 

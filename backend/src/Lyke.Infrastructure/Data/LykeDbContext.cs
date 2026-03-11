@@ -1,5 +1,4 @@
 using Lyke.Core.Entities;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -9,14 +8,14 @@ namespace Lyke.Infrastructure.Data;
 
 public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
-    public LykeDbContext(DbContextOptions<LykeDbContext> options) : base(options)
-    {
-    }
+    public LykeDbContext(DbContextOptions<LykeDbContext> options)
+        : base(options) { }
 
     public DbSet<BodyProfile> BodyProfiles => Set<BodyProfile>();
     public DbSet<BodyType> BodyTypes => Set<BodyType>();
     public DbSet<FrameSize> FrameSizes => Set<FrameSize>();
-    public DbSet<BodyProfileFitPreference> BodyProfileFitPreferences => Set<BodyProfileFitPreference>();
+    public DbSet<BodyProfileFitPreference> BodyProfileFitPreferences =>
+        Set<BodyProfileFitPreference>();
     public DbSet<Creator> Creators => Set<Creator>();
     public DbSet<Retailer> Retailers => Set<Retailer>();
     public DbSet<Product> Products => Set<Product>();
@@ -49,7 +48,9 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
-        optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning)
+        );
     }
 
     public override int SaveChanges()
@@ -66,7 +67,8 @@ public class LykeDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
     private void UpdateTimestamps()
     {
-        var entries = ChangeTracker.Entries()
+        var entries = ChangeTracker
+            .Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         foreach (var entry in entries)

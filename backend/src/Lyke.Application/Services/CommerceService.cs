@@ -26,7 +26,8 @@ public class CommerceService : ICommerceService
     private readonly IEventTrackingService _eventTracking;
     private readonly IMemoryCache _cache;
     private readonly ILogger<CommerceService> _logger;
-    private bool UseFullTextSearch => _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
+    private bool UseFullTextSearch =>
+        _dbContext.Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL";
 
     private const string RetailersCacheKey = "commerce:retailers";
     private static readonly TimeSpan RetailerCacheDuration = TimeSpan.FromMinutes(15);
@@ -58,7 +59,7 @@ public class CommerceService : ICommerceService
         var postProduct = await _dbContext
             .Set<PostProduct>()
             .Include(pp => pp.Product)
-            .ThenInclude(p => p.Retailer)
+                .ThenInclude(p => p.Retailer)
             .Include(pp => pp.Post)
             .FirstOrDefaultAsync(
                 pp => pp.Id == request.PostProductId && pp.PostId == request.PostId,
@@ -156,10 +157,11 @@ public class CommerceService : ICommerceService
             new Dictionary<string, string>
             {
                 ["postId"] = request.PostId.ToString(),
-                ["source"] = request.Source ?? ""
+                ["source"] = request.Source ?? "",
             },
             request.SessionId,
-            cancellationToken);
+            cancellationToken
+        );
 
         return new TrackClickResponse(
             clickId,
@@ -210,12 +212,20 @@ public class CommerceService : ICommerceService
         {
             query = UseFullTextSearch
                 ? query.Where(p =>
-                    EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
-                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm)))
+                    EF.Functions.ToTsVector(
+                            "english",
+                            p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku
+                        )
+                        .Matches(EF.Functions.PlainToTsQuery("english", searchTerm))
+                )
                 : query.Where(p =>
                     p.Name.ToLower().Contains(searchTerm.ToLower())
-                    || (p.Description != null && p.Description.ToLower().Contains(searchTerm.ToLower()))
-                    || p.ExternalSku.ToLower().Contains(searchTerm.ToLower()));
+                    || (
+                        p.Description != null
+                        && p.Description.ToLower().Contains(searchTerm.ToLower())
+                    )
+                    || p.ExternalSku.ToLower().Contains(searchTerm.ToLower())
+                );
         }
 
         // Apply retailer filter
@@ -232,13 +242,18 @@ public class CommerceService : ICommerceService
 
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var orderedQuery = UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
-            ? query
-                .OrderByDescending(p =>
-                    EF.Functions.ToTsVector("english", p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku)
-                        .Rank(EF.Functions.PlainToTsQuery("english", searchTerm)))
-                .ThenBy(p => p.Name)
-            : query.OrderBy(p => p.Name);
+        var orderedQuery =
+            UseFullTextSearch && !string.IsNullOrWhiteSpace(searchTerm)
+                ? query
+                    .OrderByDescending(p =>
+                        EF.Functions.ToTsVector(
+                                "english",
+                                p.Name + " " + (p.Description ?? "") + " " + p.ExternalSku
+                            )
+                            .Rank(EF.Functions.PlainToTsQuery("english", searchTerm))
+                    )
+                    .ThenBy(p => p.Name)
+                : query.OrderBy(p => p.Name);
 
         var products = await orderedQuery
             .Skip((request.Page - 1) * request.PageSize)
@@ -261,7 +276,10 @@ public class CommerceService : ICommerceService
         CancellationToken cancellationToken = default
     )
     {
-        if (_cache.TryGetValue(RetailersCacheKey, out IReadOnlyList<RetailerResponse>? cached) && cached != null)
+        if (
+            _cache.TryGetValue(RetailersCacheKey, out IReadOnlyList<RetailerResponse>? cached)
+            && cached != null
+        )
         {
             return cached;
         }
@@ -306,7 +324,11 @@ public class CommerceService : ICommerceService
             ))
             .ToList();
 
-        _cache.Set(RetailersCacheKey, (IReadOnlyList<RetailerResponse>)result, RetailerCacheDuration);
+        _cache.Set(
+            RetailersCacheKey,
+            (IReadOnlyList<RetailerResponse>)result,
+            RetailerCacheDuration
+        );
         return result;
     }
 
@@ -387,23 +409,23 @@ public class CommerceService : ICommerceService
                 && p.PostProducts.Any(pp => pp.ProductId == productId)
             )
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile)
-            .ThenInclude(bp => bp!.BodyType)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile!)
-            .ThenInclude(bp => bp.FrameSize)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FrameSize)
             .Include(p => p.Creator)
-            .ThenInclude(c => c.User)
-            .ThenInclude(u => u.BodyProfile!)
-            .ThenInclude(bp => bp.FitPreferences)
+                .ThenInclude(c => c.User)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.Product)
-            .ThenInclude(prod => prod.Retailer)
+                .ThenInclude(pp => pp.Product)
+                    .ThenInclude(prod => prod.Retailer)
             .Include(p => p.PostProducts)
-            .ThenInclude(pp => pp.FitTags)
-            .ThenInclude(pft => pft.FitTag)
+                .ThenInclude(pp => pp.FitTags)
+                    .ThenInclude(pft => pft.FitTag)
             .Include(p => p.Engagements)
             .AsSplitQuery()
             .OrderByDescending(p => p.PublishedAt)
@@ -451,7 +473,7 @@ public class CommerceService : ICommerceService
         var clickEvent = await _dbContext
             .Set<ClickEvent>()
             .Include(ce => ce.PostProduct)
-            .ThenInclude(pp => pp.Post)
+                .ThenInclude(pp => pp.Post)
             .FirstOrDefaultAsync(ce => ce.Id == clickId, cancellationToken);
 
         if (clickEvent == null)
@@ -503,9 +525,10 @@ public class CommerceService : ICommerceService
             {
                 ["orderId"] = request.OrderId,
                 ["amount"] = request.CommissionAmount.ToString("F2"),
-                ["currency"] = request.Currency
+                ["currency"] = request.Currency,
             },
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
 
         return true;
     }
@@ -656,7 +679,11 @@ public class CommerceService : ICommerceService
                 creatorBodyProfile.FrameSize?.Name,
                 creatorBodyProfile.Stature,
                 creatorBodyProfile.Build,
-                BodyProfileHelper.FormatBodyTypeLabel(creatorBodyProfile.Stature, creatorBodyProfile.Build, creatorBodyProfile.BodyType.Name),
+                BodyProfileHelper.FormatBodyTypeLabel(
+                    creatorBodyProfile.Stature,
+                    creatorBodyProfile.Build,
+                    creatorBodyProfile.BodyType.Name
+                ),
                 creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }

@@ -14,9 +14,7 @@ public class SearchRequestValidator : AbstractValidator<SearchRequest>
             .MaximumLength(100)
             .WithMessage("Search query must not exceed 100 characters");
 
-        RuleFor(x => x.Page)
-            .GreaterThan(0)
-            .WithMessage("Page must be greater than 0");
+        RuleFor(x => x.Page).GreaterThan(0).WithMessage("Page must be greater than 0");
 
         RuleFor(x => x.PageSize)
             .InclusiveBetween(1, 100)
