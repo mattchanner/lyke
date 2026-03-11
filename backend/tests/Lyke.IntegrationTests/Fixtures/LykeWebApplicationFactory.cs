@@ -5,6 +5,7 @@ using Lyke.Application.DTOs.Media;
 using Lyke.Application.Interfaces;
 using Lyke.Core.Entities;
 using Lyke.Core.Enums;
+using Lyke.Infrastructure.Configuration;
 using Lyke.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -74,9 +75,31 @@ public class LykeWebApplicationFactory : WebApplicationFactory<Program>
             // Register DbContext as an alias for LykeDbContext (some services depend on the base type)
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<LykeDbContext>());
 
-            // Replace storage service with mock for testing
+            // Replace storage and media processing services with mocks for testing
             services.RemoveAll<IStorageService>();
             services.AddSingleton<IStorageService, MockStorageService>();
+
+            services.RemoveAll<IImageProcessingService>();
+            services.AddSingleton<IImageProcessingService, MockImageProcessingService>();
+
+            services.RemoveAll<IVideoProcessingService>();
+            services.AddSingleton<IVideoProcessingService, MockVideoProcessingService>();
+
+            services.RemoveAll<IMessageQueue<MediaProcessingMessage>>();
+            services.AddSingleton<
+                IMessageQueue<MediaProcessingMessage>,
+                MockMessageQueue<MediaProcessingMessage>
+            >();
+
+            // Add blob settings for any code that requires it
+            services.RemoveAll<AzureBlobSettings>();
+            services.AddSingleton(
+                new AzureBlobSettings
+                {
+                    ConnectionString = "UseDevelopmentStorage=true",
+                    ContainerName = "test-media",
+                }
+            );
 
             // Build service provider and seed data
             var sp = services.BuildServiceProvider();
@@ -361,5 +384,97 @@ internal class MockStorageService : IStorageService
     public Task<bool> ExistsAsync(string blobPath, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_uploadedFiles.Contains(blobPath));
+    }
+}
+
+/// <summary>
+/// Mock image processing service for integration tests.
+/// </summary>
+internal class MockImageProcessingService : IImageProcessingService
+{
+    public Task<ProcessedImage> ProcessImageAsync(
+        Stream input,
+        int maxWidth,
+        int maxHeight,
+        int quality,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var output = new MemoryStream();
+        input.CopyTo(output);
+        output.Position = 0;
+        return Task.FromResult(new ProcessedImage(output, "image/jpeg", maxWidth, maxHeight));
+    }
+
+    public Task<ProcessedImage> CreateThumbnailAsync(
+        Stream input,
+        int width,
+        int height,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var output = new MemoryStream();
+        input.CopyTo(output);
+        output.Position = 0;
+        return Task.FromResult(new ProcessedImage(output, "image/jpeg", width, height));
+    }
+
+    public Task<ImageDimensions> GetImageDimensionsAsync(
+        Stream input,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Task.FromResult(new ImageDimensions(1920, 1080));
+    }
+}
+
+/// <summary>
+/// Mock video processing service for integration tests.
+/// </summary>
+internal class MockVideoProcessingService : IVideoProcessingService
+{
+    public Task<Stream> ExtractThumbnailAsync(
+        string videoPath,
+        int width,
+        int height,
+        double atSecond = 1.0,
+        CancellationToken cancellationToken = default
+    )
+    {
+        Stream ms = new MemoryStream(new byte[100]);
+        return Task.FromResult(ms);
+    }
+
+    public Task<VideoInfo> GetVideoInfoAsync(
+        string videoPath,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Task.FromResult(new VideoInfo(1920, 1080, 30.0, "h264"));
+    }
+
+    public Task<string> TranscodeAsync(
+        string inputPath,
+        string outputPath,
+        int maxWidth,
+        int maxHeight,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return Task.FromResult(outputPath);
+    }
+}
+
+/// <summary>
+/// Mock message queue for integration tests.
+/// </summary>
+internal class MockMessageQueue<T> : IMessageQueue<T>
+{
+    private readonly List<T> _messages = new();
+
+    public Task EnqueueAsync(T message, CancellationToken cancellationToken = default)
+    {
+        _messages.Add(message);
+        return Task.CompletedTask;
     }
 }

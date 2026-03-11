@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Lyke.Infrastructure;
 
@@ -17,10 +18,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration
+        IConfiguration configuration,
+        IHostEnvironment? environment = null
     )
     {
-        services.AddDatabase(configuration);
+        var isTesting = environment?.IsEnvironment("Testing") ?? false;
+
+        if (!isTesting)
+        {
+            services.AddDatabase(configuration);
+        }
 
         // Identity
         services
@@ -43,12 +50,18 @@ public static class DependencyInjection
         // Email
         services.AddSingleton<IEmailService, Lyke.Infrastructure.Email.EmailService>();
 
-        // Background services
-        services.AddHostedService<DataRetentionService>();
-        services.AddHostedService<MetricsAggregationService>();
+        // Background services (skip in testing to avoid timer-based issues)
+        if (!isTesting)
+        {
+            services.AddHostedService<DataRetentionService>();
+            services.AddHostedService<MetricsAggregationService>();
+        }
 
-        // Storage
-        services.AddStorage(configuration);
+        // Storage (skip in testing - test factory provides mocks)
+        if (!isTesting)
+        {
+            services.AddStorage(configuration);
+        }
 
         return services;
     }

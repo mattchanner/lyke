@@ -54,7 +54,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 // Add services
 builder.Services.AddApplication(builder.Configuration);
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment);
 builder.Services.AddRedirectToScalarUiMiddleware();
 
 // Caching
