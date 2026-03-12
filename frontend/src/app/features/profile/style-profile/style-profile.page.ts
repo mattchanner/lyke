@@ -10,6 +10,9 @@ import {
   IonButtons,
   IonBackButton,
   IonSpinner,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
   AlertController,
 } from '@ionic/angular/standalone';
 import { ViewWillEnter } from '@ionic/angular';
@@ -19,6 +22,10 @@ import { ShareCardService } from '../../../core/services/share-card.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { StyleProfileResponse, KibbeFamily } from '../../../models/style/kibbe.models';
 import { FAMILY_TAGLINES } from '../../style-quiz/pages/teaser/style-quiz-teaser.page';
+import {
+  KIBBE_STYLE_GUIDES,
+  KibbeStyleGuide,
+} from '../../style-quiz/data/kibbe-style-guide.data';
 
 @Component({
   selector: 'app-style-profile',
@@ -32,6 +39,9 @@ import { FAMILY_TAGLINES } from '../../style-quiz/pages/teaser/style-quiz-teaser
     IonButtons,
     IonBackButton,
     IonSpinner,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
   ],
   templateUrl: './style-profile.page.html',
   styleUrls: ['./style-profile.page.scss'],
@@ -50,6 +60,7 @@ export class StyleProfilePage implements ViewWillEnter {
   readonly isOverriding = signal(false);
   readonly isSharing = signal(false);
   readonly sharePreviewUrl = signal<string | null>(null);
+  readonly activeTab = signal('overview');
 
   ionViewWillEnter(): void {
     this.loadProfile();
@@ -99,6 +110,15 @@ export class StyleProfilePage implements ViewWillEnter {
   tagline(family: string | null): string {
     if (!family) return '';
     return FAMILY_TAGLINES[family] ?? '';
+  }
+
+  styleGuide(family: string | null): KibbeStyleGuide | null {
+    if (!family) return null;
+    return KIBBE_STYLE_GUIDES[family] ?? null;
+  }
+
+  setTab(tab: string): void {
+    this.activeTab.set(tab);
   }
 
   async share(): Promise<void> {
