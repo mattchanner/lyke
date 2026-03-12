@@ -116,4 +116,76 @@ public class EventTrackingServiceTests : IDisposable
         await act.Should().NotThrowAsync();
         _context.AnalyticsEvents.Should().BeEmpty();
     }
+
+    // ── TrackRawAsync ──
+
+    [Theory]
+    [InlineData("FeedFilter")]
+    [InlineData("feedfilter")]
+    [InlineData("SEARCHEXECUTE")]
+    [InlineData("ProfileComplete")]
+    public async Task TrackRawAsync_KnownPersistableEventType_PersistsToDatabase(string eventType)
+    {
+        // Act
+        await _sut.TrackRawAsync(eventType, Guid.NewGuid());
+
+        // Assert
+        _context.AnalyticsEvents.Should().HaveCount(1);
+    }
+
+    [Theory]
+    [InlineData("kibbe_quiz_start")]
+    [InlineData("kibbe_full_results_view")]
+    [InlineData("PostView")]
+    [InlineData("completely_unknown_event")]
+    public async Task TrackRawAsync_UnknownOrNonPersistableEventType_DoesNotPersist(
+        string eventType
+    )
+    {
+        // Act
+        await _sut.TrackRawAsync(eventType, Guid.NewGuid());
+
+        // Assert — logged but not saved to DB
+        _context.AnalyticsEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task TrackRawBatchAsync_MixedEventTypes_OnlyPersistsKnownBehavioralEvents()
+    {
+        // Arrange
+        var events = new List<TrackRawEventItem>
+        {
+            new("SearchExecute", Guid.NewGuid()),
+            new("kibbe_quiz_start", Guid.NewGuid()),
+            new("FeedFilter", Guid.NewGuid()),
+            new("kibbe_share_complete", Guid.NewGuid()),
+            new("ProfileComplete", Guid.NewGuid()),
+        };
+
+        // Act
+        await _sut.TrackRawBatchAsync(events);
+
+        // Assert — only the 3 persistable events are saved
+        var persisted = _context.AnalyticsEvents.ToList();
+        persisted.Should().HaveCount(3);
+        persisted
+            .Select(e => e.EventType)
+            .Should()
+            .BeEquivalentTo(
+                new[]
+                {
+                    AnalyticsEventType.SearchExecute,
+                    AnalyticsEventType.FeedFilter,
+                    AnalyticsEventType.ProfileComplete,
+                }
+            );
+    }
+
+    [Fact]
+    public async Task TrackRawBatchAsync_EmptyBatch_DoesNotThrow()
+    {
+        var act = () => _sut.TrackRawBatchAsync([]);
+        await act.Should().NotThrowAsync();
+        _context.AnalyticsEvents.Should().BeEmpty();
+    }
 }

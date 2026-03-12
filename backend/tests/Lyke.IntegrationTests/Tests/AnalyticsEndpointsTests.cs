@@ -1,11 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using FluentAssertions;
 using Lyke.Application.DTOs;
 using Lyke.Application.DTOs.Analytics;
-using Lyke.Core.Enums;
 using Lyke.IntegrationTests.Fixtures;
 
 namespace Lyke.IntegrationTests.Tests;
@@ -22,11 +19,11 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     }
 
     [Fact]
-    public async Task TrackEvent_WithValidEvent_ReturnsOk()
+    public async Task TrackEvent_WithKnownEventType_ReturnsOk()
     {
         // Arrange
         var request = new TrackEventRequest(
-            EventType: AnalyticsEventType.SearchExecute,
+            EventType: "SearchExecute",
             Properties: new Dictionary<string, string> { ["query"] = "summer dress" }
         );
 
@@ -46,18 +43,46 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     }
 
     [Fact]
-    public async Task TrackEventBatch_WithValidBatch_ReturnsOk()
+    public async Task TrackEvent_WithUnknownEventType_ReturnsOk()
     {
-        // Arrange
+        // Arbitrary client-side event names (e.g. from the Kibbe quiz) must be accepted
+        var request = new TrackEventRequest(
+            EventType: "kibbe_quiz_start",
+            Properties: new Dictionary<string, string> { ["feature"] = "kibbe_quiz" }
+        );
+
+        // Act
+        var response = await _client.PostAsJsonAsync(
+            "/api/analytics/v1/events",
+            request,
+            LykeWebApplicationFactory.JsonOptions
+        );
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse>(
+            LykeWebApplicationFactory.JsonOptions
+        );
+        result!.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task TrackEventBatch_WithMixedEventTypes_ReturnsOk()
+    {
+        // Arrange — mix of known enum-mapped and arbitrary frontend event names
         var request = new TrackEventBatchRequest(
             Events:
             [
                 new TrackEventRequest(
-                    EventType: AnalyticsEventType.FeedFilter,
+                    EventType: "FeedFilter",
                     Properties: new Dictionary<string, string> { ["category"] = "dresses" }
                 ),
                 new TrackEventRequest(
-                    EventType: AnalyticsEventType.SearchExecute,
+                    EventType: "kibbe_full_results_view",
+                    Properties: new Dictionary<string, string> { ["primary_family"] = "Classic" }
+                ),
+                new TrackEventRequest(
+                    EventType: "SearchExecute",
                     Properties: new Dictionary<string, string> { ["query"] = "jeans" }
                 ),
             ]
@@ -81,8 +106,8 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     [Fact]
     public async Task TrackEvent_IsPubliclyAccessible()
     {
-        // Arrange - No authorization header
-        var request = new TrackEventRequest(EventType: AnalyticsEventType.PostView);
+        // No authorization header
+        var request = new TrackEventRequest(EventType: "PostView");
 
         // Act
         var response = await _client.PostAsJsonAsync(
@@ -91,7 +116,7 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             LykeWebApplicationFactory.JsonOptions
         );
 
-        // Assert - Should not return 401
+        // Assert — should not return 401
         response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
     }
 
@@ -108,7 +133,7 @@ public class AnalyticsEndpointsTests : IClassFixture<LykeWebApplicationFactory>
             LykeWebApplicationFactory.JsonOptions
         );
 
-        // Assert - Endpoint accepts empty batches (no server-side validation)
+        // Assert — endpoint accepts empty batches
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 }
