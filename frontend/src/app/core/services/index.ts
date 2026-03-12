@@ -17,3 +17,4 @@ export { QuizService } from './quiz.service';
 export { KibbeQuizApiService } from './kibbe-quiz-api.service';
 export { KibbeSessionService } from './kibbe-session.service';
 export { KibbeAnalyticsService } from './kibbe-analytics.service';
+export { ShareCardService } from './share-card.service';

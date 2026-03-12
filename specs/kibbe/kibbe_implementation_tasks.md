@@ -3,7 +3,7 @@
 **Document version:** 1.1
 **Created:** 2026-03-11
 **Last updated:** 2026-03-12
-**Status:** In Progress — Phases 1–4, 6 complete; Phase 5, 7, 8 remaining
+**Status:** In Progress — Phases 1–6 complete; Phase 7, 8 remaining
 
 ---
 
@@ -97,11 +97,11 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T5.1 | Implement `ShareCardComponent` | [ ] | HTML Canvas generator |
-| T5.2 | Integrate Web Share API | [ ] | File export for sharing |
-| T5.3 | Implement download fallback | [ ] | For non-supporting browsers |
-| T5.4 | Add share section to results | [ ] | Button + preview |
-| T5.5 | Add share analytics events | [ ] | share_click, share_complete |
+| T5.1 | Implement `ShareCardService` | [x] | HTML Canvas generator — 1080×1080 PNG with family theming |
+| T5.2 | Integrate Web Share API | [x] | File export with navigator.share |
+| T5.3 | Implement download fallback | [x] | createObjectURL + anchor click for non-supporting browsers |
+| T5.4 | Add share section to results | [x] | Share button + preview image card above action buttons |
+| T5.5 | Add share analytics events | [x] | share_click, share_complete via KibbeAnalyticsService |
 
 ---
 
@@ -162,6 +162,7 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 | 2026-03-12 | T4.1-T4.11 | Phase 4 complete — all quiz UI pages, style guide data, auto-advance, retake confirmation, family override, /profile/style page |
 | 2026-03-12 | T6.1-T6.4 | Phase 6 complete — return redirect in login/register, expiry toast, quiz analytics events |
 | 2026-03-12 | Bug fixes | Calculating page respects light/dark mode; authenticated users bypass teaser and go straight to results; style profile empty state fixed (spinner no longer stuck when no profile exists); ES2018 lib compatibility (replaced flatMap/fromEntries) |
+| 2026-03-12 | T5.1-T5.5 | Phase 5 complete — ShareCardService (Canvas 1080×1080 with family themes), Web Share API with file export, download fallback, share preview on results page, analytics events |
 
 ---
 
