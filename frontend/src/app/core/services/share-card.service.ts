@@ -85,7 +85,7 @@ export class ShareCardService {
     ctx.font = `400 ${this.SIZE * 0.025}px -apple-system, sans-serif`;
     ctx.letterSpacing = `${this.SIZE * 0.003}px`;
     ctx.textAlign = 'center';
-    ctx.fillText('be-lyke.clothing', this.SIZE / 2, this.SIZE * 0.89);
+    ctx.fillText('be-lyke.clothing/style-quiz', this.SIZE / 2, this.SIZE * 0.89);
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => resolve(blob), 'image/png');

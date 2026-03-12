@@ -137,7 +137,7 @@ export class StyleQuizResultsPage implements OnInit {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: `My LYKE Style Type: ${family}`,
-          text: `I'm a ${family} style type! Find yours at be-lyke.clothing`,
+          text: `I'm a ${family} style type! Find yours at https://be-lyke.clothing/style-quiz`,
           files: [file],
         });
       } else {
