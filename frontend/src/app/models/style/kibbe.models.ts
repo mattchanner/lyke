@@ -73,13 +73,35 @@ export interface StyleProfileResponse {
 export interface KibbeQuizOption {
   value: KibbeOption;
   label: string;
+  description?: string;
 }
 
 export interface KibbeQuizQuestion {
   id: string;
   sectionId: KibbeSectionId;
   prompt: string;
+  subPrompt?: string;
   options: KibbeQuizOption[];
+}
+
+// Maps a primary+runnerUp combination to its named Kibbe mixed type.
+// Returns null for combinations not in the classical Kibbe system.
+export function getMixedTypeName(
+  primary: KibbeFamily,
+  runnerUp: KibbeFamily | null | undefined,
+): string | null {
+  if (!runnerUp) return null;
+  const lookup: Partial<Record<string, string>> = {
+    'Dramatic+Romantic': 'Soft Dramatic',
+    'Natural+Dramatic': 'Flamboyant Natural',
+    'Natural+Romantic': 'Soft Natural',
+    'Classic+Dramatic': 'Dramatic Classic',
+    'Classic+Romantic': 'Soft Classic',
+    'Romantic+Dramatic': 'Theatrical Romantic',
+    'Gamine+Dramatic': 'Flamboyant Gamine',
+    'Gamine+Romantic': 'Soft Gamine',
+  };
+  return lookup[`${primary}+${runnerUp}`] ?? null;
 }
 
 export interface KibbeQuizSection {

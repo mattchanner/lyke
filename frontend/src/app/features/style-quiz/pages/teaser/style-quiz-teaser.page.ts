@@ -15,7 +15,7 @@ export const FAMILY_TAGLINES: Record<string, string> = {
   Dramatic: 'Bold, elongated, and powerfully angular.',
   Natural: 'Relaxed, earthy, and effortlessly at ease.',
   Classic: 'Refined, symmetrical, and timelessly elegant.',
-  Gamine: 'Playful, vivid, and youthfully spirited.',
+  Gamine: 'High contrast and compact — angular structure with a playful, rounded spark.',
   Romantic: 'Soft, lush, and sensuously feminine.',
 };
 

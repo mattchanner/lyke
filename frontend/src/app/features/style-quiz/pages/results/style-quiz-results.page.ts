@@ -18,7 +18,7 @@ import { KibbeQuizApiService } from '../../../../core/services/kibbe-quiz-api.se
 import { KibbeAnalyticsService } from '../../../../core/services/kibbe-analytics.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { ShareCardService } from '../../../../core/services/share-card.service';
-import { KibbeScoreResponse, KibbeFamily } from '../../../../models/style/kibbe.models';
+import { KibbeScoreResponse, KibbeFamily, getMixedTypeName } from '../../../../models/style/kibbe.models';
 import { FAMILY_TAGLINES } from '../teaser/style-quiz-teaser.page';
 import {
   KIBBE_STYLE_GUIDES,
@@ -63,6 +63,12 @@ export class StyleQuizResultsPage implements OnInit {
 
   tagline(family: string): string {
     return FAMILY_TAGLINES[family] ?? '';
+  }
+
+  mixedTypeName(): string | null {
+    const r = this.result();
+    if (!r?.isMixed) return null;
+    return getMixedTypeName(r.primaryFamily, r.runnerUpFamily);
   }
 
   styleGuide(family: string): KibbeStyleGuide | null {
@@ -192,6 +198,7 @@ export class StyleQuizResultsPage implements OnInit {
         if (res.success) {
           this.displayFamily.set(family);
           this.isOverride.set(true);
+          this.generatePreview(family);
         } else {
           this.toast.error('Could not save your selection. Please try again.');
         }

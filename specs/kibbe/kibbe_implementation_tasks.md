@@ -1,9 +1,9 @@
 # Kibbe Style Quiz - Implementation Tasks
 
-**Document version:** 1.1
+**Document version:** 1.2
 **Created:** 2026-03-11
 **Last updated:** 2026-03-12
-**Status:** In Progress — Phases 1–6 complete; Phase 7 partial (T7.3–T7.5, T7.7 done; T7.1, T7.2, T7.6 manual); Phase 8 remaining
+**Status:** In Progress — Phases 1–7 partial, Phase 9 complete; Phase 8 remaining
 
 ---
 
@@ -130,6 +130,40 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 ---
 
+## Phase 9: Plan Alignment Fixes (2026-03-12)
+
+Identified during post-implementation review against `kibbe_quiz_implementation_plan.pdf`.
+
+| Task | Description | Status | Notes |
+|------|-------------|--------|-------|
+| T9.1 | Replace bone section questions with plan's version | [x] | 5 new question prompts + corrected option labels; adds jawline Q5 and vertical line Q4 which were missing |
+| T9.2 | Replace flesh section questions with plan's version | [x] | Correct order (bust Q2, waist Q3, hips Q4); option labels updated throughout |
+| T9.3 | Replace face section questions with plan's version | [x] | Q4 now "cheeks and nose" per plan; Q1 reframed as overall impression |
+| T9.4 | Add `description?` to `KibbeQuizOption` model | [x] | Enables richer option copy on Q1 of each section |
+| T9.5 | Add `subPrompt?` to `KibbeQuizQuestion` model | [x] | Used on bone_1, bone_4; guides user framing |
+| T9.6 | Update section descriptions to plan's subtitle wording | [x] | "The architectural foundation…", "How muscle and soft tissue…", "The overall impression…" |
+| T9.7 | Implement `getMixedTypeName()` in `kibbe.models.ts` | [x] | Lookup table: 8 named mixed types (Soft Dramatic, Flamboyant Natural, etc.) |
+| T9.8 | Show named mixed type on results page | [x] | Displays "Soft Dramatic" etc. instead of "with Romantic influences"; falls back to "with X influences" for unlisted combos |
+| T9.9 | Show named mixed type on style profile page | [x] | Same logic applied to `/profile/style` |
+| T9.10 | Update Gamine tagline | [x] | Now captures high-contrast + angular/rounded duality per plan spec |
+
+### Named mixed type mapping (per classical Kibbe system)
+
+| Primary | Runner-Up | Mixed Type Name |
+|---------|-----------|-----------------|
+| Dramatic | Romantic | Soft Dramatic |
+| Natural | Dramatic | Flamboyant Natural |
+| Natural | Romantic | Soft Natural |
+| Classic | Dramatic | Dramatic Classic |
+| Classic | Romantic | Soft Classic |
+| Romantic | Dramatic | Theatrical Romantic |
+| Gamine | Dramatic | Flamboyant Gamine |
+| Gamine | Romantic | Soft Gamine |
+
+All other primary+runner-up combos fall back to "with [Runner-up] influences".
+
+---
+
 ## Phase 8: Feed Personalisation (Days 12-13, Optional)
 
 | Task | Description | Status | Notes |
@@ -164,6 +198,7 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 | 2026-03-12 | Bug fixes | Calculating page respects light/dark mode; authenticated users bypass teaser and go straight to results; style profile empty state fixed (spinner no longer stuck when no profile exists); ES2018 lib compatibility (replaced flatMap/fromEntries) |
 | 2026-03-12 | T5.1-T5.5 | Phase 5 complete — ShareCardService (Canvas 1080×1080 with family themes), Web Share API with file export, download fallback, share preview on results page, analytics events |
 | 2026-03-12 | T7.3-T7.5, T7.7 | Phase 7 partial — section SVG icons (bone/flesh/face), family colour system (CSS custom properties via data-family), entrance animations (fadeSlideUp with option stagger), accessibility (radiogroup, aria-checked, aria-live, aria-label) |
+| 2026-03-12 | T9.1-T9.10 | Phase 9 complete — quiz questions replaced with plan spec versions (jawline Q, vertical line Q, corrected flesh order, cheeks/nose face Q4); named mixed types implemented; Gamine tagline updated; `description`/`subPrompt` model fields added |
 
 ---
 

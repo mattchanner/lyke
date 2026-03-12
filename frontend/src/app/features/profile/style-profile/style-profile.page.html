@@ -34,7 +34,9 @@
           }
           <p class="family-tagline">{{ tagline(displayFamily()) }}</p>
           @if (profile()!.isMixed && profile()!.runnerUpFamily) {
-            <p class="mixed-note">with {{ profile()!.runnerUpFamily }} influences</p>
+            <p class="mixed-note">
+              {{ mixedTypeName() ?? 'with ' + profile()!.runnerUpFamily + ' influences' }}
+            </p>
           }
         </div>
 

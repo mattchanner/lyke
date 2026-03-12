@@ -20,7 +20,7 @@ import { KibbeQuizApiService } from '../../../core/services/kibbe-quiz-api.servi
 import { KibbeAnalyticsService } from '../../../core/services/kibbe-analytics.service';
 import { ShareCardService } from '../../../core/services/share-card.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { StyleProfileResponse, KibbeFamily } from '../../../models/style/kibbe.models';
+import { StyleProfileResponse, KibbeFamily, getMixedTypeName } from '../../../models/style/kibbe.models';
 import { FAMILY_TAGLINES } from '../../style-quiz/pages/teaser/style-quiz-teaser.page';
 import {
   KIBBE_STYLE_GUIDES,
@@ -110,6 +110,12 @@ export class StyleProfilePage implements ViewWillEnter {
   tagline(family: string | null): string {
     if (!family) return '';
     return FAMILY_TAGLINES[family] ?? '';
+  }
+
+  mixedTypeName(): string | null {
+    const p = this.profile();
+    if (!p?.isMixed) return null;
+    return getMixedTypeName(p.primaryFamily!, p.runnerUpFamily);
   }
 
   styleGuide(family: string | null): KibbeStyleGuide | null {
