@@ -7,6 +7,9 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - 'backend/**'
+      - '.github/workflows/develop_lyke-dev-api.yml'
   workflow_dispatch:
 
 jobs:
