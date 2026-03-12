@@ -7,6 +7,13 @@
 <ion-content class="ion-padding">
   @if (result()) {
     <div class="teaser-container">
+      <div class="family-portrait">
+        <img
+          [src]="'assets/kibbe/families/' + result()!.primaryFamily.toLowerCase() + '.jpg'"
+          [alt]="result()!.primaryFamily + ' style family'"
+        />
+      </div>
+
       <div class="result-hero">
         <p class="result-label">Your style type is</p>
         <h1 class="family-name">{{ result()!.primaryFamily }}</h1>

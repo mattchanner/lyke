@@ -26,6 +26,13 @@
       </ion-segment>
 
       @if (activeTab() === 'overview') {
+        <div class="family-portrait">
+          <img
+            [src]="'assets/kibbe/families/' + displayFamily()!.toLowerCase() + '.jpg'"
+            [alt]="displayFamily() + ' style family'"
+          />
+        </div>
+
         <div class="result-hero" aria-live="polite" aria-atomic="true">
           <p class="result-label">Your Style Type</p>
           <h1 class="family-name">{{ displayFamily() }}</h1>
