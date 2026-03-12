@@ -18,8 +18,15 @@
   font-size: 1.3rem;
   font-weight: 700;
   line-height: 1.4;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.4rem;
   letter-spacing: -0.01em;
+}
+
+.question-sub-prompt {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
 }
 
 .options-list {
@@ -79,9 +86,18 @@
 }
 
 .option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
   font-size: 0.9rem;
   line-height: 1.45;
   color: var(--ion-color-dark);
+}
+
+.option-description {
+  font-size: 0.78rem;
+  color: var(--ion-color-medium);
+  line-height: 1.4;
 }
 
 ion-button {

@@ -14,6 +14,9 @@
         Question {{ questionIndex() + 1 }} of {{ totalQuestions() }}
       </p>
       <h2 class="question-prompt" id="question-prompt">{{ question()!.prompt }}</h2>
+      @if (question()!.subPrompt) {
+        <p class="question-sub-prompt">{{ question()!.subPrompt }}</p>
+      }
 
       <div
         class="options-list"
@@ -30,7 +33,12 @@
             (click)="select(opt.value)"
           >
             <span class="option-label" aria-hidden="true">{{ opt.value }}</span>
-            <span class="option-text">{{ opt.label }}</span>
+            <span class="option-text">
+              {{ opt.label }}
+              @if (opt.description) {
+                <span class="option-description">{{ opt.description }}</span>
+              }
+            </span>
           </button>
         }
       </div>
