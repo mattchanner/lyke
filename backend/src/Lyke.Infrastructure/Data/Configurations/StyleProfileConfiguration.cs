@@ -8,7 +8,7 @@ public class StyleProfileConfiguration : IEntityTypeConfiguration<StyleProfile>
 {
     public void Configure(EntityTypeBuilder<StyleProfile> builder)
     {
-        builder.ToTable("style_profiles");
+        builder.ToTable("StyleProfiles");
 
         builder.HasKey(x => x.Id);
 
