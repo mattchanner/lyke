@@ -1,0 +1,74 @@
+.primer-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+}
+
+.yin-yang-section {
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+}
+
+.concept-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.concept-card {
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--ion-color-medium);
+  }
+
+  &.yang {
+    background: var(--ion-color-light);
+    border-left: 4px solid var(--ion-color-dark);
+  }
+
+  &.yin {
+    background: var(--ion-color-light);
+    border-left: 4px solid var(--ion-color-primary);
+  }
+}
+
+.guidance-section {
+  margin-bottom: 2rem;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  ul {
+    padding-left: 1.25rem;
+
+    li {
+      margin-bottom: 0.6rem;
+      line-height: 1.5;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+ion-button {
+  --border-radius: 24px;
+  font-weight: 600;
+}

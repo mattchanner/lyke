@@ -7,7 +7,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -34,7 +34,7 @@ import {
   logoGoogle,
   logoApple,
 } from 'ionicons/icons';
-import { AuthService, ToastService, SocialAuthService } from '../../../core';
+import { AuthService, ToastService, SocialAuthService, KibbeAnalyticsService } from '../../../core';
 import { RegisterRequest, UserType } from '../../../models';
 import { environment } from '../../../../environments/environment';
 
@@ -83,7 +83,9 @@ export class RegisterPage {
   private readonly authService = inject(AuthService);
   private readonly socialAuth = inject(SocialAuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly kibbeAnalytics = inject(KibbeAnalyticsService);
 
   readonly isLoading = signal(false);
   readonly socialLoading = signal(false);
@@ -132,7 +134,7 @@ export class RegisterPage {
     this.authService.register(request).subscribe({
       next: () => {
         this.toast.success('Account created successfully!');
-        this.router.navigate(['/onboarding']);
+        this.router.navigate([this.getPostRegisterRoute()]);
       },
       error: () => {
         this.isLoading.set(false);
@@ -141,6 +143,15 @@ export class RegisterPage {
         this.isLoading.set(false);
       },
     });
+  }
+
+  private getPostRegisterRoute(): string {
+    const returnPath = this.route.snapshot.queryParamMap.get('return');
+    if (returnPath) {
+      this.kibbeAnalytics.registerCompleteFromQuiz();
+      return `/${returnPath}`;
+    }
+    return '/onboarding';
   }
 
   async onGoogleSignIn(): Promise<void> {

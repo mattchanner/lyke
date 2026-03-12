@@ -1,0 +1,143 @@
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+  color: var(--ion-color-medium);
+}
+
+.profile-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+}
+
+.result-hero {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  .result-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ion-color-medium);
+    margin-bottom: 0.25rem;
+  }
+
+  .family-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--ion-color-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .self-selected-label {
+    font-size: 0.85rem;
+    color: var(--ion-color-medium);
+    font-style: italic;
+    margin-bottom: 0.25rem;
+  }
+
+  .family-tagline {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--ion-color-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .mixed-note {
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.section-breakdown {
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ion-color-medium);
+    margin-bottom: 1rem;
+  }
+}
+
+.breakdown-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breakdown-label {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.breakdown-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+}
+
+.confidence-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
+
+.confidence-label {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+}
+
+.confidence-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  &[data-level='High'] { color: var(--ion-color-success); }
+  &[data-level='Medium'] { color: var(--ion-color-warning); }
+  &[data-level='Low'] { color: var(--ion-color-medium); }
+}
+
+.action-buttons {
+  ion-button {
+    --border-radius: 24px;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding-top: 4rem;
+  color: var(--ion-color-medium);
+
+  p {
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+  }
+
+  ion-button {
+    --border-radius: 24px;
+    font-weight: 600;
+  }
+}

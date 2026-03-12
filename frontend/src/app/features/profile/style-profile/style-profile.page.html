@@ -1,0 +1,82 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/profile"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Style Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isLoading()) {
+    <div class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Loading your style profile…</p>
+    </div>
+  } @else if (profile() && displayFamily()) {
+    <div class="profile-container">
+      <div class="result-hero">
+        <p class="result-label">Your Style Type</p>
+        <h1 class="family-name">{{ displayFamily() }}</h1>
+        @if (profile()!.isUserOverride) {
+          <p class="self-selected-label">(self-selected)</p>
+        }
+        <p class="family-tagline">{{ tagline(displayFamily()) }}</p>
+        @if (profile()!.isMixed && profile()!.runnerUpFamily) {
+          <p class="mixed-note">with {{ profile()!.runnerUpFamily }} influences</p>
+        }
+      </div>
+
+      @if (profile()!.sectionDominance) {
+        <div class="section-breakdown">
+          <h3>Section Breakdown</h3>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Bone Structure</span>
+              <span class="breakdown-value">{{ profile()!.sectionDominance!.bone }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Body Flesh</span>
+              <span class="breakdown-value">{{ profile()!.sectionDominance!.flesh }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Facial Features</span>
+              <span class="breakdown-value">{{ profile()!.sectionDominance!.face }}</span>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (profile()!.confidence) {
+        <div class="confidence-row">
+          <span class="confidence-label">Result Confidence</span>
+          <span class="confidence-value" [attr.data-level]="profile()!.confidence">{{ profile()!.confidence }}</span>
+        </div>
+      }
+
+      <div class="action-buttons">
+        <ion-button expand="block" fill="outline" (click)="retakeQuiz()">
+          Retake Quiz
+        </ion-button>
+        <ion-button expand="block" fill="outline" (click)="changeFamily()" [disabled]="isOverriding()">
+          @if (isOverriding()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+          }
+          Change Family
+        </ion-button>
+        @if (profile()!.isUserOverride) {
+          <ion-button expand="block" fill="clear" color="medium" (click)="clearOverride()" [disabled]="isOverriding()">
+            Clear Override
+          </ion-button>
+        }
+      </div>
+    </div>
+  } @else if (!isLoading()) {
+    <div class="empty-state">
+      <p>You haven't taken the style quiz yet.</p>
+      <ion-button expand="block" (click)="retakeQuiz()">
+        Take the Quiz
+      </ion-button>
+    </div>
+  }
+</ion-content>

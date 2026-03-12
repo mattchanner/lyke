@@ -1,8 +1,9 @@
 # Kibbe Style Quiz - Implementation Tasks
 
-**Document version:** 1.0
+**Document version:** 1.1
 **Created:** 2026-03-11
-**Status:** In Progress
+**Last updated:** 2026-03-12
+**Status:** In Progress — Phases 1–4, 6 complete; Phase 5, 7, 8 remaining
 
 ---
 
@@ -63,14 +64,14 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T3.1 | Create `style-quiz` feature folder and module/routing files | [ ] | Lazy-loaded module |
-| T3.2 | Create `kibbe.models.ts` with TypeScript interfaces | [ ] | All request/response types |
-| T3.3 | Create `kibbe-quiz.data.ts` with 14 questions | [ ] | 3 sections, 5 options each |
-| T3.4 | Create `KibbeSessionService` | [ ] | localStorage + 30min TTL |
-| T3.5 | Create `KibbeAnalyticsService` | [ ] | Typed event emitter |
-| T3.6 | Create `KibbeQuizService` (API calls) | [ ] | HTTP client wrapper |
-| T3.7 | Add lazy route to `app.routes.ts` | [ ] | /style-quiz → module |
-| T3.8 | Add auth guard to full-results route | [ ] | Redirect if unauthed |
+| T3.1 | Create `style-quiz` feature folder and module/routing files | [x] | Lazy-loaded routes (standalone components) |
+| T3.2 | Create `kibbe.models.ts` with TypeScript interfaces | [x] | All request/response types in `models/style/` |
+| T3.3 | Create `kibbe-quiz.data.ts` with 14 questions | [x] | 3 sections (5+5+4), 5 options each |
+| T3.4 | Create `KibbeSessionService` | [x] | localStorage + 30min TTL |
+| T3.5 | Create `KibbeAnalyticsService` | [x] | Typed event emitter wrapping AnalyticsService |
+| T3.6 | Create `KibbeQuizApiService` (API calls) | [x] | HTTP client wrapper for all 5 endpoints |
+| T3.7 | Add lazy route to `app.routes.ts` | [x] | /style-quiz → STYLE_QUIZ_ROUTES |
+| T3.8 | Add auth guard to full-results route | [x] | authGuard on /style-quiz/results |
 
 ---
 
@@ -78,17 +79,17 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T4.1 | Landing page | [ ] | Hero, CTA, family preview chips |
-| T4.2 | Primer screen | [ ] | Yin/yang explainer, begin CTA |
-| T4.3 | Section intro screen | [ ] | Animated card per section |
-| T4.4 | Question screen | [ ] | 5-option cards, auto-advance |
-| T4.5 | Calculating screen | [ ] | Animated gradient, 2.5s delay |
-| T4.6 | Teaser results page | [ ] | Family hero, blurred section, reg CTA |
-| T4.7 | Full results page | [ ] | Animated reveal, style guide |
-| T4.8 | Style guide tab content | [ ] | Per-family recommendations |
-| T4.9 | Retake quiz flow | [ ] | Confirmation, re-run, overwrite |
-| T4.10 | Family override UI | [ ] | Self-select different family |
-| T4.11 | Style profile page (`/profile/style`) | [ ] | Saved result view |
+| T4.1 | Landing page | [x] | Hero, CTA, family preview chips |
+| T4.2 | Primer screen | [x] | Yin/yang explainer, begin CTA |
+| T4.3 | Section intro screen | [x] | Section card with question count |
+| T4.4 | Question screen | [x] | 5-option cards, auto-advance (400ms delay) |
+| T4.5 | Calculating screen | [x] | Spinner overlay, 2.5s min delay |
+| T4.6 | Teaser results page | [x] | Family hero, blurred preview, reg CTA |
+| T4.7 | Full results page | [x] | Overview + Style Guide tabs |
+| T4.8 | Style guide tab content | [x] | Per-family silhouettes/colours/fabrics/avoid/icons |
+| T4.9 | Retake quiz flow | [x] | AlertController confirmation on landing if existing data |
+| T4.10 | Family override UI | [x] | AlertController radio picker on results + style profile pages |
+| T4.11 | Style profile page (`/profile/style`) | [x] | Full saved result view with override + clear |
 
 ---
 
@@ -108,10 +109,10 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T6.1 | Pass `?return=kibbe-results` to auth | [ ] | From teaser page |
-| T6.2 | Handle return redirect in AuthService | [ ] | Navigate to full-results |
-| T6.3 | Session expiry message | [ ] | Friendly retake prompt |
-| T6.4 | Track auth events from quiz | [ ] | register/login_complete_from_quiz |
+| T6.1 | Pass `?return=style-quiz/results` to auth | [x] | Teaser page passes param on register/login click |
+| T6.2 | Handle return redirect in auth pages | [x] | Login + register read `?return=` and navigate there after success |
+| T6.3 | Session expiry message | [x] | Results page shows toast + redirects to /style-quiz if no session |
+| T6.4 | Track auth events from quiz | [x] | `loginCompleteFromQuiz` / `registerCompleteFromQuiz` fired when `?return=` present |
 
 ---
 
@@ -157,6 +158,10 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 | Date | Tasks Completed | Notes |
 |------|-----------------|-------|
 | 2026-03-11 | T1.1-T1.16, T2.1-T2.2 | Backend foundation + tests complete - 154 unit tests pass |
+| 2026-03-12 | T3.1-T3.8 | Frontend foundation complete — models, data, services, stub pages, routing |
+| 2026-03-12 | T4.1-T4.11 | Phase 4 complete — all quiz UI pages, style guide data, auto-advance, retake confirmation, family override, /profile/style page |
+| 2026-03-12 | T6.1-T6.4 | Phase 6 complete — return redirect in login/register, expiry toast, quiz analytics events |
+| 2026-03-12 | Bug fixes | Calculating page respects light/dark mode; authenticated users bypass teaser and go straight to results; style profile empty state fixed (spinner no longer stuck when no profile exists); ES2018 lib compatibility (replaced flatMap/fromEntries) |
 
 ---
 

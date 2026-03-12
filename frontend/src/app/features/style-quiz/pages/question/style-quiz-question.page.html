@@ -1,0 +1,31 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-progress-bar [value]="progressValue"></ion-progress-bar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (question()) {
+    <div class="question-container">
+      <p class="question-counter">{{ questionIndex() + 1 }} / {{ totalQuestions() }}</p>
+      <h2 class="question-prompt">{{ question()!.prompt }}</h2>
+
+      <div class="options-list">
+        @for (opt of question()!.options; track opt.value) {
+          <button
+            class="option-card"
+            [class.selected]="isSelected(opt.value)"
+            (click)="select(opt.value)"
+          >
+            <span class="option-label">{{ opt.value }}</span>
+            <span class="option-text">{{ opt.label }}</span>
+          </button>
+        }
+      </div>
+
+    </div>
+  }
+</ion-content>

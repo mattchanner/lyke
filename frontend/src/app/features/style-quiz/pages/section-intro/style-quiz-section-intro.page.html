@@ -1,0 +1,26 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/style-quiz/primer"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Section {{ sectionNumber() }} of 3</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (section()) {
+    <div class="section-container">
+      <div class="section-header">
+        <p class="section-label">Section {{ sectionNumber() }}</p>
+        <h1>{{ section()!.title }}</h1>
+        <p class="section-description">{{ section()!.description }}</p>
+      </div>
+
+      <p class="question-count">{{ section()!.questions.length }} questions in this section</p>
+
+      <ion-button expand="block" (click)="startSection()">
+        Begin Section
+      </ion-button>
+    </div>
+  }
+</ion-content>
