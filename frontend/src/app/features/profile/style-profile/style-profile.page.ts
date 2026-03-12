@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import {
   IonContent,
@@ -13,6 +14,8 @@ import {
 } from '@ionic/angular/standalone';
 import { ViewWillEnter } from '@ionic/angular';
 import { KibbeQuizApiService } from '../../../core/services/kibbe-quiz-api.service';
+import { KibbeAnalyticsService } from '../../../core/services/kibbe-analytics.service';
+import { ShareCardService } from '../../../core/services/share-card.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { StyleProfileResponse, KibbeFamily } from '../../../models/style/kibbe.models';
 import { FAMILY_TAGLINES } from '../../style-quiz/pages/teaser/style-quiz-teaser.page';
@@ -38,10 +41,15 @@ export class StyleProfilePage implements ViewWillEnter {
   private readonly api = inject(KibbeQuizApiService);
   private readonly toast = inject(ToastService);
   private readonly alertCtrl = inject(AlertController);
+  private readonly analytics = inject(KibbeAnalyticsService);
+  private readonly shareCard = inject(ShareCardService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly profile = signal<StyleProfileResponse | null>(null);
   readonly isLoading = signal(false);
   readonly isOverriding = signal(false);
+  readonly isSharing = signal(false);
+  readonly sharePreviewUrl = signal<string | null>(null);
 
   ionViewWillEnter(): void {
     this.loadProfile();
@@ -53,6 +61,7 @@ export class StyleProfilePage implements ViewWillEnter {
       next: (res) => {
         if (res.success && res.data) {
           this.profile.set(res.data);
+          this.generatePreview();
         } else {
           this.profile.set(null);
         }
@@ -68,6 +77,19 @@ export class StyleProfilePage implements ViewWillEnter {
     });
   }
 
+  private generatePreview(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const family = this.displayFamily();
+    if (!family) return;
+    const tl = FAMILY_TAGLINES[family] ?? '';
+    this.shareCard.generate(family, tl).then((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        this.sharePreviewUrl.set(url);
+      }
+    });
+  }
+
   displayFamily(): KibbeFamily | null {
     const p = this.profile();
     if (!p) return null;
@@ -77,6 +99,46 @@ export class StyleProfilePage implements ViewWillEnter {
   tagline(family: string | null): string {
     if (!family) return '';
     return FAMILY_TAGLINES[family] ?? '';
+  }
+
+  async share(): Promise<void> {
+    const family = this.displayFamily();
+    if (!family || !isPlatformBrowser(this.platformId)) return;
+
+    this.analytics.shareClick();
+    this.isSharing.set(true);
+
+    try {
+      const blob = await this.shareCard.generate(family, FAMILY_TAGLINES[family] ?? '');
+      if (!blob) throw new Error('Could not generate share card');
+
+      const file = new File([blob], `lyke-style-${family.toLowerCase()}.png`, {
+        type: 'image/png',
+      });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `My LYKE Style Type: ${family}`,
+          text: `I'm a ${family} style type! Find yours at be-lyke.clothing`,
+          files: [file],
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      this.analytics.shareComplete();
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError') {
+        this.toast.error('Could not share. Try downloading instead.');
+      }
+    } finally {
+      this.isSharing.set(false);
+    }
   }
 
   retakeQuiz(): void {
@@ -114,6 +176,7 @@ export class StyleProfilePage implements ViewWillEnter {
       next: (res) => {
         if (res.success && res.data) {
           this.profile.set(res.data);
+          this.generatePreview();
         } else {
           this.toast.error('Could not save your selection. Please try again.');
         }

@@ -54,7 +54,24 @@
         </div>
       }
 
+      @if (sharePreviewUrl()) {
+        <div class="share-preview">
+          <img [src]="sharePreviewUrl()!" alt="Share card preview" />
+        </div>
+      }
+
       <div class="action-buttons">
+        <ion-button
+          expand="block"
+          (click)="share()"
+          [disabled]="isSharing()"
+          aria-label="Share your style type card"
+        >
+          @if (isSharing()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+          }
+          Share My Style Type
+        </ion-button>
         <ion-button expand="block" fill="outline" (click)="retakeQuiz()">
           Retake Quiz
         </ion-button>
