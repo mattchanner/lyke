@@ -7,6 +7,7 @@ import {
   IonTitle,
   IonToolbar,
   IonButton,
+  IonButtons,
   IonSpinner,
   IonSegment,
   IonSegmentButton,
@@ -34,6 +35,7 @@ import {
     IonTitle,
     IonToolbar,
     IonButton,
+    IonButtons,
     IonSpinner,
     IonSegment,
     IonSegmentButton,
@@ -159,6 +161,10 @@ export class StyleQuizResultsPage implements OnInit {
     } finally {
       this.isSharing.set(false);
     }
+  }
+
+  done(): void {
+    this.router.navigate(['/feed']);
   }
 
   retake(): void {
