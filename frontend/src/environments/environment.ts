@@ -2,6 +2,7 @@ export const environment = {
   production: false,
   apiBaseUrl2: 'https://beta-api.be-lyke.clothing/api',
   apiBaseUrl: 'http://localhost:5104/api',
+  appUrl: 'https://localhost:4200',
   apiVersion: 'v1',
   googleClientId: '',
   appleClientId: '',
