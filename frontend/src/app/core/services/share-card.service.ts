@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { KibbeFamily } from '../../models/style/kibbe.models';
 
 interface FamilyTheme {
@@ -85,7 +86,8 @@ export class ShareCardService {
     ctx.font = `400 ${this.SIZE * 0.025}px -apple-system, sans-serif`;
     ctx.letterSpacing = `${this.SIZE * 0.003}px`;
     ctx.textAlign = 'center';
-    ctx.fillText('be-lyke.clothing/style-quiz', this.SIZE / 2, this.SIZE * 0.89);
+    const quizUrl = `${environment.appUrl}/style-quiz`;
+    ctx.fillText(quizUrl, this.SIZE / 2, this.SIZE * 0.89);
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => resolve(blob), 'image/png');

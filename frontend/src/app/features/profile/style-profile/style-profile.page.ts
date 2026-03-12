@@ -1,5 +1,6 @@
 import { Component, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
 import {
   IonContent,
@@ -145,7 +146,7 @@ export class StyleProfilePage implements ViewWillEnter {
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: `My LYKE Style Type: ${family}`,
-          text: `I'm a ${family} style type! Find yours at https://be-lyke.clothing/style-quiz`,
+          text: `I'm a ${family} style type! Find yours at ${environment.appUrl}/style-quiz`,
           files: [file],
         });
       } else {
