@@ -10,8 +10,15 @@
 <ion-content class="ion-padding">
   @if (section()) {
     <div class="section-container">
+      <img
+        class="section-icon body-shape-icon"
+        [src]="'assets/style-quiz/section-' + section()!.id + '.svg'"
+        [alt]="section()!.title + ' illustration'"
+        aria-hidden="true"
+      />
+
       <div class="section-header">
-        <p class="section-label">Section {{ sectionNumber() }}</p>
+        <p class="section-label">Section {{ sectionNumber() }} of 3</p>
         <h1>{{ section()!.title }}</h1>
         <p class="section-description">{{ section()!.description }}</p>
       </div>

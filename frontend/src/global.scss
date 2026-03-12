@@ -135,9 +135,39 @@ ion-item {
 @media (prefers-color-scheme: dark) {
   .body-shape-icon,
   .result-body-shape,
-  .intro-illustration {
+  .intro-illustration,
+  .section-icon {
     filter: invert(1);
   }
+}
+
+// ── Entrance Animations ──
+// Reusable keyframes for quiz page transitions.
+// Apply via animation: fadeSlideUp / fadeIn utility classes or directly in component SCSS.
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// Utility classes for one-off use in templates
+.anim-fade-slide-up {
+  animation: fadeSlideUp 0.4s ease both;
+}
+
+.anim-fade-in {
+  animation: fadeIn 0.35s ease both;
 }
 
 // Bottom safe area for Android gesture navigation.

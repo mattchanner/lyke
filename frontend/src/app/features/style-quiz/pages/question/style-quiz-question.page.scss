@@ -2,6 +2,7 @@
   max-width: 480px;
   margin: 0 auto;
   padding-top: 1rem;
+  animation: fadeSlideUp 0.3s ease both;
 }
 
 .question-counter {
@@ -40,6 +41,13 @@
   text-align: left;
   width: 100%;
   transition: border-color 0.15s, background 0.15s;
+  animation: fadeSlideUp 0.35s ease both;
+
+  @for $i from 1 through 5 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{($i - 1) * 0.06}s;
+    }
+  }
 
   &.selected {
     border-color: var(--ion-color-primary);

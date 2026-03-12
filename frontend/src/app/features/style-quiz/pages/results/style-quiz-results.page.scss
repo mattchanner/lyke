@@ -17,6 +17,7 @@
 .result-hero {
   text-align: center;
   margin-bottom: 2rem;
+  animation: fadeSlideUp 0.45s ease both;
 
   .result-label {
     font-size: 0.85rem;
@@ -31,8 +32,9 @@
     font-size: 2.5rem;
     font-weight: 800;
     letter-spacing: -0.03em;
-    color: var(--ion-color-primary);
+    color: var(--family-accent, var(--ion-color-primary));
     margin-bottom: 0.5rem;
+    transition: color 0.3s ease;
   }
 
   .family-tagline {
@@ -159,7 +161,7 @@ ion-segment {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;
-    color: var(--ion-color-primary);
+    color: var(--family-accent, var(--ion-color-primary));
     margin-bottom: 0.75rem;
   }
 
@@ -182,7 +184,7 @@ ion-segment {
       content: '·';
       position: absolute;
       left: 0;
-      color: var(--ion-color-primary);
+      color: var(--family-accent, var(--ion-color-primary));
     }
   }
 

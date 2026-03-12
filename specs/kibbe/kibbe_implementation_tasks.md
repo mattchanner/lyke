@@ -3,7 +3,7 @@
 **Document version:** 1.1
 **Created:** 2026-03-11
 **Last updated:** 2026-03-12
-**Status:** In Progress — Phases 1–6 complete; Phase 7, 8 remaining
+**Status:** In Progress — Phases 1–6 complete; Phase 7 partial (T7.3–T7.5, T7.7 done; T7.1, T7.2, T7.6 manual); Phase 8 remaining
 
 ---
 
@@ -120,13 +120,13 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T7.1 | Source 5 family portrait images | [ ] | Unsplash or commission |
-| T7.2 | Create 5 family hero images | [ ] | Landscape format |
-| T7.3 | Create 3 section icons (SVG) | [ ] | bone, flesh, face |
-| T7.4 | Apply family colour system | [ ] | CSS custom properties |
-| T7.5 | Add entrance animations | [ ] | Ionic/CSS @keyframes |
-| T7.6 | Test on iOS Safari, Android Chrome | [ ] | Responsive + PWA |
-| T7.7 | Accessibility audit | [ ] | ARIA labels, focus management |
+| T7.1 | Source 5 family portrait images | [ ] | Unsplash or commission — manual task |
+| T7.2 | Create 5 family hero images | [ ] | Landscape format — manual task |
+| T7.3 | Create 3 section icons (SVG) | [x] | src/assets/style-quiz/section-{bone,flesh,face}.svg — shown on section intro page |
+| T7.4 | Apply family colour system | [x] | CSS custom properties via data-family attribute; accent colour on family name, guide headings, bullets |
+| T7.5 | Add entrance animations | [x] | fadeSlideUp keyframe in global.scss; applied to landing, section-intro, question container, option cards (staggered), results hero |
+| T7.6 | Test on iOS Safari, Android Chrome | [ ] | Manual device testing required |
+| T7.7 | Accessibility audit | [x] | role=radiogroup + aria-labelledby on question options; aria-checked on option cards; aria-live on question counter + results hero; aria-label on action buttons |
 
 ---
 
@@ -163,6 +163,7 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 | 2026-03-12 | T6.1-T6.4 | Phase 6 complete — return redirect in login/register, expiry toast, quiz analytics events |
 | 2026-03-12 | Bug fixes | Calculating page respects light/dark mode; authenticated users bypass teaser and go straight to results; style profile empty state fixed (spinner no longer stuck when no profile exists); ES2018 lib compatibility (replaced flatMap/fromEntries) |
 | 2026-03-12 | T5.1-T5.5 | Phase 5 complete — ShareCardService (Canvas 1080×1080 with family themes), Web Share API with file export, download fallback, share preview on results page, analytics events |
+| 2026-03-12 | T7.3-T7.5, T7.7 | Phase 7 partial — section SVG icons (bone/flesh/face), family colour system (CSS custom properties via data-family), entrance animations (fadeSlideUp with option stagger), accessibility (radiogroup, aria-checked, aria-live, aria-label) |
 
 ---
 

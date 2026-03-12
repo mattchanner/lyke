@@ -10,17 +10,26 @@
 <ion-content class="ion-padding">
   @if (question()) {
     <div class="question-container">
-      <p class="question-counter">{{ questionIndex() + 1 }} / {{ totalQuestions() }}</p>
-      <h2 class="question-prompt">{{ question()!.prompt }}</h2>
+      <p class="question-counter" aria-live="polite" aria-atomic="true">
+        Question {{ questionIndex() + 1 }} of {{ totalQuestions() }}
+      </p>
+      <h2 class="question-prompt" id="question-prompt">{{ question()!.prompt }}</h2>
 
-      <div class="options-list">
+      <div
+        class="options-list"
+        role="radiogroup"
+        aria-labelledby="question-prompt"
+      >
         @for (opt of question()!.options; track opt.value) {
           <button
             class="option-card"
+            type="button"
+            role="radio"
             [class.selected]="isSelected(opt.value)"
+            [attr.aria-checked]="isSelected(opt.value)"
             (click)="select(opt.value)"
           >
-            <span class="option-label">{{ opt.value }}</span>
+            <span class="option-label" aria-hidden="true">{{ opt.value }}</span>
             <span class="option-text">{{ opt.label }}</span>
           </button>
         }

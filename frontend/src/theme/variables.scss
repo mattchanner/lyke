@@ -177,3 +177,34 @@
     --ion-item-background: #1a1a1c;
   }
 }
+
+// ── Kibbe Family Colour System ──
+// Each family gets a named accent colour applied via data-family attribute
+// (e.g. <div [attr.data-family]="family.toLowerCase()">).
+// --family-accent     — primary tint for headings, highlights
+// --family-accent-rgb — RGB triplet for rgba() usage
+
+[data-family="dramatic"] {
+  --family-accent: #7c6aff;
+  --family-accent-rgb: 124, 106, 255;
+}
+
+[data-family="natural"] {
+  --family-accent: #c8873a;
+  --family-accent-rgb: 200, 135, 58;
+}
+
+[data-family="classic"] {
+  --family-accent: #4a90b8;
+  --family-accent-rgb: 74, 144, 184;
+}
+
+[data-family="gamine"] {
+  --family-accent: #e8454a;
+  --family-accent-rgb: 232, 69, 74;
+}
+
+[data-family="romantic"] {
+  --family-accent: #d97ba8;
+  --family-accent-rgb: 217, 123, 168;
+}

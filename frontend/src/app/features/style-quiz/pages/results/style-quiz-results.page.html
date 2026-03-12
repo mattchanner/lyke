@@ -11,7 +11,7 @@
       <p>Saving your style profile…</p>
     </div>
   } @else if (result()) {
-    <div class="results-container">
+    <div class="results-container" [attr.data-family]="displayFamily()?.toLowerCase()">
 
       <ion-segment [value]="activeTab()" (ionChange)="setTab($any($event).detail.value)">
         <ion-segment-button value="overview">
@@ -23,7 +23,7 @@
       </ion-segment>
 
       @if (activeTab() === 'overview') {
-        <div class="result-hero">
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
           <p class="result-label">Your Style Type</p>
           <h1 class="family-name">{{ displayFamily() }}</h1>
           @if (isOverride()) {
@@ -65,13 +65,18 @@
         }
 
         <div class="action-buttons">
-          <ion-button expand="block" (click)="share()" [disabled]="isSharing()">
+          <ion-button
+            expand="block"
+            (click)="share()"
+            [disabled]="isSharing()"
+            aria-label="Share your style type card"
+          >
             @if (isSharing()) {
               <ion-spinner name="crescent" slot="start"></ion-spinner>
             }
             Share My Style Type
           </ion-button>
-          <ion-button expand="block" fill="outline" (click)="retake()">
+          <ion-button expand="block" fill="outline" (click)="retake()" aria-label="Retake the style quiz">
             Retake Quiz
           </ion-button>
         </div>
