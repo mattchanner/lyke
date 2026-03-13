@@ -1,8 +1,7 @@
-import { Component, inject, signal, computed, OnInit, DestroyRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 import {
   IonContent,
   IonHeader,
@@ -15,11 +14,14 @@ import {
   IonMenuButton,
   IonRefresher,
   IonRefresherContent,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
   IonSpinner,
   IonChip,
   IonLabel,
   IonBadge,
   RefresherCustomEvent,
+  InfiniteScrollCustomEvent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -42,7 +44,6 @@ import { VerificationBannerComponent } from '../../../shared/components/verifica
   imports: [
     CommonModule,
     RouterLink,
-    ScrollingModule,
     IonAvatar,
     IonContent,
     IonHeader,
@@ -54,6 +55,8 @@ import { VerificationBannerComponent } from '../../../shared/components/verifica
     IonMenuButton,
     IonRefresher,
     IonRefresherContent,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
     IonSpinner,
     IonChip,
     IonLabel,
@@ -76,20 +79,14 @@ export class FeedHomePage implements OnInit {
   private readonly storage = inject(StorageService);
   readonly auth = inject(AuthService);
 
-  @ViewChild(CdkVirtualScrollViewport) virtualScroll!: CdkVirtualScrollViewport;
-
   readonly FeedSortBy = FeedSortBy;
 
   readonly posts = signal<FeedPostResponse[]>([]);
   readonly isLoading = signal(false);
-  readonly isLoadingMore = signal(false);
   readonly sortBy = signal(FeedSortBy.Relevance);
   readonly currentPage = signal(1);
   readonly hasMore = signal(true);
   readonly showCreatorPromo = signal(false);
-
-  // Estimated item height for virtual scroll (will auto-adjust)
-  readonly itemSize = 480;
 
   // Filter state
   readonly isFilterOpen = signal(false);
@@ -182,7 +179,7 @@ export class FeedHomePage implements OnInit {
 
     this.api.get<FeedPostResponse[]>('feed', '', {
       page: this.currentPage(),
-      pageSize: 20,
+      pageSize: 40,
       sortBy: this.sortBy(),
       category: this.filterCategory() ?? undefined,
       retailerId: this.filterRetailerId() ?? undefined,
@@ -223,24 +220,13 @@ export class FeedHomePage implements OnInit {
     setTimeout(() => event.target.complete(), 1000);
   }
 
-  onScrollIndexChange(): void {
-    if (!this.virtualScroll || this.isLoadingMore() || !this.hasMore()) {
+  onInfiniteScroll(event: InfiniteScrollCustomEvent): void {
+    if (!this.hasMore()) {
+      event.target.complete();
+      event.target.disabled = true;
       return;
     }
 
-    const end = this.virtualScroll.measureScrollOffset('bottom');
-    // Load more when within 500px of the bottom
-    if (end < 500) {
-      this.loadMore();
-    }
-  }
-
-  loadMore(): void {
-    if (this.isLoadingMore() || !this.hasMore()) {
-      return;
-    }
-
-    this.isLoadingMore.set(true);
     this.currentPage.update((p) => p + 1);
 
     this.api.get<FeedPostResponse[]>('feed', '', {
@@ -261,20 +247,17 @@ export class FeedHomePage implements OnInit {
         }
       },
       complete: () => {
-        this.isLoadingMore.set(false);
+        event.target.complete();
+        if (!this.hasMore()) event.target.disabled = true;
       },
       error: () => {
-        this.isLoadingMore.set(false);
+        event.target.complete();
       },
     });
   }
 
   trackPost(_index: number, post: FeedPostResponse): string {
     return post.id;
-  }
-
-  scrollToTop(): void {
-    this.virtualScroll?.scrollToIndex(0, 'smooth');
   }
 
   onPostLiked(_event: { postId: string; liked: boolean }): void {

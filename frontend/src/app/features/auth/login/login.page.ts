@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -17,7 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline, mailOutline, lockClosedOutline, logoGoogle, logoApple } from 'ionicons/icons';
-import { AuthService, ToastService, SocialAuthService } from '../../../core';
+import { AuthService, ToastService, SocialAuthService, KibbeAnalyticsService } from '../../../core';
 import { LoginRequest, UserType } from '../../../models';
 import { environment } from '../../../../environments/environment';
 
@@ -48,7 +48,9 @@ export class LoginPage {
   private readonly authService = inject(AuthService);
   private readonly socialAuth = inject(SocialAuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly toast = inject(ToastService);
+  private readonly kibbeAnalytics = inject(KibbeAnalyticsService);
 
   readonly isLoading = signal(false);
   readonly socialLoading = signal(false);
@@ -115,6 +117,11 @@ export class LoginPage {
   }
 
   private getPostLoginRoute(): string {
+    const returnPath = this.route.snapshot.queryParamMap.get('return');
+    if (returnPath) {
+      this.kibbeAnalytics.loginCompleteFromQuiz();
+      return `/${returnPath}`;
+    }
     const userType = this.authService.userType();
     if (userType === UserType.Admin) return '/admin';
     if (userType === UserType.Creator) return '/creator';

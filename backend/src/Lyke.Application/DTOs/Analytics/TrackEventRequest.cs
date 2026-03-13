@@ -1,9 +1,7 @@
-using Lyke.Core.Enums;
-
 namespace Lyke.Application.DTOs.Analytics;
 
 public record TrackEventRequest(
-    AnalyticsEventType EventType,
+    string EventType,
     Guid? EntityId = null,
     string? EntityType = null,
     Dictionary<string, string>? Properties = null,

@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/style-quiz"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Before You Begin</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="primer-container">
+    <div class="yin-yang-section">
+      <h2>Yin &amp; Yang — What Does It Mean?</h2>
+      <div class="concept-cards">
+        <div class="concept-card yang">
+          <h3>Yang</h3>
+          <p>Angular, elongated, bold. Think sharp edges, straight lines, and a commanding presence.</p>
+        </div>
+        <div class="concept-card yin">
+          <h3>Yin</h3>
+          <p>Rounded, soft, delicate. Think gentle curves, small features, and a lush presence.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="guidance-section">
+      <h3>A Few Things to Keep in Mind</h3>
+      <ul>
+        <li>This is about your <strong>natural body lines</strong>, not your weight or size.</li>
+        <li>Think about your <strong>overall impression</strong>, not individual features in isolation.</li>
+        <li>Answer based on how you look at a <strong>healthy, comfortable weight</strong> for you.</li>
+        <li>There are no wrong answers — all types are beautiful.</li>
+      </ul>
+    </div>
+
+    <ion-button expand="block" (click)="begin()">
+      I'm Ready — Begin Quiz
+    </ion-button>
+  </div>
+</ion-content>

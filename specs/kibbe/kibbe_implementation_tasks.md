@@ -1,8 +1,9 @@
 # Kibbe Style Quiz - Implementation Tasks
 
-**Document version:** 1.0
+**Document version:** 1.2
 **Created:** 2026-03-11
-**Status:** In Progress
+**Last updated:** 2026-03-12
+**Status:** In Progress — Phases 1–7 partial, Phase 9 complete; Phase 8 remaining
 
 ---
 
@@ -63,14 +64,14 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T3.1 | Create `style-quiz` feature folder and module/routing files | [ ] | Lazy-loaded module |
-| T3.2 | Create `kibbe.models.ts` with TypeScript interfaces | [ ] | All request/response types |
-| T3.3 | Create `kibbe-quiz.data.ts` with 14 questions | [ ] | 3 sections, 5 options each |
-| T3.4 | Create `KibbeSessionService` | [ ] | localStorage + 30min TTL |
-| T3.5 | Create `KibbeAnalyticsService` | [ ] | Typed event emitter |
-| T3.6 | Create `KibbeQuizService` (API calls) | [ ] | HTTP client wrapper |
-| T3.7 | Add lazy route to `app.routes.ts` | [ ] | /style-quiz → module |
-| T3.8 | Add auth guard to full-results route | [ ] | Redirect if unauthed |
+| T3.1 | Create `style-quiz` feature folder and module/routing files | [x] | Lazy-loaded routes (standalone components) |
+| T3.2 | Create `kibbe.models.ts` with TypeScript interfaces | [x] | All request/response types in `models/style/` |
+| T3.3 | Create `kibbe-quiz.data.ts` with 14 questions | [x] | 3 sections (5+5+4), 5 options each |
+| T3.4 | Create `KibbeSessionService` | [x] | localStorage + 30min TTL |
+| T3.5 | Create `KibbeAnalyticsService` | [x] | Typed event emitter wrapping AnalyticsService |
+| T3.6 | Create `KibbeQuizApiService` (API calls) | [x] | HTTP client wrapper for all 5 endpoints |
+| T3.7 | Add lazy route to `app.routes.ts` | [x] | /style-quiz → STYLE_QUIZ_ROUTES |
+| T3.8 | Add auth guard to full-results route | [x] | authGuard on /style-quiz/results |
 
 ---
 
@@ -78,17 +79,17 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T4.1 | Landing page | [ ] | Hero, CTA, family preview chips |
-| T4.2 | Primer screen | [ ] | Yin/yang explainer, begin CTA |
-| T4.3 | Section intro screen | [ ] | Animated card per section |
-| T4.4 | Question screen | [ ] | 5-option cards, auto-advance |
-| T4.5 | Calculating screen | [ ] | Animated gradient, 2.5s delay |
-| T4.6 | Teaser results page | [ ] | Family hero, blurred section, reg CTA |
-| T4.7 | Full results page | [ ] | Animated reveal, style guide |
-| T4.8 | Style guide tab content | [ ] | Per-family recommendations |
-| T4.9 | Retake quiz flow | [ ] | Confirmation, re-run, overwrite |
-| T4.10 | Family override UI | [ ] | Self-select different family |
-| T4.11 | Style profile page (`/profile/style`) | [ ] | Saved result view |
+| T4.1 | Landing page | [x] | Hero, CTA, family preview chips |
+| T4.2 | Primer screen | [x] | Yin/yang explainer, begin CTA |
+| T4.3 | Section intro screen | [x] | Section card with question count |
+| T4.4 | Question screen | [x] | 5-option cards, auto-advance (400ms delay) |
+| T4.5 | Calculating screen | [x] | Spinner overlay, 2.5s min delay |
+| T4.6 | Teaser results page | [x] | Family hero, blurred preview, reg CTA |
+| T4.7 | Full results page | [x] | Overview + Style Guide tabs |
+| T4.8 | Style guide tab content | [x] | Per-family silhouettes/colours/fabrics/avoid/icons |
+| T4.9 | Retake quiz flow | [x] | AlertController confirmation on landing if existing data |
+| T4.10 | Family override UI | [x] | AlertController radio picker on results + style profile pages |
+| T4.11 | Style profile page (`/profile/style`) | [x] | Full saved result view with override + clear |
 
 ---
 
@@ -96,11 +97,11 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T5.1 | Implement `ShareCardComponent` | [ ] | HTML Canvas generator |
-| T5.2 | Integrate Web Share API | [ ] | File export for sharing |
-| T5.3 | Implement download fallback | [ ] | For non-supporting browsers |
-| T5.4 | Add share section to results | [ ] | Button + preview |
-| T5.5 | Add share analytics events | [ ] | share_click, share_complete |
+| T5.1 | Implement `ShareCardService` | [x] | HTML Canvas generator — 1080×1080 PNG with family theming |
+| T5.2 | Integrate Web Share API | [x] | File export with navigator.share |
+| T5.3 | Implement download fallback | [x] | createObjectURL + anchor click for non-supporting browsers |
+| T5.4 | Add share section to results | [x] | Share button + preview image card above action buttons |
+| T5.5 | Add share analytics events | [x] | share_click, share_complete via KibbeAnalyticsService |
 
 ---
 
@@ -108,10 +109,10 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T6.1 | Pass `?return=kibbe-results` to auth | [ ] | From teaser page |
-| T6.2 | Handle return redirect in AuthService | [ ] | Navigate to full-results |
-| T6.3 | Session expiry message | [ ] | Friendly retake prompt |
-| T6.4 | Track auth events from quiz | [ ] | register/login_complete_from_quiz |
+| T6.1 | Pass `?return=style-quiz/results` to auth | [x] | Teaser page passes param on register/login click |
+| T6.2 | Handle return redirect in auth pages | [x] | Login + register read `?return=` and navigate there after success |
+| T6.3 | Session expiry message | [x] | Results page shows toast + redirects to /style-quiz if no session |
+| T6.4 | Track auth events from quiz | [x] | `loginCompleteFromQuiz` / `registerCompleteFromQuiz` fired when `?return=` present |
 
 ---
 
@@ -119,13 +120,47 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 
 | Task | Description | Status | Notes |
 |------|-------------|--------|-------|
-| T7.1 | Source 5 family portrait images | [ ] | Unsplash or commission |
-| T7.2 | Create 5 family hero images | [ ] | Landscape format |
-| T7.3 | Create 3 section icons (SVG) | [ ] | bone, flesh, face |
-| T7.4 | Apply family colour system | [ ] | CSS custom properties |
-| T7.5 | Add entrance animations | [ ] | Ionic/CSS @keyframes |
-| T7.6 | Test on iOS Safari, Android Chrome | [ ] | Responsive + PWA |
-| T7.7 | Accessibility audit | [ ] | ARIA labels, focus management |
+| T7.1 | Source 5 family portrait images | [ ] | Unsplash or commission — manual task |
+| T7.2 | Create 5 family hero images | [ ] | Landscape format — manual task |
+| T7.3 | Create 3 section icons (SVG) | [x] | src/assets/style-quiz/section-{bone,flesh,face}.svg — shown on section intro page |
+| T7.4 | Apply family colour system | [x] | CSS custom properties via data-family attribute; accent colour on family name, guide headings, bullets |
+| T7.5 | Add entrance animations | [x] | fadeSlideUp keyframe in global.scss; applied to landing, section-intro, question container, option cards (staggered), results hero |
+| T7.6 | Test on iOS Safari, Android Chrome | [ ] | Manual device testing required |
+| T7.7 | Accessibility audit | [x] | role=radiogroup + aria-labelledby on question options; aria-checked on option cards; aria-live on question counter + results hero; aria-label on action buttons |
+
+---
+
+## Phase 9: Plan Alignment Fixes (2026-03-12)
+
+Identified during post-implementation review against `kibbe_quiz_implementation_plan.pdf`.
+
+| Task | Description | Status | Notes |
+|------|-------------|--------|-------|
+| T9.1 | Replace bone section questions with plan's version | [x] | 5 new question prompts + corrected option labels; adds jawline Q5 and vertical line Q4 which were missing |
+| T9.2 | Replace flesh section questions with plan's version | [x] | Correct order (bust Q2, waist Q3, hips Q4); option labels updated throughout |
+| T9.3 | Replace face section questions with plan's version | [x] | Q4 now "cheeks and nose" per plan; Q1 reframed as overall impression |
+| T9.4 | Add `description?` to `KibbeQuizOption` model | [x] | Enables richer option copy on Q1 of each section |
+| T9.5 | Add `subPrompt?` to `KibbeQuizQuestion` model | [x] | Used on bone_1, bone_4; guides user framing |
+| T9.6 | Update section descriptions to plan's subtitle wording | [x] | "The architectural foundation…", "How muscle and soft tissue…", "The overall impression…" |
+| T9.7 | Implement `getMixedTypeName()` in `kibbe.models.ts` | [x] | Lookup table: 8 named mixed types (Soft Dramatic, Flamboyant Natural, etc.) |
+| T9.8 | Show named mixed type on results page | [x] | Displays "Soft Dramatic" etc. instead of "with Romantic influences"; falls back to "with X influences" for unlisted combos |
+| T9.9 | Show named mixed type on style profile page | [x] | Same logic applied to `/profile/style` |
+| T9.10 | Update Gamine tagline | [x] | Now captures high-contrast + angular/rounded duality per plan spec |
+
+### Named mixed type mapping (per classical Kibbe system)
+
+| Primary | Runner-Up | Mixed Type Name |
+|---------|-----------|-----------------|
+| Dramatic | Romantic | Soft Dramatic |
+| Natural | Dramatic | Flamboyant Natural |
+| Natural | Romantic | Soft Natural |
+| Classic | Dramatic | Dramatic Classic |
+| Classic | Romantic | Soft Classic |
+| Romantic | Dramatic | Theatrical Romantic |
+| Gamine | Dramatic | Flamboyant Gamine |
+| Gamine | Romantic | Soft Gamine |
+
+All other primary+runner-up combos fall back to "with [Runner-up] influences".
 
 ---
 
@@ -157,6 +192,13 @@ The Kibbe Body Type Quiz is a user acquisition feature that helps users discover
 | Date | Tasks Completed | Notes |
 |------|-----------------|-------|
 | 2026-03-11 | T1.1-T1.16, T2.1-T2.2 | Backend foundation + tests complete - 154 unit tests pass |
+| 2026-03-12 | T3.1-T3.8 | Frontend foundation complete — models, data, services, stub pages, routing |
+| 2026-03-12 | T4.1-T4.11 | Phase 4 complete — all quiz UI pages, style guide data, auto-advance, retake confirmation, family override, /profile/style page |
+| 2026-03-12 | T6.1-T6.4 | Phase 6 complete — return redirect in login/register, expiry toast, quiz analytics events |
+| 2026-03-12 | Bug fixes | Calculating page respects light/dark mode; authenticated users bypass teaser and go straight to results; style profile empty state fixed (spinner no longer stuck when no profile exists); ES2018 lib compatibility (replaced flatMap/fromEntries) |
+| 2026-03-12 | T5.1-T5.5 | Phase 5 complete — ShareCardService (Canvas 1080×1080 with family themes), Web Share API with file export, download fallback, share preview on results page, analytics events |
+| 2026-03-12 | T7.3-T7.5, T7.7 | Phase 7 partial — section SVG icons (bone/flesh/face), family colour system (CSS custom properties via data-family), entrance animations (fadeSlideUp with option stagger), accessibility (radiogroup, aria-checked, aria-live, aria-label) |
+| 2026-03-12 | T9.1-T9.10 | Phase 9 complete — quiz questions replaced with plan spec versions (jawline Q, vertical line Q, corrected flesh order, cheeks/nose face Q4); named mixed types implemented; Gamine tagline updated; `description`/`subPrompt` model fields added |
 
 ---
 

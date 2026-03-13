@@ -18,7 +18,8 @@ public static class GetStyleProfile
         if (userId == null)
             return Results.Unauthorized();
 
-        var result = await kibbeQuizService.GetProfileAsync(userId.Value, cancellationToken);
+        StyleProfileResponse? result = 
+            await kibbeQuizService.GetProfileAsync(userId.Value, cancellationToken);
 
         if (result == null)
             return Results.NotFound(

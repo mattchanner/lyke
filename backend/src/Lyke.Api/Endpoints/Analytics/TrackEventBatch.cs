@@ -18,7 +18,7 @@ public static class TrackEventBatch
     {
         var userId = UserIdExtractor.GetUserId(user);
 
-        var items = request.Events.Select(e => new TrackEventItem(
+        var items = request.Events.Select(e => new TrackRawEventItem(
             e.EventType,
             userId,
             e.EntityId,
@@ -27,7 +27,7 @@ public static class TrackEventBatch
             e.SessionId
         ));
 
-        await trackingService.TrackBatchAsync(items, cancellationToken);
+        await trackingService.TrackRawBatchAsync(items, cancellationToken);
 
         return Results.Ok(ApiResponse.Ok());
     }

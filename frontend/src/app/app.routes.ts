@@ -145,6 +145,13 @@ export const routes: Routes = [
             './features/profile/following/following.page'
           ).then((m) => m.FollowingPage),
       },
+      {
+        path: 'style',
+        loadComponent: () =>
+          import('./features/profile/style-profile/style-profile.page').then(
+            (m) => m.StyleProfilePage
+          ),
+      },
     ],
   },
 
@@ -441,6 +448,15 @@ export const routes: Routes = [
     path: 'quiz',
     loadComponent: () =>
       import('./features/quiz/quiz.page').then((m) => m.QuizPage),
+  },
+
+  // Kibbe Style Quiz (public entry, auth-gated full results)
+  {
+    path: 'style-quiz',
+    loadChildren: () =>
+      import('./features/style-quiz/style-quiz.routes').then(
+        (m) => m.STYLE_QUIZ_ROUTES
+      ),
   },
 
   // Catch-all redirect

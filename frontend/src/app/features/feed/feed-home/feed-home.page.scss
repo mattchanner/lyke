@@ -87,16 +87,6 @@
   }
 }
 
-.feed-viewport {
-  height: 100%;
-  width: 100%;
-
-  // Ensure smooth scrolling
-  ::ng-deep .cdk-virtual-scroll-content-wrapper {
-    width: 100%;
-  }
-}
-
 .feed-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -110,20 +100,6 @@
 
   @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.loading-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  color: var(--ion-color-medium);
-
-  ion-spinner {
-    width: 20px;
-    height: 20px;
   }
 }
 

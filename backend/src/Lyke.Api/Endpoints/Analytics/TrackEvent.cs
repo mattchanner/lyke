@@ -18,7 +18,7 @@ public static class TrackEvent
     {
         var userId = UserIdExtractor.GetUserId(user);
 
-        await trackingService.TrackAsync(
+        await trackingService.TrackRawAsync(
             request.EventType,
             userId,
             request.EntityId,

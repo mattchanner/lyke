@@ -1,0 +1,60 @@
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  animation: fadeSlideUp 0.45s ease both;
+}
+
+.hero-section {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+    color: var(--ion-color-primary);
+  }
+
+  .subtitle {
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+}
+
+.families-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.family-chip {
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  border: 1px solid var(--ion-color-primary);
+  color: var(--ion-color-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.quiz-info {
+  margin-bottom: 2rem;
+
+  p {
+    color: var(--ion-color-medium);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+ion-button {
+  --border-radius: 24px;
+  font-weight: 600;
+}

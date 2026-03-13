@@ -1,0 +1,52 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Your Result</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (result()) {
+    <div class="teaser-container">
+      <div class="family-portrait">
+        <img
+          [src]="'assets/kibbe/families/' + result()!.primaryFamily.toLowerCase() + '.jpg'"
+          [alt]="result()!.primaryFamily + ' style family'"
+        />
+      </div>
+
+      <div class="result-hero">
+        <p class="result-label">Your style type is</p>
+        <h1 class="family-name">{{ result()!.primaryFamily }}</h1>
+        <p class="family-tagline">{{ tagline() }}</p>
+      </div>
+
+      <div class="blurred-preview">
+        <div class="blur-overlay">
+          <p class="lock-message">🔒 Full style breakdown unlocked after sign-up</p>
+        </div>
+        <div class="preview-content" aria-hidden="true">
+          <p>Section analysis</p>
+          <p>Style recommendations</p>
+          <p>Celebrity examples</p>
+        </div>
+      </div>
+
+      <div class="cta-section">
+        <ion-button expand="block" (click)="register()">
+          Create an account to unlock your full style profile
+        </ion-button>
+        <ion-button expand="block" fill="clear" (click)="login()">
+          Already have an account? Log in
+        </ion-button>
+        <ion-button expand="block" fill="clear" color="medium" (click)="retake()">
+          Retake quiz
+        </ion-button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <p>No result found.</p>
+      <ion-button fill="clear" (click)="retake()">Take the quiz</ion-button>
+    </div>
+  }
+</ion-content>

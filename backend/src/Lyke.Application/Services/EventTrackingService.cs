@@ -106,4 +106,103 @@ public class EventTrackingService : IEventTrackingService
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task TrackRawAsync(
+        string eventType,
+        Guid? userId = null,
+        Guid? entityId = null,
+        string? entityType = null,
+        Dictionary<string, string>? properties = null,
+        string? sessionId = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Structured log for ALL events (flows to AppInsights via OpenTelemetry)
+        _logger.LogInformation(
+            "AnalyticsEvent {EventType} User={UserId} Entity={EntityId} EntityType={EntityType} Session={SessionId}",
+            eventType,
+            userId,
+            entityId,
+            entityType,
+            sessionId
+        );
+
+        // Persist only if the event type maps to a known persistable enum value
+        if (
+            Enum.TryParse<AnalyticsEventType>(eventType, ignoreCase: true, out var parsedType)
+            && PersistableEvents.Contains(parsedType)
+        )
+        {
+            var analyticsEvent = new AnalyticsEvent
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                EventType = parsedType,
+                EntityId = entityId,
+                EntityType = entityType,
+                Properties = properties != null ? JsonSerializer.Serialize(properties) : null,
+                SessionId = sessionId,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _dbContext.Set<AnalyticsEvent>().AddAsync(analyticsEvent, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task TrackRawBatchAsync(
+        IEnumerable<TrackRawEventItem> events,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var eventsList = events.ToList();
+
+        foreach (var evt in eventsList)
+        {
+            _logger.LogInformation(
+                "AnalyticsEvent {EventType} User={UserId} Entity={EntityId} EntityType={EntityType} Session={SessionId}",
+                evt.EventType,
+                evt.UserId,
+                evt.EntityId,
+                evt.EntityType,
+                evt.SessionId
+            );
+        }
+
+        var persistable = new List<AnalyticsEvent>();
+        foreach (var evt in eventsList)
+        {
+            if (
+                Enum.TryParse<AnalyticsEventType>(
+                    evt.EventType,
+                    ignoreCase: true,
+                    out var parsedType
+                ) && PersistableEvents.Contains(parsedType)
+            )
+            {
+                persistable.Add(
+                    new AnalyticsEvent
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = evt.UserId,
+                        EventType = parsedType,
+                        EntityId = evt.EntityId,
+                        EntityType = evt.EntityType,
+                        Properties =
+                            evt.Properties != null
+                                ? JsonSerializer.Serialize(evt.Properties)
+                                : null,
+                        SessionId = evt.SessionId,
+                        CreatedAt = DateTime.UtcNow,
+                    }
+                );
+            }
+        }
+
+        if (persistable.Count > 0)
+        {
+            await _dbContext.Set<AnalyticsEvent>().AddRangeAsync(persistable, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
 }

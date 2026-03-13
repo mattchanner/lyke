@@ -1,0 +1,156 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Your Style Profile</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="done()" aria-label="Go to feed">Done</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (isSaving()) {
+    <div class="saving-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>Saving your style profile…</p>
+    </div>
+  } @else if (result()) {
+    <div class="results-container" [attr.data-family]="displayFamily()?.toLowerCase()">
+
+      <ion-segment [value]="activeTab()" (ionChange)="setTab($any($event).detail.value)">
+        <ion-segment-button value="overview">
+          <ion-label>Overview</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="guide">
+          <ion-label>Style Guide</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      @if (activeTab() === 'overview') {
+        <div class="family-portrait">
+          <img
+            [src]="'assets/kibbe/families/' + displayFamily()!.toLowerCase() + '.jpg'"
+            [alt]="displayFamily() + ' style family'"
+          />
+        </div>
+
+        <div class="result-hero" aria-live="polite" aria-atomic="true">
+          <p class="result-label">Your Style Type</p>
+          <h1 class="family-name">{{ displayFamily() }}</h1>
+          @if (isOverride()) {
+            <p class="self-selected-label">(self-selected)</p>
+          }
+          <p class="family-tagline">{{ tagline(displayFamily()!) }}</p>
+          @if (result()!.isMixed && result()!.runnerUpFamily) {
+            <p class="mixed-note">
+              {{ mixedTypeName() ?? 'with ' + result()!.runnerUpFamily + ' influences' }}
+            </p>
+          }
+        </div>
+
+        <div class="section-breakdown">
+          <h3>Section Breakdown</h3>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span class="breakdown-label">Bone Structure</span>
+              <span class="breakdown-value">{{ result()!.sectionDominance.bone }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Body Flesh</span>
+              <span class="breakdown-value">{{ result()!.sectionDominance.flesh }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">Facial Features</span>
+              <span class="breakdown-value">{{ result()!.sectionDominance.face }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="confidence-row">
+          <span class="confidence-label">Result Confidence</span>
+          <span class="confidence-value" [attr.data-level]="result()!.confidence">{{ result()!.confidence }}</span>
+        </div>
+
+        @if (sharePreviewUrl()) {
+          <div class="share-preview">
+            <img [src]="sharePreviewUrl()!" alt="Share card preview" />
+          </div>
+        }
+
+        <div class="action-buttons">
+          <ion-button
+            expand="block"
+            (click)="share()"
+            [disabled]="isSharing()"
+            aria-label="Share your style type card"
+          >
+            @if (isSharing()) {
+              <ion-spinner name="crescent" slot="start"></ion-spinner>
+            }
+            Share My Style Type
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="retake()" aria-label="Retake the style quiz">
+            Retake Quiz
+          </ion-button>
+        </div>
+      }
+
+      @if (activeTab() === 'guide') {
+        @if (styleGuide(displayFamily()!); as guide) {
+          <div class="style-guide">
+            <div class="guide-section">
+              <h3>Silhouettes</h3>
+              <ul>
+                @for (item of guide.silhouettes; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+            <div class="guide-section">
+              <h3>Colours</h3>
+              <ul>
+                @for (item of guide.colours; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+            <div class="guide-section">
+              <h3>Fabrics</h3>
+              <ul>
+                @for (item of guide.fabrics; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+            <div class="guide-section guide-section--avoid">
+              <h3>Avoid</h3>
+              <ul>
+                @for (item of guide.avoid; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+            <div class="guide-section">
+              <h3>Style Icons</h3>
+              <ul>
+                @for (item of guide.celebrities; track item) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      }
+
+      <div class="override-section">
+        <p class="override-hint">Not quite right?</p>
+        <ion-button fill="outline" size="small" (click)="chooseFamily()" [disabled]="isOverriding()">
+          @if (isOverriding()) {
+            <ion-spinner name="crescent" slot="start"></ion-spinner>
+          }
+          Choose a different family
+        </ion-button>
+      </div>
+
+    </div>
+  }
+</ion-content>

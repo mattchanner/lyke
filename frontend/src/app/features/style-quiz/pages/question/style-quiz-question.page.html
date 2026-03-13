@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-progress-bar [value]="progressValue"></ion-progress-bar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (question()) {
+    <div class="question-container">
+      <p class="question-counter" aria-live="polite" aria-atomic="true">
+        Question {{ questionIndex() + 1 }} of {{ totalQuestions() }}
+      </p>
+      <h2 class="question-prompt" id="question-prompt">{{ question()!.prompt }}</h2>
+      @if (question()!.subPrompt) {
+        <p class="question-sub-prompt">{{ question()!.subPrompt }}</p>
+      }
+
+      <div
+        class="options-list"
+        role="radiogroup"
+        aria-labelledby="question-prompt"
+      >
+        @for (opt of question()!.options; track opt.value) {
+          <button
+            class="option-card"
+            type="button"
+            role="radio"
+            [class.selected]="isSelected(opt.value)"
+            [attr.aria-checked]="isSelected(opt.value)"
+            (click)="select(opt.value)"
+          >
+            <span class="option-label" aria-hidden="true">{{ opt.value }}</span>
+            <span class="option-text">
+              {{ opt.label }}
+              @if (opt.description) {
+                <span class="option-description">{{ opt.description }}</span>
+              }
+            </span>
+          </button>
+        }
+      </div>
+
+    </div>
+  }
+</ion-content>
