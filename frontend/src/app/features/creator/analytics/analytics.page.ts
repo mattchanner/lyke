@@ -9,7 +9,7 @@ import {
   ElementRef,
   effect,
 } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import {
   IonContent,
@@ -78,7 +78,6 @@ const METRIC_COLORS: Record<ChartMetric, { line: string; fill: string }> = {
   selector: 'app-analytics',
   standalone: true,
   imports: [
-    DatePipe,
     DecimalPipe,
     RouterLink,
     IonContent,

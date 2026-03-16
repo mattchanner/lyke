@@ -32,7 +32,7 @@
         </div>
       } @else {
         <img
-          [src]="media[0].url"
+          [src]="compact ? (media[0].thumbnailUrl || media[0].url) : media[0].url"
           [alt]="alt"
           loading="lazy"
           (load)="onMediaLoaded(0)"
@@ -86,7 +86,7 @@
               </div>
             } @else {
               <img
-                [src]="item.url"
+                [src]="compact ? (item.thumbnailUrl || item.url) : item.url"
                 [alt]="alt + ' ' + (i + 1)"
                 loading="lazy"
                 (load)="onMediaLoaded(i)"

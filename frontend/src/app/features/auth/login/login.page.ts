@@ -4,9 +4,6 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import {
   IonContent,
-  IonHeader,
-  IonTitle,
-  IonToolbar,
   IonButton,
   IonInput,
   IonItem,
@@ -29,9 +26,6 @@ import { environment } from '../../../../environments/environment';
     ReactiveFormsModule,
     RouterLink,
     IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
     IonButton,
     IonInput,
     IonItem,

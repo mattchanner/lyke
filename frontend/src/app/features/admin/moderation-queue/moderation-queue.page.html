@@ -31,8 +31,8 @@
             {{ item.priority }}
           </div>
           <ion-thumbnail slot="start">
-            @if (item.mediaUrls?.length) {
-              <img [src]="item.thumbnailUrls?.[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" loading="lazy" />
+            @if (item.mediaUrls.length) {
+              <img [src]="item.thumbnailUrls[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" loading="lazy" />
             } @else {
               <div class="no-media">
                 <ion-icon
@@ -109,7 +109,7 @@
                 </p>
               </div>
 
-              @if (item.products?.length) {
+              @if (item.products.length) {
                 <div class="detail-section">
                   <strong>Products Tagged ({{ item.products.length }})</strong>
                   @for (product of item.products; track product.productId) {

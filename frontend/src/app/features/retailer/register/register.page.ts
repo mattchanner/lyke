@@ -13,7 +13,6 @@ import {
   IonInput,
   IonButton,
   IonSpinner,
-  IonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { storefrontOutline } from 'ionicons/icons';
@@ -36,7 +35,6 @@ import { RegisterRetailerRequest } from '../../../models';
     IonInput,
     IonButton,
     IonSpinner,
-    IonText,
   ],
   templateUrl: './register.page.html',
   styleUrls: ['./register.page.scss'],

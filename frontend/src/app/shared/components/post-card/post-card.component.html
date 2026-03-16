@@ -4,6 +4,7 @@
       <app-media-carousel
         [media]="mediaItems"
         [alt]="post.title || 'Post image'"
+        [compact]="true"
       ></app-media-carousel>
     }
     @if (post.similarityScore >= 0.8) {

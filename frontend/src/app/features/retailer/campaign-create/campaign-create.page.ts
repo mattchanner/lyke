@@ -17,8 +17,6 @@ import {
   IonIcon,
   IonLabel,
   IonChip,
-  IonSelect,
-  IonSelectOption,
   IonSkeletonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -59,8 +57,6 @@ const BODY_TYPES = [
     IonIcon,
     IonLabel,
     IonChip,
-    IonSelect,
-    IonSelectOption,
     IonSkeletonText,
   ],
   templateUrl: './campaign-create.page.html',

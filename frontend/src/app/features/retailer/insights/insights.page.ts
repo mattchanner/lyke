@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, inject } from '@angular/core';
-import { DecimalPipe, PercentPipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   IonContent,
   IonHeader,
@@ -38,7 +38,6 @@ type InsightTab = 'fit' | 'body';
   standalone: true,
   imports: [
     DecimalPipe,
-    PercentPipe,
     IonContent,
     IonHeader,
     IonTitle,

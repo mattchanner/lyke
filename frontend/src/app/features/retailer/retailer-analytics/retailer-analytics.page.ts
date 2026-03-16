@@ -9,7 +9,7 @@ import {
   ElementRef,
   effect,
 } from '@angular/core';
-import { DecimalPipe, DatePipe } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import {
   IonContent,
   IonHeader,
@@ -78,7 +78,6 @@ const METRIC_COLORS: Record<ChartMetric, { line: string; fill: string }> = {
   standalone: true,
   imports: [
     DecimalPipe,
-    DatePipe,
     IonContent,
     IonHeader,
     IonTitle,

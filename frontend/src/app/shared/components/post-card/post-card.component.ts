@@ -4,14 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import {
   IonCard,
   IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
   IonButton,
   IonIcon,
   IonChip,
   IonLabel,
   IonAvatar,
-  IonBadge,
   ActionSheetController,
   AlertController,
 } from '@ionic/angular/standalone';
@@ -41,14 +38,11 @@ import { MediaCarouselComponent, MediaItem } from '../media-carousel';
     RouterLink,
     IonCard,
     IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
     IonButton,
     IonIcon,
     IonChip,
     IonLabel,
     IonAvatar,
-    IonBadge,
     MediaCarouselComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -88,7 +82,7 @@ export class PostCardComponent {
     return this.post.mediaUrls.map((url, i) => ({
       url,
       type: this.post.mediaType ?? MediaType.Image,
-      thumbnailUrl: this.post.thumbnailUrls?.[i],
+      thumbnailUrl: this.post.thumbnailUrls[i],
     }));
   }
 

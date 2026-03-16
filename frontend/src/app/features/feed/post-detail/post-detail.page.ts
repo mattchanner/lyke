@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonContent,
   IonHeader,
@@ -8,7 +8,6 @@ import {
   IonToolbar,
   IonBackButton,
   IonButtons,
-  IonSpinner,
   IonButton,
   IonIcon,
   IonAvatar,
@@ -39,14 +38,12 @@ import { MediaCarouselComponent, MediaItem } from '../../../shared/components/me
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     IonContent,
     IonHeader,
     IonTitle,
     IonToolbar,
     IonBackButton,
     IonButtons,
-    IonSpinner,
     IonButton,
     IonIcon,
     IonAvatar,
