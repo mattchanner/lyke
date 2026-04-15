@@ -12,14 +12,16 @@ public record PendingPostResponse(
     PostStatus Status,
     DateTime CreatedAt,
     DateTime? SubmittedAt,
-    CreatorSummary Creator,
+    AuthorSummary Author,
     List<PostProductSummary> Products
 );
 
-public record CreatorSummary(
-    Guid Id,
+public record AuthorSummary(
+    Guid UserId,
+    Guid? CreatorId,
     string DisplayName,
     bool IsVerified,
+    UserType UserType,
     int TotalPosts,
     int PublishedPosts
 );

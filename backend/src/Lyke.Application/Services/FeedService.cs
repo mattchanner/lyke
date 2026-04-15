@@ -52,19 +52,12 @@ public class FeedService : IFeedService
 
         var query = BuildFeedQuery(request);
 
-        var followedCreatorIds = await GetFollowedCreatorIdsAsync(userId, cancellationToken);
+        var followedUserIds = await GetFollowedUserIdsAsync(userId, cancellationToken);
 
-        // Filter to followed creators only when sorting by Following
+        // Filter to followed users only when sorting by Following
         if (request.SortBy == FeedSortBy.Following)
         {
-            var followedUserIds = await _dbContext
-                .Set<UserFollow>()
-                .AsNoTracking()
-                .Where(uf => uf.FollowerUserId == userId)
-                .Select(uf => uf.FollowedUserId)
-                .ToListAsync(cancellationToken);
-
-            query = query.Where(p => followedUserIds.Contains(p.Creator.UserId));
+            query = query.Where(p => followedUserIds.Contains(p.AuthorUserId));
         }
 
         // For Recent, MostLiked, and Following, push sorting + pagination to DB
@@ -88,18 +81,16 @@ public class FeedService : IFeedService
             var posts = await orderedQuery
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FrameSize)
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile)
-                            .ThenInclude(bp => bp!.BodyType)
-                .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile!)
-                            .ThenInclude(bp => bp.FrameSize)
-                .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile!)
-                            .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.PostProducts)
                     .ThenInclude(pp => pp.Product)
                         .ThenInclude(prod => prod.Retailer)
@@ -117,9 +108,9 @@ public class FeedService : IFeedService
                 .Select(p =>
                     MapToFeedPostResponse(
                         p,
-                        CalculateSimilarityScore(userBodyProfile, p.Creator.User.BodyProfile),
+                        CalculateSimilarityScore(userBodyProfile, p.AuthorUser.BodyProfile),
                         userEngagements,
-                        followedCreatorIds
+                        followedUserIds
                     )
                 )
                 .ToList();
@@ -136,14 +127,13 @@ public class FeedService : IFeedService
 
         // Relevance sort: lightweight projection to score, then fetch full data for page only
         var lightweightPosts = await query
-            .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
             .Select(p => new
             {
                 p.Id,
                 p.PublishedAt,
-                CreatorBodyProfile = p.Creator.User.BodyProfile,
+                AuthorBodyProfile = p.AuthorUser.BodyProfile,
             })
             .ToListAsync(cancellationToken);
 
@@ -151,7 +141,7 @@ public class FeedService : IFeedService
             .Select(p => new
             {
                 p.Id,
-                Score = CalculateSimilarityScore(userBodyProfile, p.CreatorBodyProfile) * 0.6
+                Score = CalculateSimilarityScore(userBodyProfile, p.AuthorBodyProfile) * 0.6
                     + CalculateRecencyScore(p.PublishedAt) * 0.4,
             })
             .OrderByDescending(x => x.Score)
@@ -171,6 +161,15 @@ public class FeedService : IFeedService
             .Set<Post>()
             .AsNoTracking()
             .Where(p => pagedPostIds.Contains(p.Id))
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.BodyType)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FrameSize)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.Creator)
                 .ThenInclude(c => c.User)
                     .ThenInclude(u => u.BodyProfile)
@@ -203,7 +202,7 @@ public class FeedService : IFeedService
                     p!,
                     scoreLookup.GetValueOrDefault(p!.Id, 0),
                     relevanceUserEngagements,
-                    followedCreatorIds
+                    followedUserIds
                 )
             )
             .ToList();
@@ -262,12 +261,12 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, postIds, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        var followedCreatorIds = userId.HasValue
-            ? await GetFollowedCreatorIdsAsync(userId.Value, cancellationToken)
+        var followedUserIds = userId.HasValue
+            ? await GetFollowedUserIdsAsync(userId.Value, cancellationToken)
             : null;
 
         var feedPosts = posts
-            .Select(p => MapToFeedPostResponse(p, 0, userEngagements, followedCreatorIds))
+            .Select(p => MapToFeedPostResponse(p, 0, userEngagements, followedUserIds))
             .ToList();
 
         var meta = new PaginationMeta
@@ -289,10 +288,16 @@ public class FeedService : IFeedService
         var post = await _dbContext
             .Set<Post>()
             .AsNoTracking()
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.BodyType)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FrameSize)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
                     .ThenInclude(prod => prod.Retailer)
@@ -311,11 +316,11 @@ public class FeedService : IFeedService
             throw new NotFoundException(nameof(Post), postId);
         }
 
-        // Get creator's published post count separately to avoid no-tracking cycle
-        var creatorPublishedPostCount = await _dbContext
+        // Get author's published post count separately to avoid no-tracking cycle
+        var authorPublishedPostCount = await _dbContext
             .Set<Post>()
             .CountAsync(
-                p => p.CreatorId == post.CreatorId && p.Status == PostStatus.Published,
+                p => p.AuthorUserId == post.AuthorUserId && p.Status == PostStatus.Published,
                 cancellationToken
             );
 
@@ -328,7 +333,7 @@ public class FeedService : IFeedService
                 .FirstOrDefaultAsync(bp => bp.UserId == userId.Value, cancellationToken);
             similarityScore = CalculateSimilarityScore(
                 userBodyProfile,
-                post.Creator.User.BodyProfile
+                post.AuthorUser.BodyProfile
             );
         }
 
@@ -340,7 +345,7 @@ public class FeedService : IFeedService
             post,
             similarityScore,
             userEngagements,
-            creatorPublishedPostCount
+            authorPublishedPostCount
         );
     }
 
@@ -354,9 +359,8 @@ public class FeedService : IFeedService
         var post = await _dbContext
             .Set<Post>()
             .AsNoTracking()
-            .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
             .AsSplitQuery()
@@ -367,7 +371,7 @@ public class FeedService : IFeedService
             throw new NotFoundException(nameof(Post), postId);
         }
 
-        var creatorBodyProfile = post.Creator.User.BodyProfile;
+        var authorBodyProfile = post.AuthorUser.BodyProfile;
         var productCategories = post
             .PostProducts.Select(pp => pp.Product.Category)
             .Distinct()
@@ -378,15 +382,14 @@ public class FeedService : IFeedService
             .Set<Post>()
             .AsNoTracking()
             .Where(p => p.Id != postId && p.Status == PostStatus.Published)
-            .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
             .Select(p => new
             {
                 p.Id,
-                CreatorBodyProfile = p.Creator.User.BodyProfile,
+                AuthorBodyProfile = p.AuthorUser.BodyProfile,
                 HasMatchingCategory = p.PostProducts.Any(pp =>
                     productCategories.Contains(pp.Product.Category)
                 ),
@@ -397,7 +400,7 @@ public class FeedService : IFeedService
             .Select(p => new
             {
                 p.Id,
-                Score = CalculateSimilarityScore(creatorBodyProfile, p.CreatorBodyProfile) * 0.7
+                Score = CalculateSimilarityScore(authorBodyProfile, p.AuthorBodyProfile) * 0.7
                     + (p.HasMatchingCategory ? 0.3 : 0),
             })
             .OrderByDescending(x => x.Score)
@@ -430,8 +433,8 @@ public class FeedService : IFeedService
             ? await GetUserEngagementsAsync(userId.Value, topPostIds, cancellationToken)
             : new Dictionary<Guid, HashSet<EngagementType>>();
 
-        var followedCreatorIds = userId.HasValue
-            ? await GetFollowedCreatorIdsAsync(userId.Value, cancellationToken)
+        var followedUserIds = userId.HasValue
+            ? await GetFollowedUserIdsAsync(userId.Value, cancellationToken)
             : null;
 
         // Maintain score ordering
@@ -443,7 +446,7 @@ public class FeedService : IFeedService
                     p!,
                     scoreLookup.GetValueOrDefault(p!.Id, 0),
                     userEngagements,
-                    followedCreatorIds
+                    followedUserIds
                 )
             )
             .ToList();
@@ -601,10 +604,10 @@ public class FeedService : IFeedService
             cancellationToken
         );
 
-        var followedCreatorIds = await GetFollowedCreatorIdsAsync(userId, cancellationToken);
+        var followedUserIds = await GetFollowedUserIdsAsync(userId, cancellationToken);
 
         var feedPosts = orderedPosts
-            .Select(p => MapToFeedPostResponse(p!, 0, userEngagements, followedCreatorIds))
+            .Select(p => MapToFeedPostResponse(p!, 0, userEngagements, followedUserIds))
             .ToList();
 
         var meta = new PaginationMeta
@@ -670,10 +673,10 @@ public class FeedService : IFeedService
             cancellationToken
         );
 
-        var followedCreatorIds = await GetFollowedCreatorIdsAsync(userId, cancellationToken);
+        var followedUserIds = await GetFollowedUserIdsAsync(userId, cancellationToken);
 
         var feedPosts = orderedPosts
-            .Select(p => MapToFeedPostResponse(p!, 0, userEngagements, followedCreatorIds))
+            .Select(p => MapToFeedPostResponse(p!, 0, userEngagements, followedUserIds))
             .ToList();
 
         var meta = new PaginationMeta
@@ -726,18 +729,16 @@ public class FeedService : IFeedService
             }
 
             var postQuery = postBaseQuery
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile)
+                        .ThenInclude(bp => bp!.BodyType)
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FrameSize)
+                .Include(p => p.AuthorUser)
+                    .ThenInclude(u => u.BodyProfile!)
+                        .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile)
-                            .ThenInclude(bp => bp!.BodyType)
-                .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile!)
-                            .ThenInclude(bp => bp.FrameSize)
-                .Include(p => p.Creator)
-                    .ThenInclude(c => c.User)
-                        .ThenInclude(u => u.BodyProfile!)
-                            .ThenInclude(bp => bp.FitPreferences)
                 .Include(p => p.PostProducts)
                     .ThenInclude(pp => pp.Product)
                         .ThenInclude(prod => prod.Retailer)
@@ -769,7 +770,7 @@ public class FeedService : IFeedService
                 : new Dictionary<Guid, HashSet<EngagementType>>();
 
             var searchFollowedCreatorIds = userId.HasValue
-                ? await GetFollowedCreatorIdsAsync(userId.Value, cancellationToken)
+                ? await GetFollowedUserIdsAsync(userId.Value, cancellationToken)
                 : null;
 
             posts = foundPosts
@@ -1095,7 +1096,7 @@ public class FeedService : IFeedService
         Post post,
         double similarityScore,
         Dictionary<Guid, HashSet<EngagementType>> userEngagements,
-        HashSet<Guid>? followedCreatorIds = null
+        HashSet<Guid>? followedUserIds = null
     )
     {
         var engagementCounts = new EngagementCountsResponse(
@@ -1110,32 +1111,35 @@ public class FeedService : IFeedService
             new HashSet<EngagementType>()
         );
 
-        var creatorBodyProfile = post.Creator.User.BodyProfile;
+        var authorUser = post.AuthorUser;
+        var authorBodyProfile = authorUser.BodyProfile;
         AnonymizedBodyProfileResponse? anonymizedProfile = null;
-        if (creatorBodyProfile != null)
+        if (authorBodyProfile != null)
         {
             anonymizedProfile = new AnonymizedBodyProfileResponse(
-                BodyProfileHelper.GetHeightRange(creatorBodyProfile.HeightCm),
-                BodyProfileHelper.GetWeightRange(creatorBodyProfile.WeightKg),
-                creatorBodyProfile.BodyType.Name,
-                creatorBodyProfile.FrameSize?.Name,
-                creatorBodyProfile.Stature,
-                creatorBodyProfile.Build,
+                BodyProfileHelper.GetHeightRange(authorBodyProfile.HeightCm),
+                BodyProfileHelper.GetWeightRange(authorBodyProfile.WeightKg),
+                authorBodyProfile.BodyType.Name,
+                authorBodyProfile.FrameSize?.Name,
+                authorBodyProfile.Stature,
+                authorBodyProfile.Build,
                 BodyProfileHelper.FormatBodyTypeLabel(
-                    creatorBodyProfile.Stature,
-                    creatorBodyProfile.Build,
-                    creatorBodyProfile.BodyType.Name
+                    authorBodyProfile.Stature,
+                    authorBodyProfile.Build,
+                    authorBodyProfile.BodyType.Name
                 ),
-                creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
+                authorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
 
-        var creator = new CreatorSummaryResponse(
-            post.Creator.Id,
-            post.Creator.DisplayName,
-            post.Creator.IsVerified,
+        var author = new AuthorSummaryResponse(
+            post.AuthorUserId,
+            post.CreatorId,
+            post.Creator?.DisplayName ?? authorUser.DisplayName ?? authorUser.UserName!,
+            post.Creator?.IsVerified ?? false,
+            authorUser.UserType,
             anonymizedProfile,
-            post.Creator.User.ProfileImageUrl
+            authorUser.ProfileImageUrl
         );
 
         var products = post
@@ -1160,14 +1164,14 @@ public class FeedService : IFeedService
             post.MediaType,
             ParseMediaUrls(post.MediaUrls),
             ParseMediaUrls(post.ThumbnailUrls),
-            creator,
+            author,
             products,
             engagementCounts,
             similarityScore,
             userPostEngagements.Contains(EngagementType.Like),
             userPostEngagements.Contains(EngagementType.Save),
             post.PublishedAt ?? post.CreatedAt,
-            followedCreatorIds?.Contains(post.CreatorId) ?? false
+            followedUserIds?.Contains(post.AuthorUserId) ?? false
         );
     }
 
@@ -1175,7 +1179,7 @@ public class FeedService : IFeedService
         Post post,
         double similarityScore,
         Dictionary<Guid, HashSet<EngagementType>> userEngagements,
-        int? creatorPublishedPostCount = null
+        int? authorPublishedPostCount = null
     )
     {
         var engagementCounts = new EngagementCountsResponse(
@@ -1190,36 +1194,41 @@ public class FeedService : IFeedService
             new HashSet<EngagementType>()
         );
 
-        var creatorBodyProfile = post.Creator.User.BodyProfile;
+        var authorUser = post.AuthorUser;
+        var authorBodyProfile = authorUser.BodyProfile;
         AnonymizedBodyProfileResponse? anonymizedProfile = null;
-        if (creatorBodyProfile != null)
+        if (authorBodyProfile != null)
         {
             anonymizedProfile = new AnonymizedBodyProfileResponse(
-                BodyProfileHelper.GetHeightRange(creatorBodyProfile.HeightCm),
-                BodyProfileHelper.GetWeightRange(creatorBodyProfile.WeightKg),
-                creatorBodyProfile.BodyType.Name,
-                creatorBodyProfile.FrameSize?.Name,
-                creatorBodyProfile.Stature,
-                creatorBodyProfile.Build,
+                BodyProfileHelper.GetHeightRange(authorBodyProfile.HeightCm),
+                BodyProfileHelper.GetWeightRange(authorBodyProfile.WeightKg),
+                authorBodyProfile.BodyType.Name,
+                authorBodyProfile.FrameSize?.Name,
+                authorBodyProfile.Stature,
+                authorBodyProfile.Build,
                 BodyProfileHelper.FormatBodyTypeLabel(
-                    creatorBodyProfile.Stature,
-                    creatorBodyProfile.Build,
-                    creatorBodyProfile.BodyType.Name
+                    authorBodyProfile.Stature,
+                    authorBodyProfile.Build,
+                    authorBodyProfile.BodyType.Name
                 ),
-                creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
+                authorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
 
-        var creator = new CreatorDetailResponse(
-            post.Creator.Id,
-            post.Creator.DisplayName,
-            post.Creator.Bio,
-            post.Creator.IsVerified,
+        var totalPosts = authorPublishedPostCount
+            ?? post.AuthorUser.AuthoredPosts?.Count(p => p.Status == PostStatus.Published)
+            ?? 0;
+
+        var author = new AuthorDetailResponse(
+            post.AuthorUserId,
+            post.CreatorId,
+            post.Creator?.DisplayName ?? authorUser.DisplayName ?? authorUser.UserName!,
+            post.Creator?.Bio,
+            post.Creator?.IsVerified ?? false,
+            authorUser.UserType,
             anonymizedProfile,
-            creatorPublishedPostCount
-                ?? post.Creator.Posts?.Count(p => p.Status == PostStatus.Published)
-                ?? 0,
-            post.Creator.User.ProfileImageUrl
+            totalPosts,
+            authorUser.ProfileImageUrl
         );
 
         var products = post
@@ -1253,7 +1262,7 @@ public class FeedService : IFeedService
             post.MediaType,
             ParseMediaUrls(post.MediaUrls),
             ParseMediaUrls(post.ThumbnailUrls),
-            creator,
+            author,
             products,
             engagementCounts,
             similarityScore,
@@ -1316,7 +1325,7 @@ public class FeedService : IFeedService
         };
     }
 
-    private async Task<HashSet<Guid>> GetFollowedCreatorIdsAsync(
+    private async Task<HashSet<Guid>> GetFollowedUserIdsAsync(
         Guid userId,
         CancellationToken cancellationToken
     )
@@ -1328,14 +1337,7 @@ public class FeedService : IFeedService
             .Select(uf => uf.FollowedUserId)
             .ToListAsync(cancellationToken);
 
-        var creatorIds = await _dbContext
-            .Set<Creator>()
-            .AsNoTracking()
-            .Where(c => followedUserIds.Contains(c.UserId))
-            .Select(c => c.Id)
-            .ToListAsync(cancellationToken);
-
-        return creatorIds.ToHashSet();
+        return followedUserIds.ToHashSet();
     }
 
     #endregion

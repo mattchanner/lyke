@@ -10,7 +10,7 @@ public record FeedPostResponse(
     MediaType MediaType,
     List<string> MediaUrls,
     List<string> ThumbnailUrls,
-    CreatorSummaryResponse Creator,
+    AuthorSummaryResponse Author,
     List<PostProductSummaryResponse> Products,
     EngagementCountsResponse Engagements,
     double SimilarityScore,

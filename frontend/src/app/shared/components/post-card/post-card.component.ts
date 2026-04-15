@@ -99,17 +99,17 @@ export class PostCardComponent {
   toggleFollow(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    if (this.followService.isFollowing(this.post.creator.id)) {
-      this.followService.unfollow(this.post.creator.id);
+    if (this.followService.isFollowing(this.post.author.userId)) {
+      this.followService.unfollow(this.post.author.userId);
     } else {
-      this.followService.follow(this.post.creator.id);
+      this.followService.follow(this.post.author.userId);
     }
   }
 
   navigateToCreator(event: Event): void {
     event.stopPropagation();
     event.preventDefault();
-    this.router.navigate(['/profile/creator', this.post.creator.id]);
+    this.router.navigate(['/profile/user', this.post.author.userId]);
   }
 
   toggleLike(event: Event): void {

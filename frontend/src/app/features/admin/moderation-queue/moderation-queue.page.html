@@ -53,7 +53,7 @@
                 <ion-icon name="flag-outline" color="danger" class="flag-icon"></ion-icon>
               }
             </h2>
-            <p>By {{ item.creator.displayName }}</p>
+            <p>By {{ item.author.displayName }}</p>
             <p>
               @if (item.reportCount > 0) {
                 <ion-badge color="danger" class="report-badge">{{ item.reportCount }} report{{ item.reportCount > 1 ? 's' : '' }}</ion-badge>
@@ -85,13 +85,13 @@
               <div class="detail-section">
                 <strong>Creator</strong>
                 <p>
-                  {{ item.creator.displayName }}
-                  @if (item.creator.isVerified) {
+                  {{ item.author.displayName }}
+                  @if (item.author.isVerified) {
                     <ion-badge color="primary">Verified</ion-badge>
                   }
                 </p>
                 <p class="meta">
-                  {{ item.creator.publishedPosts }} / {{ item.creator.totalPosts }} posts published
+                  {{ item.author.publishedPosts }} / {{ item.author.totalPosts }} posts published
                 </p>
               </div>
 

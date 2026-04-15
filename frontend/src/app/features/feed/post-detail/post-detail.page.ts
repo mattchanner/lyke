@@ -115,7 +115,7 @@ export class PostDetailPage implements OnInit {
   navigateToCreator(): void {
     const currentPost = this.post();
     if (currentPost) {
-      this.router.navigate(['/profile/creator', currentPost.creator.id]);
+      this.router.navigate(['/profile/user', currentPost.author.userId]);
     }
   }
 

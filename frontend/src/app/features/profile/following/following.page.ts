@@ -18,7 +18,7 @@ import {
 import { addIcons } from 'ionicons';
 import { checkmarkCircle } from 'ionicons/icons';
 import { ApiService, FollowService } from '../../../core';
-import { FollowedCreatorResponse } from '../../../models';
+import { FollowedUserResponse } from '../../../models';
 
 @Component({
   selector: 'app-following',
@@ -46,7 +46,7 @@ export class FollowingPage implements OnInit {
   private readonly api = inject(ApiService);
   readonly followService = inject(FollowService);
 
-  readonly creators = signal<FollowedCreatorResponse[]>([]);
+  readonly users = signal<FollowedUserResponse[]>([]);
   readonly isLoading = signal(false);
 
   constructor() {
@@ -60,18 +60,18 @@ export class FollowingPage implements OnInit {
   loadFollowing(): void {
     this.isLoading.set(true);
 
-    this.api.get<FollowedCreatorResponse[]>('users', 'following').subscribe({
+    this.api.get<FollowedUserResponse[]>('users', 'following').subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.creators.set(response.data);
+          this.users.set(response.data);
         }
       },
       complete: () => this.isLoading.set(false),
     });
   }
 
-  unfollow(creatorId: string): void {
-    this.followService.unfollow(creatorId);
-    this.creators.update(list => list.filter(c => c.creatorId !== creatorId));
+  unfollow(userId: string): void {
+    this.followService.unfollow(userId);
+    this.users.update(list => list.filter(u => u.userId !== userId));
   }
 }

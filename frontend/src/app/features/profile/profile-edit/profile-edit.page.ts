@@ -63,16 +63,21 @@ export class ProfileEditPage implements OnInit {
 
   readonly form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
+    displayName: [''],
   });
 
   private originalEmail = '';
+  private originalDisplayName = '';
 
   ngOnInit(): void {
     this.loadProfile();
   }
 
   get isDirty(): boolean {
-    return this.form.value.email !== this.originalEmail;
+    return (
+      this.form.value.email !== this.originalEmail ||
+      (this.form.value.displayName ?? '') !== this.originalDisplayName
+    );
   }
 
   loadProfile(): void {
@@ -81,7 +86,11 @@ export class ProfileEditPage implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.originalEmail = response.data.email;
-          this.form.patchValue({ email: response.data.email });
+          this.originalDisplayName = response.data.displayName ?? '';
+          this.form.patchValue({
+            email: response.data.email,
+            displayName: response.data.displayName ?? '',
+          });
           this.imagePreview.set(response.data.profileImageUrl);
         }
       },
@@ -95,6 +104,7 @@ export class ProfileEditPage implements OnInit {
     this.isSaving.set(true);
     const request: UpdateProfileRequest = {
       email: this.form.value.email!,
+      displayName: this.form.value.displayName || null,
     };
 
     this.api.put<UserProfileResponse>('profile', '', request).subscribe({

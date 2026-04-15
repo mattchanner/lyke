@@ -20,6 +20,9 @@
       <ion-avatar>
         <img [src]="profile()!.profileImageUrl || 'assets/default-avatar.svg'" alt="Profile" loading="lazy" />
       </ion-avatar>
+      @if (profile()!.displayName) {
+        <h2>{{ profile()!.displayName }}</h2>
+      }
       <h2>
         {{ profile()!.email }}
         @if (!profile()!.isEmailVerified) {
@@ -72,6 +75,13 @@
         <ion-label>Following</ion-label>
       </ion-item>
 
+      @if (!authService.isAdmin() && !authService.isRetailer()) {
+        <ion-item routerLink="/my-posts" detail>
+          <ion-icon name="images-outline" slot="start"></ion-icon>
+          <ion-label>My Posts</ion-label>
+        </ion-item>
+      }
+
       @if (authService.isCreator()) {
         <ion-item routerLink="/creator" detail>
           <ion-icon name="ribbon-outline" slot="start"></ion-icon>
@@ -91,8 +101,8 @@
         <ion-item routerLink="/creator/register" detail class="creator-cta" (click)="trackCreatorCta()">
           <ion-icon name="star-outline" slot="start" color="tertiary"></ion-icon>
           <ion-label>
-            Become a Creator
-            <p>Share outfits &amp; earn</p>
+            Join Creator Programme
+            <p>Get verified &amp; earn from your posts</p>
           </ion-label>
         </ion-item>
       }

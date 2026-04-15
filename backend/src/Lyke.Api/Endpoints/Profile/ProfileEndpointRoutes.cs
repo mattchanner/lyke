@@ -74,6 +74,18 @@ public static class ProfileEndpointRoutes
             .Produces<ApiResponse>(StatusCodes.Status200OK)
             .Produces<ApiResponse>(StatusCodes.Status401Unauthorized);
 
+        // Public user profile (accessible by any authenticated user)
+        var userGroup = app.MapGroup("/api/users/v1")
+            .WithTags("Profile")
+            .RequireAuthorization();
+
+        userGroup
+            .MapGet("/{userId:guid}/profile", GetPublicUserProfile.Handle)
+            .WithName("GetPublicUserProfile")
+            .WithSummary("Get public profile for any user")
+            .Produces<ApiResponse<PublicUserProfileResponse>>(StatusCodes.Status200OK)
+            .Produces<ApiResponse>(StatusCodes.Status404NotFound);
+
         return app;
     }
 }

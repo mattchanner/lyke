@@ -1,3 +1,3 @@
 namespace Lyke.Application.DTOs.Profile;
 
-public record UpdateProfileRequest(string? Email);
+public record UpdateProfileRequest(string? Email, string? DisplayName);

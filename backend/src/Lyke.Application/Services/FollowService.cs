@@ -183,4 +183,150 @@ public class FollowService : IFollowService
 
         return creatorIds.ToHashSet();
     }
+
+    // User-based follow methods
+
+    public async Task FollowUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        if (followerUserId == followedUserId)
+            throw new ValidationException("Follow", "You cannot follow yourself");
+
+        var userExists = await _dbContext
+            .Set<User>()
+            .AnyAsync(u => u.Id == followedUserId, cancellationToken);
+
+        if (!userExists)
+            throw new NotFoundException("User", followedUserId);
+
+        var existing = await _dbContext
+            .Set<UserFollow>()
+            .AnyAsync(
+                uf => uf.FollowerUserId == followerUserId && uf.FollowedUserId == followedUserId,
+                cancellationToken
+            );
+
+        if (existing)
+            return;
+
+        var follow = new UserFollow
+        {
+            Id = Guid.NewGuid(),
+            FollowerUserId = followerUserId,
+            FollowedUserId = followedUserId,
+            CreatedAt = DateTime.UtcNow,
+        };
+
+        await _dbContext.Set<UserFollow>().AddAsync(follow, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "User {FollowerUserId} followed user {FollowedUserId}",
+            followerUserId,
+            followedUserId
+        );
+    }
+
+    public async Task UnfollowUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var follow = await _dbContext
+            .Set<UserFollow>()
+            .FirstOrDefaultAsync(
+                uf => uf.FollowerUserId == followerUserId && uf.FollowedUserId == followedUserId,
+                cancellationToken
+            );
+
+        if (follow != null)
+        {
+            _dbContext.Set<UserFollow>().Remove(follow);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation(
+                "User {FollowerUserId} unfollowed user {FollowedUserId}",
+                followerUserId,
+                followedUserId
+            );
+        }
+    }
+
+    public async Task<bool> IsFollowingUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _dbContext
+            .Set<UserFollow>()
+            .AnyAsync(
+                uf => uf.FollowerUserId == followerUserId && uf.FollowedUserId == followedUserId,
+                cancellationToken
+            );
+    }
+
+    public async Task<HashSet<Guid>> GetFollowedUserIdsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var followedUserIds = await _dbContext
+            .Set<UserFollow>()
+            .AsNoTracking()
+            .Where(uf => uf.FollowerUserId == userId)
+            .Select(uf => uf.FollowedUserId)
+            .ToListAsync(cancellationToken);
+
+        return followedUserIds.ToHashSet();
+    }
+
+    public async Task<(
+        IReadOnlyList<FollowedUserResponse> Users,
+        PaginationMeta Meta
+    )> GetFollowingUsersAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var query = _dbContext
+            .Set<UserFollow>()
+            .AsNoTracking()
+            .Where(uf => uf.FollowerUserId == userId);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var follows = await query
+            .OrderByDescending(uf => uf.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Include(uf => uf.Followed)
+                .ThenInclude(u => u.Creator)
+            .Select(uf => new FollowedUserResponse(
+                uf.FollowedUserId,
+                uf.Followed.Creator != null
+                    ? uf.Followed.Creator.DisplayName
+                    : uf.Followed.DisplayName ?? uf.Followed.UserName!,
+                uf.Followed.UserType,
+                uf.Followed.Creator != null && uf.Followed.Creator.IsVerified,
+                uf.Followed.Creator != null ? uf.Followed.Creator.Id : null,
+                uf.Followed.ProfileImageUrl,
+                uf.CreatedAt
+            ))
+            .ToListAsync(cancellationToken);
+
+        var meta = new PaginationMeta
+        {
+            Page = page,
+            PageSize = pageSize,
+            TotalCount = totalCount,
+        };
+
+        return (follows, meta);
+    }
 }

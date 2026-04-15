@@ -4,7 +4,8 @@ namespace Lyke.Core.Entities;
 
 public class Post : BaseEntity
 {
-    public Guid CreatorId { get; set; }
+    public Guid AuthorUserId { get; set; }
+    public Guid? CreatorId { get; set; }
     public string? Title { get; set; }
     public string? Description { get; set; }
     public MediaType MediaType { get; set; }
@@ -19,7 +20,8 @@ public class Post : BaseEntity
     public DateTime? ModeratedAt { get; set; }
 
     // Navigation properties
-    public Creator Creator { get; set; } = null!;
+    public User AuthorUser { get; set; } = null!;
+    public Creator? Creator { get; set; }
     public User? ModeratedByUser { get; set; }
     public ICollection<PostProduct> PostProducts { get; set; } = new List<PostProduct>();
     public ICollection<Engagement> Engagements { get; set; } = new List<Engagement>();

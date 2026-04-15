@@ -103,7 +103,7 @@ export class PostReviewModalComponent {
 
     const alert = await this.alertController.create({
       header: 'Approve Post',
-      message: `Approve "${p.title || 'Untitled'}" by ${p.creator.displayName}?`,
+      message: `Approve "${p.title || 'Untitled'}" by ${p.author.displayName}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
@@ -123,7 +123,7 @@ export class PostReviewModalComponent {
 
     const alert = await this.alertController.create({
       header: 'Reject Post',
-      message: `Reject "${p.title || 'Untitled'}" by ${p.creator.displayName}?`,
+      message: `Reject "${p.title || 'Untitled'}" by ${p.author.displayName}?`,
       inputs: [
         {
           name: 'reason',

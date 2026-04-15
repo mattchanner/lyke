@@ -326,7 +326,7 @@ public class CreatorService : ICreatorService
 
         var postCounts = await _dbContext
             .Set<Post>()
-            .Where(p => creatorIds.Contains(p.CreatorId))
+            .Where(p => p.CreatorId.HasValue && creatorIds.Contains(p.CreatorId.Value))
             .GroupBy(p => new { p.CreatorId, p.Status })
             .Select(g => new
             {
@@ -552,6 +552,7 @@ public class CreatorService : ICreatorService
         var post = new Post
         {
             Id = Guid.NewGuid(),
+            AuthorUserId = creator.UserId,
             CreatorId = creator.Id,
             Title = request.Title,
             Description = request.Description,

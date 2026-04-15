@@ -5,6 +5,7 @@ namespace Lyke.Application.DTOs.Profile;
 public record UserProfileResponse(
     Guid Id,
     string Email,
+    string? DisplayName,
     UserType UserType,
     bool HasBodyProfile,
     int ProfileCompleteness,

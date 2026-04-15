@@ -11,5 +11,6 @@ export * from './admin';
 export * from './retailer';
 export * from './privacy';
 export * from './follow';
+export * from './post';
 export * from './quiz';
 export * from './style/kibbe.models';

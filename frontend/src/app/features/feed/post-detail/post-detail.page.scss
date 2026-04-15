@@ -1,60 +1,91 @@
-.media-section {
-  img {
-    width: 100%;
-    display: block;
-    padding: var(--media-border-padding, 1rem);
-    border-radius: var(--media-border-radius, 1rem);
-  }
-}
-
-.content-section {
-  padding: 1rem;
-}
-
-.creator-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  cursor: pointer;
-
-  ion-avatar {
-    width: 48px;
-    height: 48px;
+.post-detail {
+  // Outer wrapper: overflow visible so avatar can extend below the image
+  .media-wrapper {
+    position: relative;
+    overflow: visible;
   }
 
-  .creator-name {
+  // Inner clip: handles image rounding and overflow:hidden for the photo
+  .media-clip {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem 0.5rem 0 0;
+    background: var(--ion-color-light);
+  }
+
+  // Avatar: 52px with thick 4px border. bottom: -26px so centre sits on image boundary.
+  .post-avatar {
+    position: absolute;
+    bottom: -26px;
+    left: 1rem;
+    width: 52px;
+    height: 52px;
+    z-index: 2;
+    border: 4px solid var(--ion-card-background, #fff);
+    cursor: pointer;
+  }
+
+  // Creator row: padding-top clears the avatar's lower half (26px) + small gap.
+  // Text is left-aligned — it sits BELOW the avatar, not beside it.
+  .creator-row {
     display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-weight: 600;
+    align-items: flex-start;
+    padding: 30px 1rem 10px 1rem;
+    cursor: pointer;
+
+    .creator-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      .creator-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        ion-icon {
+          font-size: 0.9rem;
+          flex-shrink: 0;
+        }
+      }
+
+      .body-info {
+        font-size: 0.78rem;
+        color: var(--ion-color-medium);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
   }
 
-  .body-info {
-    font-size: 0.85rem;
-    color: var(--ion-color-medium);
+  .content-section {
+    padding: 0 1rem 1.5rem;
+
+    .engagement-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--ion-color-light);
+    }
+
+    .post-text {
+      margin-bottom: 1.5rem;
+
+      h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: var(--ion-color-dark);
+        line-height: 1.5;
+      }
+    }
   }
 }
-
-.engagement-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--ion-color-light);
-}
-
-.post-text {
-  margin-bottom: 1.5rem;
-
-  h2 {
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-  }
-
-  p {
-    color: var(--ion-color-dark);
-    line-height: 1.5;
-  }
-}
-

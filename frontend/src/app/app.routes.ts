@@ -139,6 +139,13 @@ export const routes: Routes = [
           ).then((m) => m.CreatorProfilePage),
       },
       {
+        path: 'user/:id',
+        loadComponent: () =>
+          import(
+            './features/profile/user-profile/user-profile.page'
+          ).then((m) => m.UserProfilePage),
+      },
+      {
         path: 'following',
         loadComponent: () =>
           import(
@@ -227,6 +234,35 @@ export const routes: Routes = [
           import(
             './features/commerce/retailer-storefront/retailer-storefront.page'
           ).then((m) => m.RetailerStorefrontPage),
+      },
+    ],
+  },
+
+  // My Posts (any authenticated user can create posts)
+  {
+    path: 'my-posts',
+    canActivate: [authGuard, onboardingGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () =>
+          import('./features/my-posts/my-posts.page').then(
+            (m) => m.MyPostsPage
+          ),
+      },
+      {
+        path: 'create',
+        loadComponent: () =>
+          import('./features/my-posts/my-post-create.page').then(
+            (m) => m.MyPostCreatePage
+          ),
+      },
+      {
+        path: ':id/edit',
+        loadComponent: () =>
+          import('./features/my-posts/my-post-edit.page').then(
+            (m) => m.MyPostEditPage
+          ),
       },
     ],
   },

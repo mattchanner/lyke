@@ -20,37 +20,45 @@
     <app-skeleton-post-detail></app-skeleton-post-detail>
   } @else if (post()) {
     <div class="post-detail">
-      <div class="media-section">
-        @if (mediaItems().length > 0) {
-          <app-media-carousel
-            [media]="mediaItems()"
-            [alt]="post()!.title || 'Post media'"
-          ></app-media-carousel>
-        }
+
+      <!-- media-wrapper allows avatar to overflow; media-clip handles image clipping -->
+      <div class="media-wrapper">
+        <div class="media-clip">
+          @if (mediaItems().length > 0) {
+            <app-media-carousel
+              [media]="mediaItems()"
+              [alt]="post()!.title || 'Post media'"
+            ></app-media-carousel>
+          }
+        </div>
+
+        <ion-avatar class="post-avatar" (click)="navigateToCreator()">
+          <img
+            [src]="post()!.author.profileImageUrl || 'assets/default-avatar.svg'"
+            [alt]="post()!.author.displayName"
+            loading="lazy"
+          />
+        </ion-avatar>
+      </div>
+
+      <!-- Creator row: text below the avatar, matching feed card layout -->
+      <div class="creator-row" (click)="navigateToCreator()">
+        <div class="creator-info">
+          <span class="creator-name">
+            {{ post()!.author.displayName }}
+            @if (post()!.author.isVerified) {
+              <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
+            }
+          </span>
+          @if (post()!.author.bodyProfile; as bp) {
+            <span class="body-info">
+              {{ bp.heightRange }} · {{ bp.bodyTypeName }}
+            </span>
+          }
+        </div>
       </div>
 
       <div class="content-section">
-        <div class="creator-row" (click)="navigateToCreator()">
-          <ion-avatar>
-            <img [src]="post()!.creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="post()!.creator.displayName" loading="lazy" />
-          </ion-avatar>
-          <div class="creator-info">
-            <span class="creator-name">
-              {{ post()!.creator.displayName }}
-              @if (post()!.creator.isVerified) {
-                <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
-              }
-            </span>
-            @if (post()!.creator.bodyProfile; as bp) {
-              <span class="body-info">
-                {{ bp.heightRange }} ·
-                {{ bp.weightRange }} ·
-                {{ bp.bodyTypeName }}
-              </span>
-            }
-          </div>
-        </div>
-
         <div class="engagement-actions">
           <ion-button fill="clear" (click)="toggleLike()">
             <ion-icon
@@ -86,6 +94,7 @@
           [postId]="post()!.id"
         ></app-shop-the-look>
       </div>
+
     </div>
   }
 </ion-content>

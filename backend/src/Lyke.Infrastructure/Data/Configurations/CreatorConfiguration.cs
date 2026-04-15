@@ -34,7 +34,8 @@ public class CreatorConfiguration : IEntityTypeConfiguration<Creator>
             .HasMany(c => c.Posts)
             .WithOne(p => p.Creator)
             .HasForeignKey(p => p.CreatorId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder
             .HasOne(c => c.VerificationReviewedByUser)

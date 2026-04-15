@@ -9,7 +9,7 @@ public static class MediaEndpointRoutes
     {
         var group = app.MapGroup("/api/media/v1")
             .WithTags("Media")
-            .RequireAuthorization("CreatorOnly")
+            .RequireAuthorization("ContentAuthor")
             .DisableAntiforgery();
 
         group

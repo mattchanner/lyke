@@ -12,27 +12,27 @@
     <div class="loading-container">
       <ion-spinner name="crescent"></ion-spinner>
     </div>
-  } @else if (creators().length === 0) {
+  } @else if (users().length === 0) {
     <div class="empty-state">
       <h3>Not following anyone</h3>
-      <p>Creators you follow will appear here.</p>
+      <p>People you follow will appear here.</p>
     </div>
   } @else {
     <ion-list>
-      @for (creator of creators(); track creator.creatorId) {
-        <ion-item [routerLink]="['/profile/creator', creator.creatorId]" detail>
+      @for (user of users(); track user.userId) {
+        <ion-item [routerLink]="['/profile/user', user.userId]" detail>
           <ion-avatar slot="start">
-            <img [src]="creator.profileImageUrl || 'assets/default-avatar.svg'" [alt]="creator.displayName" />
+            <img [src]="user.profileImageUrl || 'assets/default-avatar.svg'" [alt]="user.displayName" />
           </ion-avatar>
           <ion-label>
             <h2>
-              {{ creator.displayName }}
-              @if (creator.isVerified) {
+              {{ user.displayName }}
+              @if (user.isVerified) {
                 <ion-icon name="checkmark-circle" color="primary"></ion-icon>
               }
             </h2>
           </ion-label>
-          <ion-button fill="outline" size="small" slot="end" (click)="unfollow(creator.creatorId); $event.stopPropagation()">
+          <ion-button fill="outline" size="small" slot="end" (click)="unfollow(user.userId); $event.stopPropagation()">
             Unfollow
           </ion-button>
         </ion-item>

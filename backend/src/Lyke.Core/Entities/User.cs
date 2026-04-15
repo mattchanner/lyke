@@ -6,6 +6,7 @@ namespace Lyke.Core.Entities;
 public class User : IdentityUser<Guid>
 {
     public UserType UserType { get; set; }
+    public string? DisplayName { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -28,6 +29,7 @@ public class User : IdentityUser<Guid>
     public Retailer? Retailer { get; set; }
     public ICollection<Engagement> Engagements { get; set; } = new List<Engagement>();
     public ICollection<ClickEvent> ClickEvents { get; set; } = new List<ClickEvent>();
+    public ICollection<Post> AuthoredPosts { get; set; } = new List<Post>();
     public ICollection<UserFollow> Following { get; set; } = new List<UserFollow>();
     public ICollection<UserFollow> Followers { get; set; } = new List<UserFollow>();
 }

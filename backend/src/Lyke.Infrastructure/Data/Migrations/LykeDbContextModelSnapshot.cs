@@ -813,10 +813,13 @@ namespace Lyke.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("AuthorUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("CreatorId")
+                    b.Property<Guid?>("CreatorId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Description")
@@ -868,6 +871,9 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.HasIndex("Status", "PublishedAt")
                         .HasDatabaseName("IX_Posts_Status_PublishedAt");
+
+                    b.HasIndex("AuthorUserId", "Status", "PublishedAt")
+                        .HasDatabaseName("IX_Posts_AuthorUserId_Status_PublishedAt");
 
                     b.HasIndex("CreatorId", "Status", "PublishedAt")
                         .HasDatabaseName("IX_Posts_CreatorId_Status_PublishedAt");
@@ -1229,6 +1235,10 @@ namespace Lyke.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -1623,16 +1633,23 @@ namespace Lyke.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Lyke.Core.Entities.Post", b =>
                 {
+                    b.HasOne("Lyke.Core.Entities.User", "AuthorUser")
+                        .WithMany("AuthoredPosts")
+                        .HasForeignKey("AuthorUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Lyke.Core.Entities.Creator", "Creator")
                         .WithMany("Posts")
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Lyke.Core.Entities.User", "ModeratedByUser")
                         .WithMany()
                         .HasForeignKey("ModeratedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AuthorUser");
 
                     b.Navigation("Creator");
 
@@ -1871,6 +1888,8 @@ namespace Lyke.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Lyke.Core.Entities.User", b =>
                 {
+                    b.Navigation("AuthoredPosts");
+
                     b.Navigation("BodyProfile");
 
                     b.Navigation("ClickEvents");

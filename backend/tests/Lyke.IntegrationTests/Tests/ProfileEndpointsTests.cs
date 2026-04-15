@@ -76,7 +76,7 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
         );
 
         var newEmail = $"updated-{Guid.NewGuid()}@example.com";
-        var request = new UpdateProfileRequest(Email: newEmail);
+        var request = new UpdateProfileRequest(Email: newEmail, DisplayName: null);
 
         // Act
         var response = await _client.PutAsJsonAsync("/api/profile/v1/", request);
@@ -98,7 +98,7 @@ public class ProfileEndpointsTests : IClassFixture<LykeWebApplicationFactory>
     public async Task UpdateProfile_WithoutToken_ReturnsUnauthorized()
     {
         // Arrange
-        var request = new UpdateProfileRequest(Email: "test@example.com");
+        var request = new UpdateProfileRequest(Email: "test@example.com", DisplayName: null);
 
         // Act
         var response = await _client.PutAsJsonAsync("/api/profile/v1/", request);
