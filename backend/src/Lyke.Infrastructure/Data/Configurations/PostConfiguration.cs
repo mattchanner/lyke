@@ -32,6 +32,15 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder
             .HasIndex(p => new
             {
+                p.AuthorUserId,
+                p.Status,
+                p.PublishedAt,
+            })
+            .HasDatabaseName("IX_Posts_AuthorUserId_Status_PublishedAt");
+
+        builder
+            .HasIndex(p => new
+            {
                 p.CreatorId,
                 p.Status,
                 p.PublishedAt,

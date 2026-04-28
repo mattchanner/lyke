@@ -1,0 +1,224 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/my-posts"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Create Post</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <!-- 1. Media Section -->
+  <section class="media-section">
+    @if (hasMedia()) {
+      <app-media-carousel [media]="mediaItems()" alt="Post media"></app-media-carousel>
+
+      @if (uploadedMedia().length > 1) {
+        <div class="thumb-strip">
+          @for (media of uploadedMedia(); track media.mediaId; let i = $index) {
+            <div class="thumb-item">
+              <img [src]="media.thumbnailUrl" alt="" loading="lazy" />
+              <button class="thumb-remove" (click)="removeMedia(i)">
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </div>
+          }
+          <button class="thumb-add" (click)="fileInput.click()">
+            <ion-icon name="add-outline"></ion-icon>
+          </button>
+        </div>
+      } @else {
+        <ion-button fill="clear" size="small" class="add-more-btn" (click)="fileInput.click()">
+          <ion-icon name="add-outline" slot="start"></ion-icon>
+          Add more
+        </ion-button>
+      }
+    } @else {
+      <div class="hero-upload" (click)="fileInput.click()">
+        @if (isUploading()) {
+          <ion-spinner name="crescent" color="primary"></ion-spinner>
+          <p>Uploading...</p>
+        } @else {
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+          <p>Tap to add photos or video</p>
+        }
+      </div>
+    }
+
+    @if (isUploading() && hasMedia()) {
+      <div class="upload-overlay">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    }
+
+    <input
+      #fileInput
+      type="file"
+      [accept]="fileAccept"
+      [multiple]="fileMultiple"
+      (change)="onFileSelected($event)"
+      hidden
+    />
+  </section>
+
+  <!-- 2. Details -->
+  <section class="form-section">
+    <ion-item>
+      <ion-input
+        label="Title"
+        labelPlacement="stacked"
+        placeholder="Give your post a title (optional)"
+        [value]="title()"
+        (ionInput)="title.set($event.detail.value || '')"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-textarea
+        label="Description"
+        labelPlacement="stacked"
+        placeholder="Describe your outfit, styling tips... (optional)"
+        [value]="description()"
+        (ionInput)="description.set($event.detail.value || '')"
+        [autoGrow]="true"
+        [rows]="3"
+      ></ion-textarea>
+    </ion-item>
+  </section>
+
+  <!-- 3. Products -->
+  <section class="products-section">
+    <div class="section-header">
+      <h3>Products</h3>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <ion-item>
+        <ion-input
+          placeholder="Search products to tag..."
+          [value]="productSearchQuery()"
+          (ionInput)="productSearchQuery.set($event.detail.value || '')"
+          (keyup.enter)="searchProducts()"
+        ></ion-input>
+        <ion-button fill="clear" slot="end" (click)="searchProducts()" [disabled]="isSearching()">
+          @if (isSearching()) {
+            <ion-spinner name="crescent" slot="icon-only"></ion-spinner>
+          } @else {
+            <ion-icon name="search-outline" slot="icon-only"></ion-icon>
+          }
+        </ion-button>
+      </ion-item>
+    </div>
+
+    @if (searchResults().length > 0) {
+      <ion-list class="search-results">
+        @for (product of searchResults(); track product.id) {
+          <ion-item button (click)="addProduct(product)">
+            @if (product.imageUrls.length > 0) {
+              <img [src]="product.imageUrls[0]" class="result-thumb" slot="start" alt="Product" loading="lazy" />
+            }
+            <ion-label>
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.retailerName }} · {{ product.currency }}{{ product.price | number:'1.2-2' }}</p>
+            </ion-label>
+            <ion-icon name="add-outline" slot="end" color="primary"></ion-icon>
+          </ion-item>
+        }
+      </ion-list>
+    }
+
+    @if (taggedProducts().length === 0 && searchResults().length === 0) {
+      <ion-note class="empty-hint">Tag the products you're wearing so shoppers can find them.</ion-note>
+    }
+
+    @for (tp of taggedProducts(); track tp.product.id; let i = $index) {
+      <div class="tagged-product-card">
+        <div class="product-row">
+          @if (tp.product.imageUrls.length > 0) {
+            <img [src]="tp.product.imageUrls[0]" alt="" class="product-thumb" loading="lazy" />
+          }
+          <div class="product-info">
+            <span class="product-name">{{ tp.product.name }}</span>
+            <span class="product-retailer">{{ tp.product.retailerName }}</span>
+          </div>
+          <ion-button fill="clear" size="small" color="medium" (click)="removeProduct(i)">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+
+        <ion-item>
+          <ion-input
+            label="Size worn"
+            labelPlacement="stacked"
+            placeholder="e.g., M, 10, 32W"
+            [value]="tp.sizeWorn"
+            (ionInput)="updateProductSize(i, $event.detail.value || '')"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-select
+            label="Fit rating"
+            labelPlacement="stacked"
+            placeholder="How did it fit?"
+            [value]="tp.fitRating"
+            (ionChange)="updateProductFitRating(i, $any($event).detail.value)"
+          >
+            <ion-select-option [value]="FitRating.TooSmall">Too Small</ion-select-option>
+            <ion-select-option [value]="FitRating.SlightlySmall">Slightly Small</ion-select-option>
+            <ion-select-option [value]="FitRating.TrueToSize">True to Size</ion-select-option>
+            <ion-select-option [value]="FitRating.SlightlyLarge">Slightly Large</ion-select-option>
+            <ion-select-option [value]="FitRating.TooLarge">Too Large</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-item>
+          <ion-textarea
+            label="Fit notes"
+            labelPlacement="stacked"
+            placeholder="How does it fit? Sizing tips? (optional)"
+            [value]="tp.fitNotes"
+            (ionInput)="updateProductFitNotes(i, $event.detail.value || '')"
+            [autoGrow]="true"
+            [rows]="2"
+          ></ion-textarea>
+        </ion-item>
+
+        <ion-item>
+          <ion-textarea
+            label="Styling notes"
+            labelPlacement="stacked"
+            placeholder="How did you style it? (optional)"
+            [value]="tp.stylingNotes"
+            (ionInput)="updateProductStylingNotes(i, $event.detail.value || '')"
+            [autoGrow]="true"
+            [rows]="2"
+          ></ion-textarea>
+        </ion-item>
+      </div>
+    }
+  </section>
+</ion-content>
+
+<!-- Sticky Footer -->
+<ion-footer class="action-bar">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button fill="outline" [disabled]="!hasMedia() || isSubmitting()" (click)="saveAsDraft()">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Save Draft
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="solid" color="primary" [disabled]="!hasMedia() || isSubmitting()" (click)="submitForReview()">
+        @if (isSubmitting()) {
+          <ion-spinner name="crescent" slot="start"></ion-spinner>
+        } @else {
+          <ion-icon name="send-outline" slot="start"></ion-icon>
+        }
+        Submit
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

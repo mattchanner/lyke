@@ -1,50 +1,58 @@
 <ion-card [routerLink]="['/feed/post', post.id]">
-  <div class="media-container">
-    @if (mediaItems.length > 0) {
-      <app-media-carousel
-        [media]="mediaItems"
-        [alt]="post.title || 'Post image'"
-      ></app-media-carousel>
-    }
-    @if (post.similarityScore >= 0.8) {
-      <ion-chip class="similarity-badge" color="success">
-        <ion-label>{{ (post.similarityScore * 100).toFixed(0) }}% Match</ion-label>
-      </ion-chip>
-    }
+
+  <!-- media-wrapper allows avatar to overflow; media-clip handles image rounding/clipping -->
+  <div class="media-wrapper">
+    <div class="media-clip">
+      @if (mediaItems.length > 0) {
+        <app-media-carousel
+          [media]="mediaItems"
+          [alt]="post.title || 'Post image'"
+          [compact]="true"
+        ></app-media-carousel>
+      }
+      @if (post.similarityScore >= 0.8) {
+        <ion-chip class="similarity-badge" color="success">
+          <ion-label>{{ (post.similarityScore * 100).toFixed(0) }}% Match</ion-label>
+        </ion-chip>
+      }
+    </div>
+
+    <!-- Avatar sits here so it can extend below media-clip without being clipped -->
+    <ion-avatar class="post-avatar" (click)="navigateToCreator($event)">
+      <img
+        [src]="post.author.profileImageUrl || 'assets/default-avatar.svg'"
+        [alt]="post.author.displayName"
+      />
+    </ion-avatar>
+  </div>
+
+  <!-- Creator info row — text only, no avatar. Left padding reserves space for the avatar -->
+  <div class="creator-row" (click)="navigateToCreator($event)">
+    <div class="creator-info">
+      <span class="creator-name">
+        {{ post.author.displayName }}
+        @if (post.author.isVerified) {
+          <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
+        }
+      </span>
+      @if (post.author.bodyProfile) {
+        <span class="body-info">
+          {{ post.author.bodyProfile.heightRange }} ·
+          {{ post.author.bodyProfile.bodyTypeName }}
+        </span>
+      }
+    </div>
+    <ion-button
+      fill="outline"
+      size="small"
+      class="follow-btn"
+      (click)="toggleFollow($event)"
+    >
+      {{ followService.isFollowing(post.author.userId) ? 'Following' : 'Follow' }}
+    </ion-button>
   </div>
 
   <ion-card-content>
-    <div class="creator-row" (click)="navigateToCreator($event)">
-      <ion-avatar>
-        <img
-          [src]="post.creator.profileImageUrl || 'assets/default-avatar.svg'"
-          [alt]="post.creator.displayName"
-        />
-      </ion-avatar>
-      <div class="creator-info">
-        <span class="creator-name">
-          {{ post.creator.displayName }}
-          @if (post.creator.isVerified) {
-            <ion-icon name="checkmark-circle-outline" color="primary"></ion-icon>
-          }
-        </span>
-        @if (post.creator.bodyProfile) {
-          <span class="body-info">
-            {{ post.creator.bodyProfile.heightRange }} ·
-            {{ post.creator.bodyProfile.bodyTypeName }}
-          </span>
-        }
-      </div>
-      <ion-button
-        fill="clear"
-        size="small"
-        class="follow-btn"
-        (click)="toggleFollow($event)"
-      >
-        {{ followService.isFollowing(post.creator.id) ? 'Following' : 'Follow' }}
-      </ion-button>
-    </div>
-
     @if (post.title) {
       <p class="post-title">{{ post.title }}</p>
     }

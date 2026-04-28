@@ -42,6 +42,8 @@ export class MediaCarouselComponent {
   @Input() alt = 'Media';
   @Input() showFullscreenButton = false;
   @Input() autoplay = false;
+  /** Use thumbnail URLs for image src — suitable for card/list views */
+  @Input() compact = false;
 
   @Output() mediaClicked = new EventEmitter<number>();
   @Output() fullscreenRequested = new EventEmitter<number>();

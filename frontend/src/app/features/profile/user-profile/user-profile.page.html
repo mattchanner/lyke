@@ -1,0 +1,74 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/feed"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Profile</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (isLoading()) {
+    <div class="loading-container">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+  } @else if (profile()) {
+    <div class="profile-header">
+      <ion-avatar class="profile-avatar">
+        <img [src]="profile()!.profileImageUrl || 'assets/default-avatar.svg'" [alt]="profile()!.displayName" />
+      </ion-avatar>
+
+      <h2 class="display-name">
+        {{ profile()!.displayName }}
+        @if (profile()!.isVerified) {
+          <ion-icon name="checkmark-circle" color="primary"></ion-icon>
+        }
+      </h2>
+
+      @if (profile()!.bio) {
+        <p class="bio">{{ profile()!.bio }}</p>
+      }
+
+      <div class="stats-row">
+        <div class="stat">
+          <strong>{{ profile()!.publishedPostCount }}</strong>
+          <span>Posts</span>
+        </div>
+        <div class="stat">
+          <strong>{{ profile()!.followerCount }}</strong>
+          <span>Followers</span>
+        </div>
+      </div>
+
+      @if (profile()!.bodyProfile) {
+        <div class="body-info">
+          <ion-chip>
+            <ion-label>{{ profile()!.bodyProfile!.heightRange }}</ion-label>
+          </ion-chip>
+          <ion-chip>
+            <ion-label>{{ profile()!.bodyProfile!.bodyTypeName }}</ion-label>
+          </ion-chip>
+        </div>
+      }
+
+      <ion-button
+        [fill]="followService.isFollowing(profile()!.userId) ? 'outline' : 'solid'"
+        expand="block"
+        (click)="toggleFollow()"
+      >
+        {{ followService.isFollowing(profile()!.userId) ? 'Following' : 'Follow' }}
+      </ion-button>
+    </div>
+
+    <div class="posts-section">
+      @for (post of posts(); track post.id) {
+        <app-post-card [post]="post"></app-post-card>
+      }
+      @if (posts().length === 0) {
+        <div class="empty-state">
+          <p>No posts yet.</p>
+        </div>
+      }
+    </div>
+  }
+</ion-content>

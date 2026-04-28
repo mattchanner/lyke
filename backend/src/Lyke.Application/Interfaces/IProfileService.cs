@@ -41,6 +41,12 @@ public interface IProfileService
     );
     Task DeleteProfileImageAsync(Guid userId, CancellationToken cancellationToken = default);
 
+    // Public user profile
+    Task<PublicUserProfileResponse> GetPublicUserProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+
     // Anonymized profile for display to other users
     Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(
         Guid userId,

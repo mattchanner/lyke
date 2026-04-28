@@ -12,7 +12,7 @@ public record ModerationQueueItemResponse(
     PostStatus Status,
     DateTime CreatedAt,
     DateTime? SubmittedAt,
-    CreatorSummary Creator,
+    AuthorSummary Author,
     List<PostProductSummary> Products,
     int ReportCount,
     ReportReason? TopReportReason,

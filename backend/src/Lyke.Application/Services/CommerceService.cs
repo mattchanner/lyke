@@ -408,18 +408,16 @@ public class CommerceService : ICommerceService
                 p.Status == PostStatus.Published
                 && p.PostProducts.Any(pp => pp.ProductId == productId)
             )
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile)
+                    .ThenInclude(bp => bp!.BodyType)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FrameSize)
+            .Include(p => p.AuthorUser)
+                .ThenInclude(u => u.BodyProfile!)
+                    .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile)
-                        .ThenInclude(bp => bp!.BodyType)
-            .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile!)
-                        .ThenInclude(bp => bp.FrameSize)
-            .Include(p => p.Creator)
-                .ThenInclude(c => c.User)
-                    .ThenInclude(u => u.BodyProfile!)
-                        .ThenInclude(bp => bp.FitPreferences)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
                     .ThenInclude(prod => prod.Retailer)
@@ -496,7 +494,7 @@ public class CommerceService : ICommerceService
         var creatorEarning = new CreatorEarning
         {
             Id = Guid.NewGuid(),
-            CreatorId = clickEvent.PostProduct.Post.CreatorId,
+            CreatorId = clickEvent.PostProduct.Post.CreatorId!.Value,
             ClickEventId = clickId,
             EarningType = EarningType.Affiliate,
             Amount = request.CommissionAmount * _settings.CreatorCommissionShare,
@@ -668,32 +666,35 @@ public class CommerceService : ICommerceService
             new HashSet<EngagementType>()
         );
 
-        var creatorBodyProfile = post.Creator.User.BodyProfile;
+        var authorUser = post.AuthorUser;
+        var authorBodyProfile = authorUser.BodyProfile;
         AnonymizedBodyProfileResponse? anonymizedProfile = null;
-        if (creatorBodyProfile != null)
+        if (authorBodyProfile != null)
         {
             anonymizedProfile = new AnonymizedBodyProfileResponse(
-                BodyProfileHelper.GetHeightRange(creatorBodyProfile.HeightCm),
-                BodyProfileHelper.GetWeightRange(creatorBodyProfile.WeightKg),
-                creatorBodyProfile.BodyType.Name,
-                creatorBodyProfile.FrameSize?.Name,
-                creatorBodyProfile.Stature,
-                creatorBodyProfile.Build,
+                BodyProfileHelper.GetHeightRange(authorBodyProfile.HeightCm),
+                BodyProfileHelper.GetWeightRange(authorBodyProfile.WeightKg),
+                authorBodyProfile.BodyType.Name,
+                authorBodyProfile.FrameSize?.Name,
+                authorBodyProfile.Stature,
+                authorBodyProfile.Build,
                 BodyProfileHelper.FormatBodyTypeLabel(
-                    creatorBodyProfile.Stature,
-                    creatorBodyProfile.Build,
-                    creatorBodyProfile.BodyType.Name
+                    authorBodyProfile.Stature,
+                    authorBodyProfile.Build,
+                    authorBodyProfile.BodyType.Name
                 ),
-                creatorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
+                authorBodyProfile.FitPreferences.Select(fp => fp.FitPreference).ToList()
             );
         }
 
-        var creator = new CreatorSummaryResponse(
-            post.Creator.Id,
-            post.Creator.DisplayName,
-            post.Creator.IsVerified,
+        var author = new AuthorSummaryResponse(
+            post.AuthorUserId,
+            post.CreatorId,
+            post.Creator?.DisplayName ?? authorUser.DisplayName ?? authorUser.UserName!,
+            post.Creator?.IsVerified ?? false,
+            authorUser.UserType,
             anonymizedProfile,
-            post.Creator.User.ProfileImageUrl
+            authorUser.ProfileImageUrl
         );
 
         var products = post
@@ -718,7 +719,7 @@ public class CommerceService : ICommerceService
             post.MediaType,
             ParseMediaUrls(post.MediaUrls),
             ParseMediaUrls(post.ThumbnailUrls),
-            creator,
+            author,
             products,
             engagementCounts,
             0,

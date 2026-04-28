@@ -8,7 +8,30 @@ import {
 } from '../enums';
 import { AnonymizedBodyProfileResponse } from '../profile';
 
-// Creator summaries
+// Author summaries (generalised from creator-only)
+export interface AuthorSummaryResponse {
+  userId: string;
+  creatorId: string | null;
+  displayName: string;
+  isVerified: boolean;
+  userType: string;
+  bodyProfile: AnonymizedBodyProfileResponse | null;
+  profileImageUrl: string | null;
+}
+
+export interface AuthorDetailResponse {
+  userId: string;
+  creatorId: string | null;
+  displayName: string;
+  bio: string | null;
+  isVerified: boolean;
+  userType: string;
+  bodyProfile: AnonymizedBodyProfileResponse | null;
+  totalPosts: number;
+  profileImageUrl: string | null;
+}
+
+// Legacy creator summaries (used by creator-only endpoints)
 export interface CreatorSummaryResponse {
   id: string;
   displayName: string;
@@ -91,7 +114,7 @@ export interface FeedPostResponse {
   mediaType: MediaType;
   mediaUrls: string[];
   thumbnailUrls: string[];
-  creator: CreatorSummaryResponse;
+  author: AuthorSummaryResponse;
   products: PostProductSummaryResponse[];
   engagements: EngagementCountsResponse;
   similarityScore: number;
@@ -108,7 +131,7 @@ export interface PostDetailResponse {
   mediaType: MediaType;
   mediaUrls: string[];
   thumbnailUrls: string[];
-  creator: CreatorDetailResponse;
+  author: AuthorDetailResponse;
   products: PostProductDetailResponse[];
   engagements: EngagementCountsResponse;
   similarityScore: number;

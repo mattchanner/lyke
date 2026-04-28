@@ -10,6 +10,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.Property(u => u.UserType).HasConversion<string>().HasMaxLength(20);
 
+        builder.Property(u => u.DisplayName).HasMaxLength(100);
+
         builder.Property(u => u.SuspensionReason).HasMaxLength(500);
 
         builder.Property(u => u.PrivacyPolicyVersion).HasMaxLength(20);
@@ -36,6 +38,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasOne(u => u.StyleProfile)
             .WithOne(sp => sp.User)
             .HasForeignKey<StyleProfile>(sp => sp.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasMany(u => u.AuthoredPosts)
+            .WithOne(p => p.AuthorUser)
+            .HasForeignKey(p => p.AuthorUserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Index for finding suspended/active users

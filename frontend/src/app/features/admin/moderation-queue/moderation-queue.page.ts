@@ -158,7 +158,7 @@ export class ModerationQueuePage implements OnInit {
   async onApprove(item: ModerationQueueItemResponse): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Approve Post',
-      message: `Approve "${item.title || 'Untitled'}" by ${item.creator.displayName}?`,
+      message: `Approve "${item.title || 'Untitled'}" by ${item.author.displayName}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
@@ -175,7 +175,7 @@ export class ModerationQueuePage implements OnInit {
   async onReject(item: ModerationQueueItemResponse): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Reject Post',
-      message: `Reject "${item.title || 'Untitled'}" by ${item.creator.displayName}?`,
+      message: `Reject "${item.title || 'Untitled'}" by ${item.author.displayName}?`,
       inputs: [
         {
           name: 'reason',

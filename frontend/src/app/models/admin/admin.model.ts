@@ -19,14 +19,16 @@ export interface PendingPostResponse {
   status: PostStatus;
   createdAt: string;
   submittedAt: string | null;
-  creator: CreatorSummary;
+  author: AdminAuthorSummary;
   products: PostProductSummary[];
 }
 
-export interface CreatorSummary {
-  id: string;
+export interface AdminAuthorSummary {
+  userId: string;
+  creatorId: string | null;
   displayName: string;
   isVerified: boolean;
+  userType: UserType;
   totalPosts: number;
   publishedPosts: number;
 }
@@ -222,7 +224,7 @@ export interface ModerationQueueItemResponse {
   status: PostStatus;
   createdAt: string;
   submittedAt: string | null;
-  creator: CreatorSummary;
+  author: AdminAuthorSummary;
   products: PostProductSummary[];
   reportCount: number;
   topReportReason: ReportReason | null;
@@ -241,7 +243,7 @@ export interface PostReviewData {
   status: PostStatus;
   createdAt: string;
   submittedAt: string | null;
-  creator: CreatorSummary;
+  author: AdminAuthorSummary;
   products: PostProductSummary[];
   // Optional — present on moderation-queue items
   reportCount?: number;

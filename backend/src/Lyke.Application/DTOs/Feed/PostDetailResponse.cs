@@ -10,7 +10,7 @@ public record PostDetailResponse(
     MediaType MediaType,
     List<string> MediaUrls,
     List<string> ThumbnailUrls,
-    CreatorDetailResponse Creator,
+    AuthorDetailResponse Author,
     List<PostProductDetailResponse> Products,
     EngagementCountsResponse Engagements,
     double SimilarityScore,

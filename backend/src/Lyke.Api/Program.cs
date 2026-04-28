@@ -12,6 +12,7 @@ using Lyke.Api.Endpoints.Feed;
 using Lyke.Api.Endpoints.Follow;
 using Lyke.Api.Endpoints.Lookup;
 using Lyke.Api.Endpoints.Media;
+using Lyke.Api.Endpoints.PostAuthor;
 using Lyke.Api.Endpoints.Posts;
 using Lyke.Api.Endpoints.Privacy;
 using Lyke.Api.Endpoints.Profile;
@@ -111,6 +112,17 @@ builder.Services.AddAuthorization(options =>
             policy.RequireAssertion(context =>
                 context.User.HasClaim(c =>
                     c.Type == "user_type" && (c.Value == "Creator" || c.Value == "Admin")
+                )
+            )
+    );
+
+    options.AddPolicy(
+        "ContentAuthor",
+        policy =>
+            policy.RequireAssertion(context =>
+                context.User.HasClaim(c =>
+                    c.Type == "user_type"
+                    && (c.Value == "Shopper" || c.Value == "Creator" || c.Value == "Admin")
                 )
             )
     );
@@ -277,6 +289,7 @@ app.MapProfileEndpoints();
 app.MapLookupEndpoints();
 app.MapFeedEndpoints();
 app.MapPostEndpoints();
+app.MapPostAuthorEndpoints();
 app.MapSearchEndpoints();
 app.MapCommerceEndpoints();
 app.MapCreatorEndpoints();

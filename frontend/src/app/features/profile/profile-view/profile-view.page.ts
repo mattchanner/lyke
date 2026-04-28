@@ -10,7 +10,6 @@ import {
   IonButton,
   IonIcon,
   IonButtons,
-  IonSpinner,
   IonList,
   IonItem,
   IonLabel,
@@ -32,6 +31,7 @@ import {
   cameraOutline,
   closeOutline,
   sparklesOutline,
+  imagesOutline,
 } from 'ionicons/icons';
 import { ViewWillEnter } from '@ionic/angular';
 import { ApiService, AuthService, AnalyticsService, ProfileStateService } from '../../../core';
@@ -52,7 +52,6 @@ import { SkeletonProfileComponent } from '../../../shared/components/loading-ske
     IonButton,
     IonIcon,
     IonButtons,
-    IonSpinner,
     IonList,
     IonItem,
     IonLabel,
@@ -99,6 +98,7 @@ export class ProfileViewPage implements OnInit, ViewWillEnter {
       cameraOutline,
       closeOutline,
       sparklesOutline,
+      imagesOutline,
     });
   }
 

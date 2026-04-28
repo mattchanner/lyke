@@ -75,13 +75,13 @@
         <div class="detail-section">
           <strong>Creator</strong>
           <p>
-            {{ post.creator.displayName }}
-            @if (post.creator.isVerified) {
+            {{ post.author.displayName }}
+            @if (post.author.isVerified) {
               <ion-icon name="checkmark-circle-outline" color="primary" class="verified-icon"></ion-icon>
             }
           </p>
           <p class="meta">
-            {{ post.creator.publishedPosts }} / {{ post.creator.totalPosts }} posts published
+            {{ post.author.publishedPosts }} / {{ post.author.totalPosts }} posts published
           </p>
         </div>
 

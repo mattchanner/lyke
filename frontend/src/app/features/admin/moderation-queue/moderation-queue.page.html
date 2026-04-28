@@ -31,8 +31,8 @@
             {{ item.priority }}
           </div>
           <ion-thumbnail slot="start">
-            @if (item.mediaUrls?.length) {
-              <img [src]="item.thumbnailUrls?.[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" loading="lazy" />
+            @if (item.mediaUrls.length) {
+              <img [src]="item.thumbnailUrls[0] || item.mediaUrls[0]" [alt]="item.title || 'Post'" loading="lazy" />
             } @else {
               <div class="no-media">
                 <ion-icon
@@ -53,7 +53,7 @@
                 <ion-icon name="flag-outline" color="danger" class="flag-icon"></ion-icon>
               }
             </h2>
-            <p>By {{ item.creator.displayName }}</p>
+            <p>By {{ item.author.displayName }}</p>
             <p>
               @if (item.reportCount > 0) {
                 <ion-badge color="danger" class="report-badge">{{ item.reportCount }} report{{ item.reportCount > 1 ? 's' : '' }}</ion-badge>
@@ -85,13 +85,13 @@
               <div class="detail-section">
                 <strong>Creator</strong>
                 <p>
-                  {{ item.creator.displayName }}
-                  @if (item.creator.isVerified) {
+                  {{ item.author.displayName }}
+                  @if (item.author.isVerified) {
                     <ion-badge color="primary">Verified</ion-badge>
                   }
                 </p>
                 <p class="meta">
-                  {{ item.creator.publishedPosts }} / {{ item.creator.totalPosts }} posts published
+                  {{ item.author.publishedPosts }} / {{ item.author.totalPosts }} posts published
                 </p>
               </div>
 
@@ -109,7 +109,7 @@
                 </p>
               </div>
 
-              @if (item.products?.length) {
+              @if (item.products.length) {
                 <div class="detail-section">
                   <strong>Products Tagged ({{ item.products.length }})</strong>
                   @for (product of item.products; track product.productId) {

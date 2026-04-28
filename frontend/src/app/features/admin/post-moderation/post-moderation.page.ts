@@ -187,7 +187,7 @@ export class PostModerationPage implements OnInit {
   async onApprove(post: PendingPostResponse): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Approve Post',
-      message: `Approve "${post.title || 'Untitled'}" by ${post.creator.displayName}?`,
+      message: `Approve "${post.title || 'Untitled'}" by ${post.author.displayName}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
         {
@@ -204,7 +204,7 @@ export class PostModerationPage implements OnInit {
   async onReject(post: PendingPostResponse): Promise<void> {
     const alert = await this.alertController.create({
       header: 'Reject Post',
-      message: `Reject "${post.title || 'Untitled'}" by ${post.creator.displayName}?`,
+      message: `Reject "${post.title || 'Untitled'}" by ${post.author.displayName}?`,
       inputs: [
         {
           name: 'reason',

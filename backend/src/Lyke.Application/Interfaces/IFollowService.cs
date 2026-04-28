@@ -30,4 +30,34 @@ public interface IFollowService
         Guid userId,
         CancellationToken cancellationToken = default
     );
+
+    // User-based follow methods (works for any user, not just creators)
+    Task FollowUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    );
+    Task UnfollowUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    );
+    Task<bool> IsFollowingUserAsync(
+        Guid followerUserId,
+        Guid followedUserId,
+        CancellationToken cancellationToken = default
+    );
+    Task<HashSet<Guid>> GetFollowedUserIdsAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    );
+    Task<(
+        IReadOnlyList<FollowedUserResponse> Users,
+        PaginationMeta Meta
+    )> GetFollowingUsersAsync(
+        Guid userId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default
+    );
 }

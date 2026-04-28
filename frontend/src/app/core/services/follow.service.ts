@@ -4,55 +4,55 @@ import { ApiService } from './api.service';
 @Injectable({ providedIn: 'root' })
 export class FollowService {
   private readonly api = inject(ApiService);
-  private readonly followedCreatorIds = signal<Set<string>>(new Set());
+  private readonly followedUserIds = signal<Set<string>>(new Set());
 
-  isFollowing(creatorId: string): boolean {
-    return this.followedCreatorIds().has(creatorId);
+  isFollowing(userId: string): boolean {
+    return this.followedUserIds().has(userId);
   }
 
-  follow(creatorId: string): void {
-    this.followedCreatorIds.update(set => {
+  follow(userId: string): void {
+    this.followedUserIds.update(set => {
       const next = new Set(set);
-      next.add(creatorId);
+      next.add(userId);
       return next;
     });
 
-    this.api.post('creators', `${creatorId}/follow`, {}).subscribe({
+    this.api.post('users', `${userId}/follow`, {}).subscribe({
       error: () => {
-        this.followedCreatorIds.update(set => {
+        this.followedUserIds.update(set => {
           const next = new Set(set);
-          next.delete(creatorId);
+          next.delete(userId);
           return next;
         });
       },
     });
   }
 
-  unfollow(creatorId: string): void {
-    this.followedCreatorIds.update(set => {
+  unfollow(userId: string): void {
+    this.followedUserIds.update(set => {
       const next = new Set(set);
-      next.delete(creatorId);
+      next.delete(userId);
       return next;
     });
 
-    this.api.delete('creators', `${creatorId}/follow`, {}).subscribe({
+    this.api.delete('users', `${userId}/follow`, {}).subscribe({
       error: () => {
-        this.followedCreatorIds.update(set => {
+        this.followedUserIds.update(set => {
           const next = new Set(set);
-          next.add(creatorId);
+          next.add(userId);
           return next;
         });
       },
     });
   }
 
-  checkFollowStatus(creatorId: string): void {
-    this.api.get<boolean>('creators', `${creatorId}/follow-status`).subscribe({
+  checkFollowStatus(userId: string): void {
+    this.api.get<boolean>('users', `${userId}/follow-status`).subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.followedCreatorIds.update(set => {
+          this.followedUserIds.update(set => {
             const next = new Set(set);
-            next.add(creatorId);
+            next.add(userId);
             return next;
           });
         }
@@ -60,13 +60,13 @@ export class FollowService {
     });
   }
 
-  syncFromFeed(posts: Array<{ creator: { id: string }; isFollowing: boolean }>): void {
-    const followed = new Set(this.followedCreatorIds());
+  syncFromFeed(posts: Array<{ author: { userId: string }; isFollowing: boolean }>): void {
+    const followed = new Set(this.followedUserIds());
     for (const post of posts) {
       if (post.isFollowing) {
-        followed.add(post.creator.id);
+        followed.add(post.author.userId);
       }
     }
-    this.followedCreatorIds.set(followed);
+    this.followedUserIds.set(followed);
   }
 }

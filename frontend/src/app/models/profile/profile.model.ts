@@ -4,6 +4,7 @@ import { FitPreference, UserType } from '../enums';
 export interface UserProfileResponse {
   id: string;
   email: string;
+  displayName: string | null;
   userType: UserType;
   hasBodyProfile: boolean;
   profileCompleteness: number;
@@ -61,6 +62,21 @@ export interface FitPreferenceResponse {
 // Requests
 export interface UpdateProfileRequest {
   email?: string;
+  displayName?: string | null;
+}
+
+export interface PublicUserProfileResponse {
+  userId: string;
+  displayName: string;
+  bio: string | null;
+  isVerified: boolean;
+  userType: UserType;
+  creatorId: string | null;
+  bodyProfile: AnonymizedBodyProfileResponse | null;
+  profileImageUrl: string | null;
+  publishedPostCount: number;
+  followerCount: number;
+  joinedAt: string;
 }
 
 export interface CreateBodyProfileRequest {

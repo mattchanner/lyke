@@ -62,8 +62,8 @@
             ></ion-checkbox>
           }
           <ion-thumbnail slot="start">
-            @if (post.mediaUrls?.length) {
-              <img [src]="post.thumbnailUrls?.[0] || post.mediaUrls[0]" [alt]="post.title || 'Post'" loading="lazy" />
+            @if (post.mediaUrls.length) {
+              <img [src]="post.thumbnailUrls[0] || post.mediaUrls[0]" [alt]="post.title || 'Post'" loading="lazy" />
             } @else {
               <div class="no-media">
                 <ion-icon
@@ -74,7 +74,7 @@
           </ion-thumbnail>
           <ion-label>
             <h2>{{ post.title || 'Untitled' }}</h2>
-            <p>By {{ post.creator.displayName }}</p>
+            <p>By {{ post.author.displayName }}</p>
             <p>
               <ion-note>{{ formatDate(post.submittedAt || post.createdAt) }}</ion-note>
             </p>
@@ -103,17 +103,17 @@
               <div class="detail-section">
                 <strong>Creator</strong>
                 <p>
-                  {{ post.creator.displayName }}
-                  @if (post.creator.isVerified) {
+                  {{ post.author.displayName }}
+                  @if (post.author.isVerified) {
                     <ion-badge color="primary">Verified</ion-badge>
                   }
                 </p>
                 <p class="meta">
-                  {{ post.creator.publishedPosts }} / {{ post.creator.totalPosts }} posts published
+                  {{ post.author.publishedPosts }} / {{ post.author.totalPosts }} posts published
                 </p>
               </div>
 
-              @if (post.products?.length) {
+              @if (post.products.length) {
                 <div class="detail-section">
                   <strong>Products Tagged ({{ post.products.length }})</strong>
                   @for (product of post.products; track product.productId) {

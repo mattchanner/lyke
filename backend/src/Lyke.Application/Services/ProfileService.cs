@@ -63,6 +63,7 @@ public class ProfileService : IProfileService
         return new UserProfileResponse(
             Id: user.Id,
             Email: user.Email!,
+            DisplayName: user.DisplayName,
             UserType: user.UserType,
             HasBodyProfile: user.BodyProfile != null,
             ProfileCompleteness: completeness,
@@ -100,6 +101,13 @@ public class ProfileService : IProfileService
             user.UserName = request.Email;
             user.NormalizedEmail = request.Email.ToUpperInvariant();
             user.NormalizedUserName = request.Email.ToUpperInvariant();
+        }
+
+        if (request.DisplayName != null)
+        {
+            user.DisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
+                ? null
+                : request.DisplayName.Trim();
         }
 
         await _userManager.UpdateAsync(user);
@@ -174,6 +182,7 @@ public class ProfileService : IProfileService
         return new UserProfileResponse(
             Id: user.Id,
             Email: user.Email!,
+            DisplayName: user.DisplayName,
             UserType: user.UserType,
             HasBodyProfile: user.BodyProfile != null,
             ProfileCompleteness: completeness,
@@ -447,6 +456,73 @@ public class ProfileService : IProfileService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Body profile deleted for user {UserId}", userId);
+    }
+
+    public async Task<PublicUserProfileResponse> GetPublicUserProfileAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var user = await _userManager
+            .Users.Include(u => u.Creator)
+            .Include(u => u.BodyProfile)
+                .ThenInclude(bp => bp!.BodyType)
+            .Include(u => u.BodyProfile!)
+                .ThenInclude(bp => bp.FrameSize)
+            .Include(u => u.BodyProfile!)
+                .ThenInclude(bp => bp.FitPreferences)
+            .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (user == null)
+        {
+            throw new NotFoundException(nameof(User), userId);
+        }
+
+        AnonymizedBodyProfileResponse? bodyProfile = null;
+        if (user.BodyProfile != null)
+        {
+            bodyProfile = new AnonymizedBodyProfileResponse(
+                HeightRange: BodyProfileHelper.GetHeightRange(user.BodyProfile.HeightCm),
+                WeightRange: BodyProfileHelper.GetWeightRange(user.BodyProfile.WeightKg),
+                BodyTypeName: user.BodyProfile.BodyType.Name,
+                FrameSizeName: user.BodyProfile.FrameSize?.Name,
+                Stature: user.BodyProfile.Stature,
+                Build: user.BodyProfile.Build,
+                BodyTypeLabel: BodyProfileHelper.FormatBodyTypeLabel(
+                    user.BodyProfile.Stature,
+                    user.BodyProfile.Build,
+                    user.BodyProfile.BodyType.Name
+                ),
+                FitPreferences: user.BodyProfile.FitPreferences
+                    .Select(fp => fp.FitPreference)
+                    .ToList()
+            );
+        }
+
+        var publishedPostCount = await _dbContext
+            .Set<Post>()
+            .CountAsync(
+                p => p.AuthorUserId == userId && p.Status == PostStatus.Published,
+                cancellationToken
+            );
+
+        var followerCount = await _dbContext
+            .Set<UserFollow>()
+            .CountAsync(uf => uf.FollowedUserId == userId, cancellationToken);
+
+        return new PublicUserProfileResponse(
+            UserId: user.Id,
+            DisplayName: user.Creator?.DisplayName ?? user.DisplayName ?? user.UserName!,
+            Bio: user.Creator?.Bio,
+            IsVerified: user.Creator?.IsVerified ?? false,
+            UserType: user.UserType,
+            CreatorId: user.Creator?.Id,
+            BodyProfile: bodyProfile,
+            ProfileImageUrl: user.ProfileImageUrl,
+            PublishedPostCount: publishedPostCount,
+            FollowerCount: followerCount,
+            JoinedAt: user.CreatedAt
+        );
     }
 
     public async Task<AnonymizedBodyProfileResponse?> GetAnonymizedBodyProfileAsync(

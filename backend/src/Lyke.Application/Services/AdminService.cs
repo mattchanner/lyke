@@ -62,6 +62,7 @@ public class AdminService : IAdminService
         var totalCount = await query.CountAsync(cancellationToken);
 
         var posts = await query
+            .Include(p => p.AuthorUser)
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
@@ -71,14 +72,14 @@ public class AdminService : IAdminService
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        var creatorIds = posts.Select(p => p.CreatorId).Distinct().ToList();
-        var creatorPostCounts = await _dbContext
+        var authorUserIds = posts.Select(p => p.AuthorUserId).Distinct().ToList();
+        var authorPostCounts = await _dbContext
             .Set<Post>()
-            .Where(p => creatorIds.Contains(p.CreatorId))
-            .GroupBy(p => new { p.CreatorId, p.Status })
+            .Where(p => authorUserIds.Contains(p.AuthorUserId))
+            .GroupBy(p => new { p.AuthorUserId, p.Status })
             .Select(g => new
             {
-                g.Key.CreatorId,
+                g.Key.AuthorUserId,
                 g.Key.Status,
                 Count = g.Count(),
             })
@@ -87,12 +88,12 @@ public class AdminService : IAdminService
         var responses = posts
             .Select(p =>
             {
-                var creatorCounts = creatorPostCounts
-                    .Where(c => c.CreatorId == p.CreatorId)
+                var authorCounts = authorPostCounts
+                    .Where(c => c.AuthorUserId == p.AuthorUserId)
                     .ToList();
-                var totalPosts = creatorCounts.Sum(c => c.Count);
+                var totalPosts = authorCounts.Sum(c => c.Count);
                 var publishedPosts =
-                    creatorCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
+                    authorCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
 
                 return new PendingPostResponse(
                     Id: p.Id,
@@ -104,10 +105,14 @@ public class AdminService : IAdminService
                     Status: p.Status,
                     CreatedAt: p.CreatedAt,
                     SubmittedAt: p.UpdatedAt,
-                    Creator: new CreatorSummary(
-                        Id: p.Creator.Id,
-                        DisplayName: p.Creator.DisplayName,
-                        IsVerified: p.Creator.IsVerified,
+                    Author: new AuthorSummary(
+                        UserId: p.AuthorUserId,
+                        CreatorId: p.CreatorId,
+                        DisplayName: p.Creator?.DisplayName
+                            ?? p.AuthorUser.DisplayName
+                            ?? p.AuthorUser.UserName!,
+                        IsVerified: p.Creator?.IsVerified ?? false,
+                        UserType: p.AuthorUser.UserType,
                         TotalPosts: totalPosts,
                         PublishedPosts: publishedPosts
                     ),
@@ -140,6 +145,7 @@ public class AdminService : IAdminService
         var post = await _dbContext
             .Set<Post>()
             .AsNoTracking()
+            .Include(p => p.AuthorUser)
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
@@ -151,16 +157,16 @@ public class AdminService : IAdminService
             throw new NotFoundException(nameof(Post), postId);
         }
 
-        var creatorPostCounts = await _dbContext
+        var authorPostCounts = await _dbContext
             .Set<Post>()
-            .Where(p => p.CreatorId == post.CreatorId)
+            .Where(p => p.AuthorUserId == post.AuthorUserId)
             .GroupBy(p => p.Status)
             .Select(g => new { Status = g.Key, Count = g.Count() })
             .ToListAsync(cancellationToken);
 
-        var totalPosts = creatorPostCounts.Sum(c => c.Count);
+        var totalPosts = authorPostCounts.Sum(c => c.Count);
         var publishedPosts =
-            creatorPostCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
+            authorPostCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
 
         return new PendingPostResponse(
             Id: post.Id,
@@ -172,10 +178,14 @@ public class AdminService : IAdminService
             Status: post.Status,
             CreatedAt: post.CreatedAt,
             SubmittedAt: post.UpdatedAt,
-            Creator: new CreatorSummary(
-                Id: post.Creator.Id,
-                DisplayName: post.Creator.DisplayName,
-                IsVerified: post.Creator.IsVerified,
+            Author: new AuthorSummary(
+                UserId: post.AuthorUserId,
+                CreatorId: post.CreatorId,
+                DisplayName: post.Creator?.DisplayName
+                    ?? post.AuthorUser.DisplayName
+                    ?? post.AuthorUser.UserName!,
+                IsVerified: post.Creator?.IsVerified ?? false,
+                UserType: post.AuthorUser.UserType,
                 TotalPosts: totalPosts,
                 PublishedPosts: publishedPosts
             ),
@@ -240,22 +250,16 @@ public class AdminService : IAdminService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var creator = await _dbContext
-            .Set<Creator>()
-            .FirstOrDefaultAsync(c => c.Id == post.CreatorId, cancellationToken);
-        if (creator != null)
+        var authorUser = await _userManager.FindByIdAsync(post.AuthorUserId.ToString());
+        if (authorUser?.Email != null)
         {
-            var creatorUser = await _userManager.FindByIdAsync(creator.UserId.ToString());
-            if (creatorUser?.Email != null)
-            {
-                _ = _emailService.SendPostModerationResultAsync(
-                    creatorUser.Email,
-                    post.Title ?? "Untitled",
-                    request.Approve,
-                    request.RejectionReason,
-                    cancellationToken
-                );
-            }
+            _ = _emailService.SendPostModerationResultAsync(
+                authorUser.Email,
+                post.Title ?? "Untitled",
+                request.Approve,
+                request.RejectionReason,
+                cancellationToken
+            );
         }
 
         return new PostModerationResponse(
@@ -660,6 +664,7 @@ public class AdminService : IAdminService
             .Set<Post>()
             .AsNoTracking()
             .Where(p => p.Status == PostStatus.PendingReview || p.Status == PostStatus.Flagged)
+            .Include(p => p.AuthorUser)
             .Include(p => p.Creator)
             .Include(p => p.PostProducts)
                 .ThenInclude(pp => pp.Product)
@@ -686,15 +691,15 @@ public class AdminService : IAdminService
 
         var reportLookup = reportData.ToDictionary(r => r.PostId);
 
-        // Get creator post counts
-        var creatorIds = posts.Select(p => p.CreatorId).Distinct().ToList();
-        var creatorPostCounts = await _dbContext
+        // Get author post counts
+        var authorUserIds = posts.Select(p => p.AuthorUserId).Distinct().ToList();
+        var authorPostCounts = await _dbContext
             .Set<Post>()
-            .Where(p => creatorIds.Contains(p.CreatorId))
-            .GroupBy(p => new { p.CreatorId, p.Status })
+            .Where(p => authorUserIds.Contains(p.AuthorUserId))
+            .GroupBy(p => new { p.AuthorUserId, p.Status })
             .Select(g => new
             {
-                g.Key.CreatorId,
+                g.Key.AuthorUserId,
                 g.Key.Status,
                 Count = g.Count(),
             })
@@ -723,19 +728,19 @@ public class AdminService : IAdminService
                 )
                     priority += 30;
 
-                var creatorCounts = creatorPostCounts
-                    .Where(c => c.CreatorId == p.CreatorId)
+                var authorCounts = authorPostCounts
+                    .Where(c => c.AuthorUserId == p.AuthorUserId)
                     .ToList();
-                var creatorPublished =
-                    creatorCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
-                if (creatorPublished < 3)
+                var authorPublished =
+                    authorCounts.FirstOrDefault(c => c.Status == PostStatus.Published)?.Count ?? 0;
+                if (authorPublished < 3)
                     priority += 20;
 
                 var hoursInQueue = (DateTime.UtcNow - p.CreatedAt).TotalHours;
                 if (hoursInQueue > 48)
                     priority += 40;
 
-                var totalPosts = creatorCounts.Sum(c => c.Count);
+                var totalPosts = authorCounts.Sum(c => c.Count);
 
                 return new ModerationQueueItemResponse(
                     Id: p.Id,
@@ -747,12 +752,16 @@ public class AdminService : IAdminService
                     Status: p.Status,
                     CreatedAt: p.CreatedAt,
                     SubmittedAt: p.UpdatedAt,
-                    Creator: new CreatorSummary(
-                        Id: p.Creator.Id,
-                        DisplayName: p.Creator.DisplayName,
-                        IsVerified: p.Creator.IsVerified,
+                    Author: new AuthorSummary(
+                        UserId: p.AuthorUserId,
+                        CreatorId: p.CreatorId,
+                        DisplayName: p.Creator?.DisplayName
+                            ?? p.AuthorUser.DisplayName
+                            ?? p.AuthorUser.UserName!,
+                        IsVerified: p.Creator?.IsVerified ?? false,
+                        UserType: p.AuthorUser.UserType,
                         TotalPosts: totalPosts,
-                        PublishedPosts: creatorPublished
+                        PublishedPosts: authorPublished
                     ),
                     Products: p.PostProducts.Select(pp => new PostProductSummary(
                             ProductId: pp.ProductId,

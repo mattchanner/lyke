@@ -12,6 +12,7 @@ export { PostEngagementService, type EngagementChange } from './post-engagement.
 export { AnalyticsService } from './analytics.service';
 export { WebVitalsService } from './web-vitals.service';
 export { FollowService } from './follow.service';
+export { PostAuthorService } from './post-author.service';
 export { ProfileStateService } from './profile-state.service';
 export { QuizService } from './quiz.service';
 export { KibbeQuizApiService } from './kibbe-quiz-api.service';
