@@ -1,0 +1,124 @@
+:host {
+  display: contents;
+}
+
+.bottom-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+
+  background: var(--ion-toolbar-background, #ffffff);
+  border-top: 0.5px solid rgba(42, 45, 50, 0.08);
+
+  // Hide on desktop where the side menu is permanent.
+  @media (min-width: 992px) {
+    display: none;
+  }
+}
+
+.dock-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 56px;
+  min-width: 44px;
+
+  color: var(--ion-color-medium);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  transition: color 0.2s ease;
+
+  ion-icon {
+    font-size: 1.5rem;
+    pointer-events: none;
+  }
+
+  .icon-active {
+    display: none;
+  }
+
+  &.is-active {
+    color: var(--ion-color-primary);
+
+    .icon-rest {
+      display: none;
+    }
+
+    .icon-active {
+      display: inline-block;
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: -4px;
+    border-radius: 8px;
+  }
+}
+
+// Filled Midnight Pine disc for create. No persistent active state — this is
+// a push-to-create action, not a destination. Press feedback only.
+.dock-create {
+  &:focus-visible {
+    outline: none;
+  }
+
+  .create-disc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 44px;
+    height: 44px;
+    border-radius: 9999px;
+
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  ion-icon {
+    color: inherit;
+    font-size: 1.4rem;
+  }
+
+  &:hover .create-disc {
+    background: var(--ion-color-primary-shade);
+    box-shadow: 0 4px 12px rgba(14, 58, 59, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &:active .create-disc {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
+  &:focus-visible .create-disc {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-item,
+  .dock-create .create-disc {
+    transition: none;
+  }
+
+  .dock-create:hover .create-disc {
+    transform: none;
+  }
+}

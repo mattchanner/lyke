@@ -186,3 +186,26 @@ ion-item {
     padding-bottom: 24px;
   }
 }
+
+// ── Bottom dock content padding ──
+// `body.has-bottom-dock` is set by <app-bottom-dock> when the dock is visible
+// (authenticated, mobile/tablet width, non-immersive route). Pad ion-content
+// and lift floating action buttons so neither sits behind the fixed dock.
+@media (max-width: 991.98px) {
+  body.has-bottom-dock ion-content {
+    --padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  }
+
+  body.has-bottom-dock ion-fab[vertical="bottom"] {
+    bottom: calc(56px + env(safe-area-inset-bottom) + 8px);
+  }
+}
+
+// Android Capacitor reports safe-area-inset-bottom as 0; pad explicitly.
+.plt-capacitor.plt-android.has-bottom-dock ion-content {
+  --padding-bottom: calc(56px + 24px);
+}
+
+.plt-capacitor.plt-android.has-bottom-dock ion-fab[vertical="bottom"] {
+  bottom: calc(56px + 24px + 8px);
+}

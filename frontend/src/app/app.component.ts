@@ -18,10 +18,14 @@ import {
   newspaperOutline,
   compassOutline,
   bookmarkOutline,
+  bookmark,
   bagOutline,
+  bagHandleOutline,
+  bagHandle,
   gridOutline,
   imagesOutline,
   addCircleOutline,
+  add,
   analyticsOutline,
   walletOutline,
   checkmarkCircleOutline,
@@ -36,9 +40,13 @@ import {
   warningOutline,
   trendingUpOutline,
   heartOutline,
+  heart,
+  homeOutline,
+  home,
   pricetagsOutline
 } from 'ionicons/icons';
 import { AppInsightsService, AuthService, DeepLinkService, WebVitalsService } from './core';
+import { BottomDockComponent } from './shared/components/bottom-dock';
 
 @Component({
   selector: 'app-root',
@@ -58,6 +66,7 @@ import { AppInsightsService, AuthService, DeepLinkService, WebVitalsService } fr
     IonIcon,
     IonLabel,
     IonMenuToggle,
+    BottomDockComponent,
   ],
 })
 export class AppComponent {
@@ -72,10 +81,14 @@ export class AppComponent {
       newspaperOutline,
       compassOutline,
       bookmarkOutline,
+      bookmark,
       bagOutline,
+      bagHandleOutline,
+      bagHandle,
       gridOutline,
       imagesOutline,
       addCircleOutline,
+      add,
       analyticsOutline,
       walletOutline,
       checkmarkCircleOutline,
@@ -90,6 +103,9 @@ export class AppComponent {
       warningOutline,
       trendingUpOutline,
       heartOutline,
+      heart,
+      homeOutline,
+      home,
       pricetagsOutline
     });
   }

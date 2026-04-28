@@ -1,0 +1,62 @@
+@if (shouldShow()) {
+  <nav class="bottom-dock" aria-label="Primary">
+    <a
+      routerLink="/feed"
+      routerLinkActive="is-active"
+      #rlaHome="routerLinkActive"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="dock-item"
+      [attr.aria-current]="rlaHome.isActive ? 'page' : null"
+      aria-label="Home"
+    >
+      <ion-icon class="icon-rest" name="home-outline" aria-hidden="true"></ion-icon>
+      <ion-icon class="icon-active" name="home" aria-hidden="true"></ion-icon>
+    </a>
+
+    <a
+      routerLink="/feed/liked"
+      routerLinkActive="is-active"
+      #rlaLiked="routerLinkActive"
+      class="dock-item"
+      [attr.aria-current]="rlaLiked.isActive ? 'page' : null"
+      aria-label="Liked posts"
+    >
+      <ion-icon class="icon-rest" name="heart-outline" aria-hidden="true"></ion-icon>
+      <ion-icon class="icon-active" name="heart" aria-hidden="true"></ion-icon>
+    </a>
+
+    <a
+      routerLink="/shop"
+      routerLinkActive="is-active"
+      #rlaShop="routerLinkActive"
+      class="dock-item"
+      [attr.aria-current]="rlaShop.isActive ? 'page' : null"
+      aria-label="Shop"
+    >
+      <ion-icon class="icon-rest" name="bag-handle-outline" aria-hidden="true"></ion-icon>
+      <ion-icon class="icon-active" name="bag-handle" aria-hidden="true"></ion-icon>
+    </a>
+
+    <a
+      routerLink="/feed/saved"
+      routerLinkActive="is-active"
+      #rlaSaved="routerLinkActive"
+      class="dock-item"
+      [attr.aria-current]="rlaSaved.isActive ? 'page' : null"
+      aria-label="Saved posts"
+    >
+      <ion-icon class="icon-rest" name="bookmark-outline" aria-hidden="true"></ion-icon>
+      <ion-icon class="icon-active" name="bookmark" aria-hidden="true"></ion-icon>
+    </a>
+
+    <a
+      [routerLink]="createPostPath()"
+      class="dock-item dock-create"
+      aria-label="Create new post"
+    >
+      <span class="create-disc">
+        <ion-icon name="add" aria-hidden="true"></ion-icon>
+      </span>
+    </a>
+  </nav>
+}
