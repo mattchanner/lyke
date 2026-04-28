@@ -26,7 +26,8 @@ public static class GetFeed
             queryParams.RetailerId,
             queryParams.FitTagIds?.Split(',').Select(int.Parse).ToList(),
             queryParams.SortBy ?? FeedSortBy.Relevance,
-            queryParams.CreatorId
+            queryParams.CreatorId,
+            queryParams.AuthorUserId
         );
 
         var (posts, meta) = await feedService.GetFeedAsync(

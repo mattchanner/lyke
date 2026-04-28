@@ -24,7 +24,8 @@ public static class GetExploreFeed
             queryParams.RetailerId,
             queryParams.FitTagIds?.Split(',').Select(int.Parse).ToList(),
             queryParams.SortBy ?? FeedSortBy.Recent,
-            queryParams.CreatorId
+            queryParams.CreatorId,
+            queryParams.AuthorUserId
         );
 
         var (posts, meta) = await feedService.GetExploreFeedAsync(

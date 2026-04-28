@@ -25,4 +25,7 @@ public class FeedQueryParams
 
     [FromQuery(Name = "creatorId")]
     public Guid? CreatorId { get; set; }
+
+    [FromQuery(Name = "authorUserId")]
+    public Guid? AuthorUserId { get; set; }
 }

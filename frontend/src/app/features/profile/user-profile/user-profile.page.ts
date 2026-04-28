@@ -78,7 +78,7 @@ export class UserProfilePage implements OnInit {
   }
 
   private loadPosts(userId: string): void {
-    this.api.get<FeedPostResponse[]>('posts', 'feed', { authorUserId: userId }).subscribe({
+    this.api.get<FeedPostResponse[]>('feed', '', { authorUserId: userId }).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.posts.set(response.data);

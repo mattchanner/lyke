@@ -1013,6 +1013,11 @@ public class FeedService : IFeedService
             query = query.Where(p => p.CreatorId == request.CreatorId.Value);
         }
 
+        if (request.AuthorUserId.HasValue)
+        {
+            query = query.Where(p => p.AuthorUserId == request.AuthorUserId.Value);
+        }
+
         return query;
     }
 
@@ -1215,7 +1220,8 @@ public class FeedService : IFeedService
             );
         }
 
-        var totalPosts = authorPublishedPostCount
+        var totalPosts =
+            authorPublishedPostCount
             ?? post.AuthorUser.AuthoredPosts?.Count(p => p.Status == PostStatus.Published)
             ?? 0;
 

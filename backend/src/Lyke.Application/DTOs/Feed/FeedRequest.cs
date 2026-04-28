@@ -7,7 +7,8 @@ public record FeedRequest(
     Guid? RetailerId = null,
     List<int>? FitTagIds = null,
     FeedSortBy SortBy = FeedSortBy.Relevance,
-    Guid? CreatorId = null
+    Guid? CreatorId = null,
+    Guid? AuthorUserId = null
 );
 
 public enum FeedSortBy
