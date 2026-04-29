@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import {
   IonContent,
@@ -16,7 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { checkmarkCircle } from 'ionicons/icons';
-import { ApiService, FollowService } from '../../../core';
+import { ApiService, AuthService, FollowService } from '../../../core';
 import { PublicUserProfileResponse, FeedPostResponse } from '../../../models';
 import { PostCardComponent } from '../../../shared/components/post-card';
 
@@ -45,11 +45,16 @@ import { PostCardComponent } from '../../../shared/components/post-card';
 export class UserProfilePage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(ApiService);
+  private readonly auth = inject(AuthService);
   readonly followService = inject(FollowService);
 
   readonly profile = signal<PublicUserProfileResponse | null>(null);
   readonly posts = signal<FeedPostResponse[]>([]);
   readonly isLoading = signal(false);
+  readonly isOwnProfile = computed(() => {
+    const p = this.profile();
+    return p !== null && p.userId === this.auth.userId();
+  });
 
   constructor() {
     addIcons({ checkmarkCircle });

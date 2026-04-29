@@ -42,14 +42,16 @@
         </span>
       }
     </div>
-    <ion-button
-      fill="outline"
-      size="small"
-      class="follow-btn"
-      (click)="toggleFollow($event)"
-    >
-      {{ followService.isFollowing(post.author.userId) ? 'Following' : 'Follow' }}
-    </ion-button>
+    @if (!isOwnPost) {
+      <ion-button
+        fill="outline"
+        size="small"
+        class="follow-btn"
+        (click)="toggleFollow($event)"
+      >
+        {{ followService.isFollowing(post.author.userId) ? 'Following' : 'Follow' }}
+      </ion-button>
+    }
   </div>
 
   <ion-card-content>

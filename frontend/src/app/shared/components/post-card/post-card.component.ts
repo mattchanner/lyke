@@ -25,7 +25,7 @@ import {
   flagOutline,
 } from 'ionicons/icons';
 import { HttpContext } from '@angular/common/http';
-import { ApiService, ToastService, AnalyticsService, FollowService } from '../../../core';
+import { ApiService, ToastService, AnalyticsService, AuthService, FollowService } from '../../../core';
 import { SUPPRESS_ERROR_TOAST } from '../../../core/interceptors/error.interceptor';
 import { FeedPostResponse, PostProductSummaryResponse, EngagementType, MediaType, ReportReason, CreateReportRequest } from '../../../models';
 import { MediaCarouselComponent, MediaItem } from '../media-carousel';
@@ -56,9 +56,14 @@ export class PostCardComponent {
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly alertCtrl = inject(AlertController);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   readonly followService = inject(FollowService);
 
   @Input({ required: true }) post!: FeedPostResponse;
+
+  get isOwnPost(): boolean {
+    return this.post.author.userId === this.auth.userId();
+  }
   @Output() liked = new EventEmitter<{ postId: string; liked: boolean }>();
   @Output() saved = new EventEmitter<{ postId: string; saved: boolean }>();
   @Output() productTapped = new EventEmitter<{ postId: string; product: PostProductSummaryResponse }>();

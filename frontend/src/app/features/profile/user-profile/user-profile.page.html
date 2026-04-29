@@ -51,13 +51,15 @@
         </div>
       }
 
-      <ion-button
-        [fill]="followService.isFollowing(profile()!.userId) ? 'outline' : 'solid'"
-        expand="block"
-        (click)="toggleFollow()"
-      >
-        {{ followService.isFollowing(profile()!.userId) ? 'Following' : 'Follow' }}
-      </ion-button>
+      @if (!isOwnProfile()) {
+        <ion-button
+          [fill]="followService.isFollowing(profile()!.userId) ? 'outline' : 'solid'"
+          expand="block"
+          (click)="toggleFollow()"
+        >
+          {{ followService.isFollowing(profile()!.userId) ? 'Following' : 'Follow' }}
+        </ion-button>
+      }
     </div>
 
     <div class="posts-section">
