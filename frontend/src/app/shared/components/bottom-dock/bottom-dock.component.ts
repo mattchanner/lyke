@@ -30,6 +30,8 @@ export class BottomDockComponent {
     if (url.startsWith('/auth')) return false;
     if (url.startsWith('/onboarding')) return false;
     if (url.startsWith('/style-quiz')) return false;
+    const path = url.split(/[?#]/)[0];
+    if (path.endsWith('/create') || path.endsWith('/edit')) return false;
     return true;
   });
 
