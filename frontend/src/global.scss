@@ -170,6 +170,21 @@ ion-item {
   animation: fadeIn 0.35s ease both;
 }
 
+// ── Reduced motion ──
+// Honour prefers-reduced-motion system-wide. Animations collapse to instant,
+// transitions become near-zero. Required for AAA on the style-quiz flow and
+// for vestibular-disorder safety across the app.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 // Bottom safe area for Android gesture navigation.
 // Android WebView doesn't report env(safe-area-inset-bottom),
 // so add explicit padding when running inside Capacitor on Android.

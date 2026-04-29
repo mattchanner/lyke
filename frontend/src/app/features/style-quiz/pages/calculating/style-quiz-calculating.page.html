@@ -1,7 +1,20 @@
 <ion-content>
-  <div class="calculating-container">
-    <ion-spinner name="crescent" class="spinner"></ion-spinner>
-    <h2>Calculating your style type…</h2>
-    <p>Analysing your answers across all three sections.</p>
-  </div>
+  @if (state() === 'calculating') {
+    <div class="calculating-container" aria-live="polite">
+      <ion-spinner name="crescent" class="spinner" aria-hidden="true"></ion-spinner>
+      <h2>Calculating your style type…</h2>
+      <p>Analysing your answers across all three sections.</p>
+    </div>
+  } @else {
+    <div class="error-container" role="alert" aria-live="assertive">
+      <h2>We couldn't calculate your result.</h2>
+      <p>Your answers are still saved. Try again, or go back to review them.</p>
+      <div class="error-actions">
+        <ion-button (click)="retry()" aria-label="Try calculating again">Try again</ion-button>
+        <ion-button fill="outline" (click)="cancel()" aria-label="Return to the quiz">
+          Back to quiz
+        </ion-button>
+      </div>
+    </div>
+  }
 </ion-content>

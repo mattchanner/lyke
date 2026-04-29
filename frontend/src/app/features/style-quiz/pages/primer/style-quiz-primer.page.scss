@@ -4,7 +4,7 @@
   padding-top: 1.5rem;
 }
 
-.yin-yang-section {
+.lines-section {
   margin-bottom: 2rem;
 
   h2 {
@@ -22,6 +22,8 @@
 
 .concept-card {
   padding: 1rem;
+  background: var(--ion-color-light);
+  border: 0.5px solid rgba(var(--ion-text-color-rgb), 0.1);
   border-radius: 12px;
   text-align: center;
 
@@ -35,16 +37,6 @@
     font-size: 0.85rem;
     line-height: 1.4;
     color: var(--ion-color-medium);
-  }
-
-  &.yang {
-    background: var(--ion-color-light);
-    border-left: 4px solid var(--ion-color-dark);
-  }
-
-  &.yin {
-    background: var(--ion-color-light);
-    border-left: 4px solid var(--ion-color-primary);
   }
 }
 
@@ -68,7 +60,3 @@
   }
 }
 
-ion-button {
-  --border-radius: 24px;
-  font-weight: 600;
-}
