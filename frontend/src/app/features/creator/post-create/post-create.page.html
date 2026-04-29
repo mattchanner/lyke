@@ -19,13 +19,23 @@
           @for (media of uploadedMedia(); track media.mediaId; let i = $index) {
             <div class="thumb-item">
               <img [src]="media.thumbnailUrl" alt="" loading="lazy" />
-              <button class="thumb-remove" (click)="removeMedia(i)">
-                <ion-icon name="close-outline"></ion-icon>
+              <button
+                class="thumb-remove"
+                type="button"
+                [attr.aria-label]="'Remove image ' + (i + 1)"
+                (click)="removeMedia(i)"
+              >
+                <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
               </button>
             </div>
           }
-          <button class="thumb-add" (click)="fileInput.click()">
-            <ion-icon name="add-outline"></ion-icon>
+          <button
+            class="thumb-add"
+            type="button"
+            aria-label="Add another image"
+            (click)="fileInput.click()"
+          >
+            <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
           </button>
         </div>
       } @else {
@@ -35,16 +45,18 @@
         </ion-button>
       }
     } @else {
-      <!-- Empty state: hero upload area -->
       <div class="hero-upload" (click)="fileInput.click()">
         @if (isUploading()) {
           <ion-spinner name="crescent" color="primary"></ion-spinner>
           <p>Uploading...</p>
         } @else {
-          <ion-icon name="cloud-upload-outline"></ion-icon>
+          <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
           <p>Tap to add photos or video</p>
         }
       </div>
+      <p class="upload-helper">
+        Real photos work best. No filters needed. Max 20MB per file.
+      </p>
     }
 
     @if (isUploading() && hasMedia()) {
@@ -112,8 +124,14 @@
             <span class="product-name">{{ tp.product.name }}</span>
             <span class="product-retailer">{{ tp.product.retailerName }}</span>
           </div>
-          <ion-button fill="clear" size="small" color="medium" (click)="removeProduct(i)">
-            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          <ion-button
+            fill="clear"
+            size="small"
+            color="medium"
+            aria-label="Remove tagged product"
+            (click)="removeProduct(i)"
+          >
+            <ion-icon name="close-outline" slot="icon-only" aria-hidden="true"></ion-icon>
           </ion-button>
         </div>
 

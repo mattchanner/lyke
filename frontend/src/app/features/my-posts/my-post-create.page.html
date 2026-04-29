@@ -18,13 +18,23 @@
           @for (media of uploadedMedia(); track media.mediaId; let i = $index) {
             <div class="thumb-item">
               <img [src]="media.thumbnailUrl" alt="" loading="lazy" />
-              <button class="thumb-remove" (click)="removeMedia(i)">
-                <ion-icon name="close-outline"></ion-icon>
+              <button
+                class="thumb-remove"
+                type="button"
+                [attr.aria-label]="'Remove image ' + (i + 1)"
+                (click)="removeMedia(i)"
+              >
+                <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
               </button>
             </div>
           }
-          <button class="thumb-add" (click)="fileInput.click()">
-            <ion-icon name="add-outline"></ion-icon>
+          <button
+            class="thumb-add"
+            type="button"
+            aria-label="Add another image"
+            (click)="fileInput.click()"
+          >
+            <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
           </button>
         </div>
       } @else {
@@ -39,10 +49,13 @@
           <ion-spinner name="crescent" color="primary"></ion-spinner>
           <p>Uploading...</p>
         } @else {
-          <ion-icon name="cloud-upload-outline"></ion-icon>
+          <ion-icon name="cloud-upload-outline" aria-hidden="true"></ion-icon>
           <p>Tap to add photos or video</p>
         }
       </div>
+      <p class="upload-helper">
+        Real photos work best. No filters needed. Max 20MB per file.
+      </p>
     }
 
     @if (isUploading() && hasMedia()) {
@@ -101,11 +114,17 @@
           (ionInput)="productSearchQuery.set($event.detail.value || '')"
           (keyup.enter)="searchProducts()"
         ></ion-input>
-        <ion-button fill="clear" slot="end" (click)="searchProducts()" [disabled]="isSearching()">
+        <ion-button
+          fill="clear"
+          slot="end"
+          aria-label="Search products"
+          [disabled]="isSearching()"
+          (click)="searchProducts()"
+        >
           @if (isSearching()) {
             <ion-spinner name="crescent" slot="icon-only"></ion-spinner>
           } @else {
-            <ion-icon name="search-outline" slot="icon-only"></ion-icon>
+            <ion-icon name="search-outline" slot="icon-only" aria-hidden="true"></ion-icon>
           }
         </ion-button>
       </ion-item>
@@ -142,8 +161,14 @@
             <span class="product-name">{{ tp.product.name }}</span>
             <span class="product-retailer">{{ tp.product.retailerName }}</span>
           </div>
-          <ion-button fill="clear" size="small" color="medium" (click)="removeProduct(i)">
-            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          <ion-button
+            fill="clear"
+            size="small"
+            color="medium"
+            aria-label="Remove tagged product"
+            (click)="removeProduct(i)"
+          >
+            <ion-icon name="close-outline" slot="icon-only" aria-hidden="true"></ion-icon>
           </ion-button>
         </div>
 
@@ -157,21 +182,11 @@
           ></ion-input>
         </ion-item>
 
-        <ion-item>
-          <ion-select
-            label="Fit rating"
-            labelPlacement="stacked"
-            placeholder="How did it fit?"
-            [value]="tp.fitRating"
-            (ionChange)="updateProductFitRating(i, $any($event).detail.value)"
-          >
-            <ion-select-option [value]="FitRating.TooSmall">Too Small</ion-select-option>
-            <ion-select-option [value]="FitRating.SlightlySmall">Slightly Small</ion-select-option>
-            <ion-select-option [value]="FitRating.TrueToSize">True to Size</ion-select-option>
-            <ion-select-option [value]="FitRating.SlightlyLarge">Slightly Large</ion-select-option>
-            <ion-select-option [value]="FitRating.TooLarge">Too Large</ion-select-option>
-          </ion-select>
-        </ion-item>
+        <div class="fit-label">Fit rating</div>
+        <app-fit-rating-pills
+          [selected]="tp.fitRating"
+          (ratingChanged)="updateProductFitRating(i, $event)"
+        ></app-fit-rating-pills>
 
         <ion-item>
           <ion-textarea

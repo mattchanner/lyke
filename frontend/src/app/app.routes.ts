@@ -7,6 +7,7 @@ import {
   creatorGuard,
   adminGuard,
   retailerGuard,
+  unsavedChangesGuard,
 } from './core';
 
 export const routes: Routes = [
@@ -256,6 +257,7 @@ export const routes: Routes = [
           import('./features/my-posts/my-post-create.page').then(
             (m) => m.MyPostCreatePage
           ),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: ':id/edit',
@@ -302,6 +304,7 @@ export const routes: Routes = [
           import('./features/creator/post-create/post-create.page').then(
             (m) => m.PostCreatePage
           ),
+        canDeactivate: [unsavedChangesGuard],
       },
       {
         path: 'posts/:id/edit',

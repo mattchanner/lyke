@@ -27,7 +27,7 @@ import {
   sendOutline,
   pricetagOutline,
 } from 'ionicons/icons';
-import { CreatorService, ToastService, ApiService } from '../../../core';
+import { CreatorService, ToastService, ApiService, HasUnsavedChanges } from '../../../core';
 import { CommerceService } from '../../../core/services/commerce.service';
 import {
   MediaType,
@@ -40,9 +40,11 @@ import {
   MediaCarouselComponent,
   MediaItem,
 } from '../../../shared/components/media-carousel';
-import { FitRatingPillsComponent } from './fit-rating-pills.component';
+import { FitRatingPillsComponent } from '../../../shared/components/fit-rating-pills';
 import { ProductTagSheetComponent } from './product-tag-sheet.component';
 import { convertToJpeg } from '../../../shared/utils/image-convert.util';
+
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB per file
 
 interface TaggedProduct {
   product: ProductResponse;
@@ -79,7 +81,7 @@ interface TaggedProduct {
   templateUrl: './post-create.page.html',
   styleUrls: ['./post-create.page.scss'],
 })
-export class PostCreatePage {
+export class PostCreatePage implements HasUnsavedChanges {
   private readonly creatorService = inject(CreatorService);
   private readonly apiService = inject(ApiService);
   private readonly toast = inject(ToastService);
@@ -134,10 +136,18 @@ export class PostCreatePage {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
 
+    for (let i = 0; i < input.files.length; i++) {
+      const f = input.files[i];
+      if (f.size > MAX_FILE_SIZE_BYTES) {
+        this.toast.warning(`${f.name || 'File'} is too large. Max 20MB per file.`);
+        input.value = '';
+        return;
+      }
+    }
+
     const file = input.files[0];
     const detectedType = this.detectMediaType(file);
 
-    // If we already have media, reject mismatched types
     if (this.uploadedMedia().length > 0 && detectedType !== this.mediaType()) {
       this.toast.warning(`You can only add ${this.mediaType() === MediaType.Image ? 'images' : 'videos'} to this post`);
       input.value = '';
@@ -245,6 +255,17 @@ export class PostCreatePage {
     return !!this.showNotes()[productId];
   }
 
+  // --- Unsaved-changes guard support ---
+
+  hasUnsavedChanges(): boolean {
+    return (
+      this.uploadedMedia().length > 0 ||
+      this.title().trim().length > 0 ||
+      this.description().trim().length > 0 ||
+      this.taggedProducts().length > 0
+    );
+  }
+
   // --- Submit ---
 
   saveAsDraft(): void {
@@ -289,13 +310,13 @@ export class PostCreatePage {
                   this.router.navigate(['/creator/posts']);
                 },
                 error: () => {
-                  this.toast.success('Post saved as draft');
+                  this.toast.success('Draft saved. You can finish it any time.');
                   this.router.navigate(['/creator/posts']);
                 },
                 complete: () => this.isSubmitting.set(false),
               });
             } else {
-              this.toast.success('Post saved as draft');
+              this.toast.success('Draft saved. You can finish it any time.');
               this.isSubmitting.set(false);
               this.router.navigate(['/creator/posts']);
             }

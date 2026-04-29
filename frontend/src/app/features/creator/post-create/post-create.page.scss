@@ -25,6 +25,14 @@ app-media-carousel { display: block; width: 100%; }
   p { color: var(--ion-color-medium); margin: 8px 0 0; }
 }
 
+.upload-helper {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  text-align: center;
+  margin: 12px 0 0;
+  line-height: 1.4;
+}
+
 .upload-overlay {
   position: absolute;
   inset: 0;

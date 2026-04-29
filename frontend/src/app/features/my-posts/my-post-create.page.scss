@@ -26,6 +26,14 @@ app-media-carousel { display: block; width: 100%; }
   p { color: var(--ion-color-medium); margin: 8px 0 0; }
 }
 
+.upload-helper {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  text-align: center;
+  margin: 12px 0 0;
+  line-height: 1.4;
+}
+
 .upload-overlay {
   position: absolute;
   inset: 0;
@@ -111,5 +119,7 @@ app-media-carousel { display: block; width: 100%; }
   .product-name { font-weight: 600; font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .product-retailer { font-size: 0.8rem; color: var(--ion-color-medium); }
 }
+
+.fit-label { font-size: 0.8rem; color: var(--ion-color-medium); margin: 8px 0 4px; }
 
 .action-bar ion-toolbar { --padding-start: 8px; --padding-end: 8px; }

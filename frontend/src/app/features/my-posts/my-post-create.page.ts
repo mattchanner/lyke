@@ -17,8 +17,6 @@ import {
   IonFooter,
   IonSpinner,
   IonNote,
-  IonSelect,
-  IonSelectOption,
   IonList,
   IonLabel,
 } from '@ionic/angular/standalone';
@@ -31,7 +29,7 @@ import {
   sendOutline,
   searchOutline,
 } from 'ionicons/icons';
-import { PostAuthorService, ToastService, ApiService } from '../../core';
+import { PostAuthorService, ToastService, ApiService, HasUnsavedChanges } from '../../core';
 import { CommerceService } from '../../core/services/commerce.service';
 import {
   MediaType,
@@ -43,7 +41,10 @@ import {
   MediaCarouselComponent,
   MediaItem,
 } from '../../shared/components/media-carousel';
+import { FitRatingPillsComponent } from '../../shared/components/fit-rating-pills';
 import { convertToJpeg } from '../../shared/utils/image-convert.util';
+
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB per file
 
 interface TaggedProduct {
   product: ProductResponse;
@@ -73,17 +74,16 @@ interface TaggedProduct {
     IonFooter,
     IonSpinner,
     IonNote,
-    IonSelect,
-    IonSelectOption,
     IonList,
     IonLabel,
     MediaCarouselComponent,
+    FitRatingPillsComponent,
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './my-post-create.page.html',
   styleUrls: ['./my-post-create.page.scss'],
 })
-export class MyPostCreatePage {
+export class MyPostCreatePage implements HasUnsavedChanges {
   private readonly postAuthorService = inject(PostAuthorService);
   private readonly apiService = inject(ApiService);
   private readonly commerceService = inject(CommerceService);
@@ -138,6 +138,15 @@ export class MyPostCreatePage {
   async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
+
+    for (let i = 0; i < input.files.length; i++) {
+      const f = input.files[i];
+      if (f.size > MAX_FILE_SIZE_BYTES) {
+        this.toast.warning(`${f.name || 'File'} is too large. Max 20MB per file.`);
+        input.value = '';
+        return;
+      }
+    }
 
     const file = input.files[0];
     const detectedType = file.type.startsWith('video/') ? MediaType.Video : MediaType.Image;
@@ -243,6 +252,17 @@ export class MyPostCreatePage {
     );
   }
 
+  // --- Unsaved-changes guard support ---
+
+  hasUnsavedChanges(): boolean {
+    return (
+      this.uploadedMedia().length > 0 ||
+      this.title().trim().length > 0 ||
+      this.description().trim().length > 0 ||
+      this.taggedProducts().length > 0
+    );
+  }
+
   // --- Submit ---
 
   saveAsDraft(): void {
@@ -285,13 +305,13 @@ export class MyPostCreatePage {
                   this.router.navigate(['/my-posts']);
                 },
                 error: () => {
-                  this.toast.success('Post saved as draft');
+                  this.toast.success('Draft saved. You can finish it any time.');
                   this.router.navigate(['/my-posts']);
                 },
                 complete: () => this.isSubmitting.set(false),
               });
             } else {
-              this.toast.success('Post saved as draft');
+              this.toast.success('Draft saved. You can finish it any time.');
               this.isSubmitting.set(false);
               this.router.navigate(['/my-posts']);
             }
