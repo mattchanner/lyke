@@ -18,6 +18,11 @@ import { AuthService, ToastService, SocialAuthService, KibbeAnalyticsService } f
 import { LoginRequest, UserType } from '../../../models';
 import { environment } from '../../../../environments/environment';
 
+interface InterceptedError {
+  status?: number;
+  message?: string;
+}
+
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -49,6 +54,7 @@ export class LoginPage {
   readonly isLoading = signal(false);
   readonly socialLoading = signal(false);
   readonly showPassword = signal(false);
+  readonly errorMessage = signal<string>('');
   readonly socialLoginsEnabled = environment.socialLoginsEnabled;
 
   readonly form = this.fb.nonNullable.group({
@@ -65,6 +71,8 @@ export class LoginPage {
   }
 
   onSubmit(): void {
+    this.errorMessage.set('');
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -79,12 +87,11 @@ export class LoginPage {
 
     this.authService.login(request).subscribe({
       next: () => {
-        this.toast.success('Welcome back!');
         this.router.navigate([this.getPostLoginRoute()]);
       },
-      error: (error) => {
+      error: (error: InterceptedError) => {
         this.isLoading.set(false);
-        // Error toast is handled by error interceptor
+        this.errorMessage.set(this.formatLoginError(error?.status));
       },
       complete: () => {
         this.isLoading.set(false);
@@ -93,20 +100,62 @@ export class LoginPage {
   }
 
   async onGoogleSignIn(): Promise<void> {
+    this.errorMessage.set('');
     this.socialLoading.set(true);
     try {
       const { idToken } = await this.socialAuth.googleSignIn();
       this.authService.socialLogin({ provider: 'Google', idToken }).subscribe({
         next: () => {
-          this.toast.success('Welcome back!');
           this.router.navigate([this.getPostLoginRoute()]);
         },
-        error: () => this.socialLoading.set(false),
+        error: (error: InterceptedError) => {
+          this.socialLoading.set(false);
+          this.errorMessage.set(this.formatLoginError(error?.status));
+        },
         complete: () => this.socialLoading.set(false),
       });
     } catch (error) {
       this.socialLoading.set(false);
-      this.toast.error('Google sign-in failed');
+      this.errorMessage.set('Google sign-in was cancelled or failed. Please try again.');
+    }
+  }
+
+  async onAppleSignIn(): Promise<void> {
+    this.errorMessage.set('');
+    this.socialLoading.set(true);
+    try {
+      const { idToken } = await this.socialAuth.appleSignIn();
+      this.authService.socialLogin({ provider: 'Apple', idToken }).subscribe({
+        next: () => {
+          this.router.navigate([this.getPostLoginRoute()]);
+        },
+        error: (error: InterceptedError) => {
+          this.socialLoading.set(false);
+          this.errorMessage.set(this.formatLoginError(error?.status));
+        },
+        complete: () => this.socialLoading.set(false),
+      });
+    } catch (error) {
+      this.socialLoading.set(false);
+      this.errorMessage.set('Apple sign-in was cancelled or failed. Please try again.');
+    }
+  }
+
+  private formatLoginError(status: number | undefined): string {
+    switch (status) {
+      case 401:
+        return 'That email and password combination is not recognised. Please try again.';
+      case 0:
+        return "We couldn't reach LYKE. Check your connection and try again.";
+      case 429:
+        return 'Too many sign-in attempts. Please wait a moment and try again.';
+      case 500:
+      case 502:
+      case 503:
+      case 504:
+        return 'Sign in is temporarily unavailable. Please try again in a moment.';
+      default:
+        return 'Sign in failed. Please try again.';
     }
   }
 
@@ -121,23 +170,5 @@ export class LoginPage {
     if (userType === UserType.Creator) return '/creator';
     if (userType === UserType.Retailer) return '/retailer';
     return '/feed';
-  }
-
-  async onAppleSignIn(): Promise<void> {
-    this.socialLoading.set(true);
-    try {
-      const { idToken } = await this.socialAuth.appleSignIn();
-      this.authService.socialLogin({ provider: 'Apple', idToken }).subscribe({
-        next: () => {
-          this.toast.success('Welcome back!');
-          this.router.navigate([this.getPostLoginRoute()]);
-        },
-        error: () => this.socialLoading.set(false),
-        complete: () => this.socialLoading.set(false),
-      });
-    } catch (error) {
-      this.socialLoading.set(false);
-      this.toast.error('Apple sign-in failed');
-    }
   }
 }

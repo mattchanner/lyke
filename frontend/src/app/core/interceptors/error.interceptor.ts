@@ -1,6 +1,11 @@
 import { HttpInterceptorFn, HttpErrorResponse, HttpContextToken } from '@angular/common/http';
 
 export const SUPPRESS_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
+
+// Set on auth/login, auth/register, auth/social-login requests so a 401 from
+// these endpoints (i.e. wrong credentials) doesn't trigger the session-expired
+// clear-and-redirect flow. The page surfaces the error inline instead.
+export const SUPPRESS_AUTH_REDIRECT = new HttpContextToken<boolean>(() => false);
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
@@ -32,9 +37,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
           case 401:
             errorMessage = 'Your session has expired. Please log in again.';
-            storage.clearAuthData().then(() => {
-              router.navigate(['/auth/login']);
-            });
+            if (!req.context.get(SUPPRESS_AUTH_REDIRECT)) {
+              storage.clearAuthData().then(() => {
+                router.navigate(['/auth/login']);
+              });
+            }
             break;
           case 403:
             errorMessage = 'You do not have permission to perform this action.';

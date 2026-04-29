@@ -10,7 +10,7 @@
 <ion-content class="ion-padding">
   <div class="register-container">
     <div class="header-section">
-      <h2>join LYKE</h2>
+      <h1>join LYKE</h1>
       <p>find clothes that fit, from people like you</p>
     </div>
 
@@ -19,10 +19,13 @@
         <ion-item>
           <ion-icon name="mail-outline" slot="start"></ion-icon>
           <ion-input
+            name="email"
             formControlName="email"
             type="email"
             placeholder="Email"
             autocomplete="email"
+            inputmode="email"
+            enterkeyhint="next"
           ></ion-input>
         </ion-item>
         @if (form.get('email')?.touched && form.get('email')?.errors?.['required']) {
@@ -35,21 +38,37 @@
             <small>Please enter a valid email</small>
           </ion-text>
         }
+        @if (form.get('email')?.errors?.['emailTaken']) {
+          <ion-text color="danger" class="error-text">
+            <small>
+              An account with this email already exists.
+              <a routerLink="/auth/login">Sign in instead</a>
+            </small>
+          </ion-text>
+        }
 
         <ion-item>
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input
+            name="password"
             formControlName="password"
             [type]="showPassword() ? 'text' : 'password'"
             placeholder="Password"
             autocomplete="new-password"
+            enterkeyhint="next"
           ></ion-input>
-          <ion-icon
-            [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+          <button
+            type="button"
             slot="end"
-            (click)="togglePassword()"
             class="password-toggle"
-          ></ion-icon>
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            (click)="togglePassword()"
+          >
+            <ion-icon
+              [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+          </button>
         </ion-item>
         @if (form.get('password')?.touched && form.get('password')?.errors?.['required']) {
           <ion-text color="danger" class="error-text">
@@ -65,17 +84,25 @@
         <ion-item>
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input
+            name="confirm-password"
             formControlName="confirmPassword"
             [type]="showConfirmPassword() ? 'text' : 'password'"
             placeholder="Confirm Password"
             autocomplete="new-password"
+            enterkeyhint="go"
           ></ion-input>
-          <ion-icon
-            [name]="showConfirmPassword() ? 'eye-off-outline' : 'eye-outline'"
+          <button
+            type="button"
             slot="end"
-            (click)="toggleConfirmPassword()"
             class="password-toggle"
-          ></ion-icon>
+            [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'"
+            (click)="toggleConfirmPassword()"
+          >
+            <ion-icon
+              [name]="showConfirmPassword() ? 'eye-off-outline' : 'eye-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+          </button>
         </ion-item>
         @if (form.get('confirmPassword')?.touched && form.get('confirmPassword')?.errors?.['required']) {
           <ion-text color="danger" class="error-text">
@@ -108,6 +135,12 @@
           </ion-text>
         }
       </div>
+
+      @if (errorMessage()) {
+        <div class="form-error" role="alert" aria-live="assertive">
+          {{ errorMessage() }}
+        </div>
+      }
 
       <ion-button
         expand="block"

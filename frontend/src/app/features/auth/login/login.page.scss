@@ -21,10 +21,12 @@
   text-align: center;
   margin-bottom: 2.5rem;
 
+  // Display H1 per DESIGN.md: 2rem / 600 / Pine, tight tracking.
   h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    letter-spacing: -0.03em;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     margin-bottom: 0.5rem;
     color: var(--ion-color-primary);
   }
@@ -54,6 +56,31 @@ ion-item {
 
 .password-toggle {
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0.25rem;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+
+  &:focus-visible {
+    outline: 2px solid var(--ion-color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+.form-error {
+  background: rgba(var(--ion-color-danger-rgb), 0.06);
+  border: 0.5px solid rgba(var(--ion-color-danger-rgb), 0.22);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--ion-color-danger);
+  font-weight: 500;
 }
 
 .forgot-password {
@@ -68,9 +95,7 @@ ion-item {
 }
 
 ion-button {
-  --border-radius: 24px;
   margin-top: 1rem;
-  font-weight: 600;
 }
 
 ion-input {
@@ -99,7 +124,6 @@ ion-input {
 
 .social-buttons {
   ion-button {
-    --border-radius: 24px;
     margin-bottom: 0.75rem;
     font-weight: 500;
   }

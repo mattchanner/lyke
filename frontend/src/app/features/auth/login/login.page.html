@@ -10,10 +10,13 @@
         <ion-item>
           <ion-icon name="mail-outline" slot="start"></ion-icon>
           <ion-input
+            name="email"
             formControlName="email"
             type="email"
             placeholder="Email"
             autocomplete="email"
+            inputmode="email"
+            enterkeyhint="next"
           ></ion-input>
         </ion-item>
         @if (form.get('email')?.touched && form.get('email')?.errors?.['required']) {
@@ -30,17 +33,25 @@
         <ion-item>
           <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
           <ion-input
+            name="password"
             formControlName="password"
             [type]="showPassword() ? 'text' : 'password'"
             placeholder="Password"
             autocomplete="current-password"
+            enterkeyhint="go"
           ></ion-input>
-          <ion-icon
-            [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+          <button
+            type="button"
             slot="end"
-            (click)="togglePassword()"
             class="password-toggle"
-          ></ion-icon>
+            [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+            (click)="togglePassword()"
+          >
+            <ion-icon
+              [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+              aria-hidden="true"
+            ></ion-icon>
+          </button>
         </ion-item>
         @if (form.get('password')?.touched && form.get('password')?.errors?.['required']) {
           <ion-text color="danger" class="error-text">
@@ -52,6 +63,12 @@
       <div class="forgot-password">
         <a routerLink="/auth/forgot-password">Forgot password?</a>
       </div>
+
+      @if (errorMessage()) {
+        <div class="form-error" role="alert" aria-live="assertive">
+          {{ errorMessage() }}
+        </div>
+      }
 
       <ion-button
         expand="block"

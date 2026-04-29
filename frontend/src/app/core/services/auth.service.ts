@@ -1,4 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpContext } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, from, of, throwError } from 'rxjs';
 import { map, switchMap, tap, catchError } from 'rxjs/operators';
@@ -7,6 +8,16 @@ import { ApiService } from './api.service';
 import { AppInsightsService } from './app-insights.service';
 import { StorageService } from './storage.service';
 import { ToastService } from './toast.service';
+import {
+  SUPPRESS_ERROR_TOAST,
+  SUPPRESS_AUTH_REDIRECT,
+} from '../interceptors/error.interceptor';
+
+// Auth-page requests handle errors inline (no toast, no auto-redirect on 401).
+const authPageContext = () =>
+  new HttpContext()
+    .set(SUPPRESS_ERROR_TOAST, true)
+    .set(SUPPRESS_AUTH_REDIRECT, true);
 import {
   AuthResponse,
   LoginRequest,
@@ -155,42 +166,48 @@ export class AuthService {
   }
 
   login(request: LoginRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('auth', 'login', request).pipe(
-      switchMap((response) => {
-        if (!response.success || !response.data) {
-          return throwError(() => new Error(response.error?.message || 'Login failed'));
-        }
-        return from(this.handleAuthResponse(response.data)).pipe(
-          map(() => response.data!)
-        );
-      })
-    );
+    return this.api
+      .post<AuthResponse>('auth', 'login', request, { context: authPageContext() })
+      .pipe(
+        switchMap((response) => {
+          if (!response.success || !response.data) {
+            return throwError(() => new Error(response.error?.message || 'Login failed'));
+          }
+          return from(this.handleAuthResponse(response.data)).pipe(
+            map(() => response.data!)
+          );
+        })
+      );
   }
 
   socialLogin(request: SocialLoginRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('auth', 'social-login', request).pipe(
-      switchMap((response) => {
-        if (!response.success || !response.data) {
-          return throwError(() => new Error(response.error?.message || 'Social login failed'));
-        }
-        return from(this.handleAuthResponse(response.data)).pipe(
-          map(() => response.data!)
-        );
-      })
-    );
+    return this.api
+      .post<AuthResponse>('auth', 'social-login', request, { context: authPageContext() })
+      .pipe(
+        switchMap((response) => {
+          if (!response.success || !response.data) {
+            return throwError(() => new Error(response.error?.message || 'Social login failed'));
+          }
+          return from(this.handleAuthResponse(response.data)).pipe(
+            map(() => response.data!)
+          );
+        })
+      );
   }
 
   register(request: RegisterRequest): Observable<AuthResponse> {
-    return this.api.post<AuthResponse>('auth', 'register', request).pipe(
-      switchMap((response) => {
-        if (!response.success || !response.data) {
-          return throwError(() => new Error(response.error?.message || 'Registration failed'));
-        }
-        return from(this.handleAuthResponse(response.data)).pipe(
-          map(() => response.data!)
-        );
-      })
-    );
+    return this.api
+      .post<AuthResponse>('auth', 'register', request, { context: authPageContext() })
+      .pipe(
+        switchMap((response) => {
+          if (!response.success || !response.data) {
+            return throwError(() => new Error(response.error?.message || 'Registration failed'));
+          }
+          return from(this.handleAuthResponse(response.data)).pipe(
+            map(() => response.data!)
+          );
+        })
+      );
   }
 
   refreshToken(refreshToken: string): Observable<AuthResponse> {
